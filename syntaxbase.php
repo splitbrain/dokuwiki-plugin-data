@@ -104,7 +104,7 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
         global $conf;
 
         $dbfile = $conf['cachedir'].'/dataplugin.sqlite';
-        $init   = !@file_exists($dbfile);
+        $init   = (!@file_exists($dbfile) || !@filesize($dbfile));
 
         $error='';
         $this->db = sqlite_open($dbfile, 0666, $error);
