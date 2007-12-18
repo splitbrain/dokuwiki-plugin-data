@@ -143,11 +143,11 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
 
         // begin transaction
         $sql = "BEGIN TRANSACTION";
-        sqlite_exec($this->db,$sql);
+        sqlite_query($this->db,$sql);
 
         // store page info
         $sql = "INSERT OR IGNORE INTO pages (page) VALUES ('$id')";
-        sqlite_exec($this->db,$sql,$error);
+        sqlite_query($this->db,$sql,$error);
 
         // fetch page id
         $sql = "SELECT pid FROM pages WHERE page = '$id'";
@@ -166,12 +166,12 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
             $multi = (int) $info['multi'];
 
             $sql = "REPLACE INTO meta (key, type, multi) VALUES ('$key', '$type', '$multi')";
-            sqlite_exec($this->db,$sql);
+            sqlite_query($this->db,$sql);
         }
 
         // remove old data
         $sql = "DELETE FROM data WHERE pid = $pid";
-        sqlite_exec($this->db,$sql);
+        sqlite_query($this->db,$sql);
 
         // insert new data
         foreach ($data['data'] as $key => $val){
@@ -179,17 +179,17 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
             if(is_array($val)) foreach($val as $v){
                 $v   = sqlite_escape_string($v);
                 $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
-                sqlite_exec($this->db,$sql);
+                sqlite_query($this->db,$sql);
             }else {
                 $v   = sqlite_escape_string($val);
                 $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
-                sqlite_exec($this->db,$sql);
+                sqlite_query($this->db,$sql);
             }
         }
 
         // finish transaction
         $sql = "COMMIT TRANSACTION";
-        sqlite_exec($this->db,$sql);
+        sqlite_query($this->db,$sql);
 
         sqlite_close($this->db);
         return true;

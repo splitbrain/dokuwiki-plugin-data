@@ -122,10 +122,10 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
      * create the needed tables
      */
     function _initdb(){
-        sqlite_exec($this->db,'CREATE TABLE pages (pid INTEGER PRIMARY KEY, page);');
-        sqlite_exec($this->db,'CREATE UNIQUE INDEX idx_page ON pages(page);');
-        sqlite_exec($this->db,'CREATE TABLE data (eid INTEGER PRIMARY KEY, pid INTEGER, key, value);');
-        sqlite_exec($this->db,'CREATE INDEX idx_key ON data(key);');
-        sqlite_exec($this->db,'CREATE TABLE meta (key PRIMARY KEY, type, multi);');
+        sqlite_query($this->db,'CREATE TABLE pages (pid INTEGER PRIMARY KEY, page);');
+        sqlite_query($this->db,'CREATE UNIQUE INDEX idx_page ON pages(page);');
+        sqlite_query($this->db,'CREATE TABLE data (eid INTEGER PRIMARY KEY, pid INTEGER, key, value);');
+        sqlite_query($this->db,'CREATE INDEX idx_key ON data(key);');
+        sqlite_query($this->db,'CREATE TABLE meta (key PRIMARY KEY, type, multi);');
     }
 }
