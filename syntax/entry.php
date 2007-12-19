@@ -147,7 +147,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
 
         // store page info
         $sql = "INSERT OR IGNORE INTO pages (page) VALUES ('$id')";
-        sqlite_query($this->db,$sql,$error);
+        @sqlite_query($this->db,$sql,SQLITE_NUM,$error);
 
         // fetch page id
         $sql = "SELECT pid FROM pages WHERE page = '$id'";
