@@ -123,8 +123,38 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         if($format != 'xhtml') return false;
         if(!$this->_dbconnect()) return false;
 
-        dbg($data);
+        #dbg($data);
+        $sql = $this->_buildSQL($data);
+        dbg($sql);
 
+        // register our custom aggregate function
+        sqlite_create_aggregate($this->db,'group_concat',
+                                array($this,'_sqlite_group_concat_step'),
+                                array($this,'_sqlite_group_concat_finalize'), 2);
+
+
+        // run query and create table
+        $types = array_values($data['cols']);
+        array_unshift($types,'page'); // add type for page in column 1
+
+        $res = sqlite_query($this->db,$sql);
+        $renderer->doc .= '<table class="inline dataplugin_table">';
+        while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
+            $renderer->doc .= '<tr>';
+            foreach($row as $num => $col){
+                $renderer->doc .= '<td>'.$this->_formatData($col,$types[$num],$renderer).'</td>';
+            }
+            $renderer->doc .= '</tr>';
+        }
+        $renderer->doc .= '</table>';
+
+        return true;
+    }
+
+    /**
+     * Builds the SQL query from the given data
+     */
+    function _buildSQL($data){
         $cnt    = 0;
         $tables = array();
         $select = array();
@@ -179,27 +209,8 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                  WHERE pages.pid = T1.pid $where
               GROUP BY pages.page
                 $order";
-        dbg($sql);
 
-        // register our custom aggregate function
-        sqlite_create_aggregate($this->db,'group_concat',
-                                array($this,'_sqlite_group_concat_step'),
-                                array($this,'_sqlite_group_concat_finalize'), 2);
-
-
-        // run query and create table
-        $res = sqlite_query($this->db,$sql);
-        $renderer->doc .= '<table class="inline dataplugin_table">';
-        while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
-            $renderer->doc .= '<tr>';
-            foreach($row as $col){
-                $renderer->doc .= '<td>'.$col.'</td>';
-            }
-            $renderer->doc .= '</tr>';
-        }
-        $renderer->doc .= '</table>';
-
-        return true;
+        return $sql;
     }
 
     /**

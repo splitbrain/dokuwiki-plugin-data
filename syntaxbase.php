@@ -89,12 +89,20 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
      * Return XHTML formated data, depending on type
      */
     function _formatData($value, $type, &$R){
-        switch($type){
-            case 'page':
-                return $R->internallink($value,NULL,NULL,true);
-            default:
-                return hsc($value);
+        $vals = explode("\n",$value);
+        $outs = array();
+        foreach($vals as $val){
+            $val = trim($val);
+            if($val=='') continue;
+            switch($type){
+                case 'page':
+                    $outs[] = $R->internallink($val,NULL,NULL,true);
+                    break;
+                default:
+                    $outs[] = hsc($val);
+            }
         }
+        return join(', ',$outs);
     }
 
     /**
