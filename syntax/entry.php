@@ -40,7 +40,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
      * Connect pattern to lexer
      */
     function connectTo($mode) {
-        $this->Lexer->addSpecialPattern('----+ *data *-+\n.*?\n----+',$mode,'plugin_data_entry');
+        $this->Lexer->addSpecialPattern('----+ *data entry *-+\n.*?\n----+',$mode,'plugin_data_entry');
     }
 
 
@@ -58,10 +58,14 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
         $meta = array();
         foreach ( $lines as $line ) {
             // ignore comments
-            $line = preg_replace('/(?<!&)#.*$/','',$line);
+            $line = preg_replace('/(?<![&\\\\])#.*$/','',$line);
+            $line = str_replace('\\#','#',$line);
             $line = trim($line);
             if(empty($line)) continue;
             $line = preg_split('/\s*:\s*/',$line,2);
+
+#FIXME use _column() here!
+
             // multiple values allowed? - vals may be comma separated or in multiple lines
             if(substr($line[0],-1) == 's'){
                 list($key,$type) = explode('_',substr($line[0],0,-1),2);
@@ -109,8 +113,10 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
     function _showData($data,&$R){
         $ret = '';
 
-        $ret .= '<table class="inline dataplugin_data">';
+        $ret .= '<table class="inline dataplugin_entry">';
         foreach($data['data'] as $key => $val){
+            if($val == '') continue;
+
             $ret .= '<tr>';
             $ret .= '<th>'.hsc($key).'</th>';
             $ret .= '<td>';
@@ -147,7 +153,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
 
         // store page info
         $sql = "INSERT OR IGNORE INTO pages (page) VALUES ('$id')";
-        @sqlite_query($this->db,$sql,SQLITE_NUM,$error);
+        sqlite_query($this->db,$sql,SQLITE_NUM);
 
         // fetch page id
         $sql = "SELECT pid FROM pages WHERE page = '$id'";
@@ -155,7 +161,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
         $pid = (int) sqlite_fetch_single($res);
 
         if(!$pid){
-            msg("data plugin: failed saving data ($error)",-1);
+            msg("data plugin: failed saving data",-1);
             return false;
         }
 
