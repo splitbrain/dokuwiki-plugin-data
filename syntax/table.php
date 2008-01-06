@@ -65,6 +65,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
             $line[0] = strtolower($line[0]);
 
             $logic = 'OR';
+            // handle line commands (we allow various aliases here)
             switch($line[0]){
                 case 'select':
                 case 'cols':
@@ -74,6 +75,20 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                             if(!$col) continue;
                             list($key,$type) = $this->_column($col);
                             $data['cols'][$key] = $type;
+
+                            // fix type for special type
+                            if($key == '%pageid%') $data['cols'][$key] = 'page';
+                        }
+                    break;
+                case 'title':
+                case 'titles':
+                case 'head':
+                case 'header':
+                case 'headers':
+                        $cols = explode(',',$line[1]);
+                        foreach($cols as $col){
+                            $col = trim($col);
+                            $data['headers'][] = $col;
                         }
                     break;
                 case 'order':
@@ -92,12 +107,16 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                     $logic = 'AND';
                 case 'filteror':
                 case 'or':
-                        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|~)(.*)$/',$line[1],$matches)){
+                        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~)(.*)$/',$line[1],$matches)){
                             list($key) = $this->_column(trim($matches[1]));
                             $val = trim($matches[3]);
+                            $val = sqlite_escape_string($val); //pre escape
                             $com = $matches[2];
                             if($com == '<>'){
                                 $com = '!=';
+                            }elseif($com == '=~' || $com == '~'){
+                                $com = 'LIKE';
+                                $val = str_replace('*','%',$val);
                             }
 
                             $data['filter'][] = array('key'     => $key,
@@ -111,6 +130,18 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                     msg("data plugin: unknown option '".hsc($line[0])."'",-1);
             }
         }
+
+        // if no header titles were given, use column names
+        if(!is_array($data['headers'])){
+            foreach(array_keys($data['cols']) as $col){
+                if($col == '%pageid%'){
+                    $data['headers'][] = 'pagename'; #FIXME add lang string
+                }else{
+                    $data['headers'][] = $col;
+                }
+            }
+        }
+
         return $data;
     }
 
@@ -123,7 +154,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         if($format != 'xhtml') return false;
         if(!$this->_dbconnect()) return false;
 
-        #dbg($data);
+        dbg($data);
         $sql = $this->_buildSQL($data);
         dbg($sql);
 
@@ -135,10 +166,13 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
 
         // run query and create table
         $types = array_values($data['cols']);
-        array_unshift($types,'page'); // add type for page in column 1
-
         $res = sqlite_query($this->db,$sql);
         $renderer->doc .= '<table class="inline dataplugin_table">';
+        $renderer->doc .= '<tr>';
+        foreach($data['headers'] as $head){
+            $renderer->doc .= '<th>'.hsc($head).'</th>';
+        }
+        $renderer->doc .= '</tr>';
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
             $renderer->doc .= '<tr>';
             foreach($row as $num => $col){
@@ -164,26 +198,34 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
 
         // prepare the columns to show
         foreach (array_keys($data['cols']) as $col){
-            if(!$tables[$col]){
-                $tables[$col] = 'T'.(++$cnt);
-                $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+            if($col == '%pageid%'){
+                $select[] = 'pages.page';
+            }else{
+                if(!$tables[$col]){
+                    $tables[$col] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                }
+                $select[] = 'group_concat('.$tables[$col].".value,', ')";
             }
-            $select[] = 'group_concat('.$tables[$col].".value,', ')";
         }
 
-        // prepare sorting #FIXME add parameter suport here
+        // prepare sorting #FIXME add HTTP GET parameter suport here
         if($data['sort'][0]){
             $col = $data['sort'][0];
 
-            // sort by hidden column?
-            if(!$tables[$col]){
-                $tables[$col] = 'T'.(++$cnt);
-                $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
-            }
+            if($col == '%pageid%'){
+                $order = 'ORDER BY pages.page '.$data['sort'][1];
+            }else{
+                // sort by hidden column?
+                if(!$tables[$col]){
+                    $tables[$col] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                }
 
-            $order = 'ORDER BY '.$tables[$col].'.value '.$data['sort'][1];
+                $order = 'ORDER BY '.$tables[$col].'.value '.$data['sort'][1];
+            }
         }else{
             $order = 'ORDER BY 1 ASC';
         }
@@ -192,19 +234,23 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         foreach((array)$data['filter'] as $filter){
             $col = $filter['key'];
 
-            // filter by hidden column?
-            if(!$tables[$col]){
-                $tables[$col] = 'T'.(++$cnt);
-                $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
-            }
+            if($col == '%pageid%'){
+                $where .= " AND pages.page ".$filter['compare']." '".$filter['value']."'";
+            }else{
+                // filter by hidden column?
+                if(!$tables[$col]){
+                    $tables[$col] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                }
 
-            $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
-                      " '".sqlite_escape_string($filter['value'])."'";
+                $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
+                          " '".$filter['value']."'"; //value is already escaped
+            }
         }
 
         // build the query
-        $sql = "SELECT pages.page, ".join(', ',$select)."
+        $sql = "SELECT ".join(', ',$select)."
                   FROM pages $from
                  WHERE pages.pid = T1.pid $where
               GROUP BY pages.page
