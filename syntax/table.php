@@ -95,6 +95,10 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                             $data['headers'][] = $col;
                         }
                     break;
+                case 'limit':
+                case 'max':
+                        $data['limit'] = abs((int) $line[1]);
+                    break;
                 case 'order':
                 case 'sort':
                         list($sort) = $this->_column($line[1]);
@@ -190,21 +194,47 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                     $renderer->doc .= '<span>&uarr;</span> ';
                 }
             }
-            $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$col)).
-                              '" title="FIXME trans sort">'.hsc($head).'</a>';
+            $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$col, 'dataofs'=>$_GET['dataofs'])).
+                              '" title="'.$this->getLang('sort').'">'.hsc($head).'</a>';
 
             $renderer->doc .= '</th>';
         }
         $renderer->doc .= '</tr>';
 
         // build data rows
+        $cnt = 0;
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
             $renderer->doc .= '<tr>';
             foreach($row as $num => $col){
                 $renderer->doc .= '<td>'.$this->_formatData($col,$types[$num],$renderer).'</td>';
             }
             $renderer->doc .= '</tr>';
+            $cnt++;
+            if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
         }
+
+        // if limit was set, add control
+        if($data['limit']){
+            $renderer->doc .= '<tr><th colspan="'.count($data['cols']).'">';
+            $offset = (int) $_GET['dataofs'];
+            if($offset){
+                $prev = $offset - $data['limit'];
+                if($prev < 0) $prev = 0;
+
+                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$prev )).
+                              '" title="'.$this->getLang('prev').'" class="prev">'.$this->getLang('prev').'</a>';
+            }
+
+            $renderer->doc .= '&nbsp;';
+
+            if(sqlite_num_rows($res) > $data['limit']){
+                $next = $offset + $data['limit'];
+                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$next )).
+                              '" title="'.$this->getLang('next').'" class="next">'.$this->getLang('next').'</a>';
+            }
+            $renderer->doc .= '</th></tr>';
+        }
+
         $renderer->doc .= '</table>';
 
         return true;
@@ -291,6 +321,16 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                  WHERE pages.pid = T1.pid $where
               GROUP BY pages.page
                 $order";
+
+        // offset and limit
+        if($data['limit']){
+            $sql .= ' LIMIT '.($data['limit'] + 1);
+
+            if((int) $_GET['dataofs']){
+                $sql .= ' OFFSET '.((int) $_GET['dataofs']);
+            }
+        }
+
 
         return $sql;
     }
