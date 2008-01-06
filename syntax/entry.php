@@ -40,7 +40,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
      * Connect pattern to lexer
      */
     function connectTo($mode) {
-        $this->Lexer->addSpecialPattern('----+ *data entry *-+\n.*?\n----+',$mode,'plugin_data_entry');
+        $this->Lexer->addSpecialPattern('----+ *dataentry(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_entry');
     }
 
 
@@ -51,7 +51,10 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
         // get lines
         $lines = explode("\n",$match);
         array_pop($lines);
-        array_shift($lines);
+        $class = array_shift($lines);
+        $class = str_replace('datatable','',$class);
+        $class = trim($class,'- ');
+
 
         // parse info
         $data = array();
@@ -86,7 +89,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
             }
             $meta[$key]['type'] = $type;
         }
-        return array('data'=>$data, 'meta'=>$meta);
+        return array('data'=>$data, 'meta'=>$meta, 'classes'=>$class);
     }
 
     /**
@@ -113,7 +116,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
     function _showData($data,&$R){
         $ret = '';
 
-        $ret .= '<table class="inline dataplugin_entry">';
+        $ret .= '<table class="inline dataplugin_entry '.$data['classes'].'">';
         foreach($data['data'] as $key => $val){
             if($val == '') continue;
 

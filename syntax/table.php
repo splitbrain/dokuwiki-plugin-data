@@ -40,7 +40,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
      * Connect pattern to lexer
      */
     function connectTo($mode) {
-        $this->Lexer->addSpecialPattern('----+ *data table *-+\n.*?\n----+',$mode,'plugin_data_table');
+        $this->Lexer->addSpecialPattern('----+ *datatable(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_table');
     }
 
 
@@ -48,12 +48,16 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
      * Handle the match - parse the data
      */
     function handle($match, $state, $pos, &$handler){
-        // get lines
+        // get lines and additional class
         $lines = explode("\n",$match);
         array_pop($lines);
-        array_shift($lines);
+        $class = array_shift($lines);
+        $class = str_replace('datatable','',$class);
+        $class = trim($class,'- ');
 
         $data = array();
+        $data['classes'] = $class;
+
         // parse info
         foreach ( $lines as $line ) {
             // ignore comments
@@ -155,8 +159,8 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         if(!$this->_dbconnect()) return false;
 
         $sql = $this->_buildSQL($data); // handles GET params, too
-        dbg($data);
-        dbg($sql);
+        #dbg($data);
+        #dbg($sql);
 
         // register our custom aggregate function
         sqlite_create_aggregate($this->db,'group_concat',
@@ -169,7 +173,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         $res = sqlite_query($this->db,$sql);
 
         // build table
-        $renderer->doc .= '<table class="inline dataplugin_table">';
+        $renderer->doc .= '<table class="inline dataplugin_table '.$data['classes'].'">';
 
         // build column headers
         $renderer->doc .= '<tr>';
