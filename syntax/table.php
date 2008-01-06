@@ -95,9 +95,9 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                 case 'sort':
                         list($sort) = $this->_column($line[1]);
                         if(substr($sort,0,1) == '^'){
-                            $data['sort'] = array(substr($sort,1),'ASC');
+                            $data['sort'] = array(substr($sort,1),'DESC');
                         }else{
-                            $data['sort'] = array($sort,'DESC');
+                            $data['sort'] = array($sort,'ASC');
                         }
                     break;
                 case 'where':
@@ -154,8 +154,8 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         if($format != 'xhtml') return false;
         if(!$this->_dbconnect()) return false;
 
+        $sql = $this->_buildSQL($data); // handles GET params, too
         dbg($data);
-        $sql = $this->_buildSQL($data);
         dbg($sql);
 
         // register our custom aggregate function
@@ -164,15 +164,36 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                                 array($this,'_sqlite_group_concat_finalize'), 2);
 
 
-        // run query and create table
+        // run query
         $types = array_values($data['cols']);
         $res = sqlite_query($this->db,$sql);
+
+        // build table
         $renderer->doc .= '<table class="inline dataplugin_table">';
+
+        // build column headers
         $renderer->doc .= '<tr>';
-        foreach($data['headers'] as $head){
-            $renderer->doc .= '<th>'.hsc($head).'</th>';
+        $cols = array_keys($data['cols']);
+        foreach($data['headers'] as $num => $head){
+            $col = $cols[$num];
+
+            $renderer->doc .= '<th>';
+            if($col == $data['sort'][0]){
+                if($data['sort'][1] == 'ASC'){
+                    $renderer->doc .= '<span>&darr;</span> ';
+                    $col = '^'.$col;
+                }else{
+                    $renderer->doc .= '<span>&uarr;</span> ';
+                }
+            }
+            $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$col)).
+                              '" title="FIXME trans sort">'.hsc($head).'</a>';
+
+            $renderer->doc .= '</th>';
         }
         $renderer->doc .= '</tr>';
+
+        // build data rows
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
             $renderer->doc .= '<tr>';
             foreach($row as $num => $col){
@@ -188,13 +209,24 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
     /**
      * Builds the SQL query from the given data
      */
-    function _buildSQL($data){
+    function _buildSQL(&$data){
         $cnt    = 0;
         $tables = array();
         $select = array();
         $from   = '';
         $where  = '';
         $order  = '';
+
+
+        // take overrides from HTTP GET params into account
+        if($_GET['datasrt']){
+            if($_GET['datasrt']{0} == '^'){
+                $data['sort'] = array(substr($_GET['datasrt'],1),'DESC');
+            }else{
+                $data['sort'] = array($_GET['datasrt'],'ASC');
+            }
+        }
+
 
         // prepare the columns to show
         foreach (array_keys($data['cols']) as $col){
