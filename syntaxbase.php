@@ -38,7 +38,7 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
         return array(
             'author' => 'Andreas Gohr',
             'email'  => 'andi@splitbrain.org',
-            'date'   => '2007-12-14',
+            'date'   => '2008-01-18',
             'name'   => 'Structured Data Plugin',
             'desc'   => 'Add and query structured data in your wiki',
             'url'    => 'http://wiki.splitbrain.org/plugins:data',
