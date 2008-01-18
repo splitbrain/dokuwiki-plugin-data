@@ -161,9 +161,10 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
 
         if($format != 'xhtml') return false;
         if(!$this->_dbconnect()) return false;
+        $renderer->info['cache'] = false;
 
-        $sql = $this->_buildSQL($data); // handles GET params, too
         #dbg($data);
+        $sql = $this->_buildSQL($data); // handles GET params, too
         #dbg($sql);
 
         // register our custom aggregate function
@@ -194,7 +195,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                     $renderer->doc .= '<span>&uarr;</span> ';
                 }
             }
-            $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$col, 'dataofs'=>$_GET['dataofs'])).
+            $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$col, 'dataofs'=>$_GET['dataofs'], 'dataflt'=>$_GET['dataflt'])).
                               '" title="'.$this->getLang('sort').'">'.hsc($head).'</a>';
 
             $renderer->doc .= '</th>';
@@ -221,7 +222,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                 $prev = $offset - $data['limit'];
                 if($prev < 0) $prev = 0;
 
-                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$prev )).
+                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$prev, 'dataflt'=>$_GET['dataflt'] )).
                               '" title="'.$this->getLang('prev').'" class="prev">'.$this->getLang('prev').'</a>';
             }
 
@@ -229,7 +230,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
 
             if(sqlite_num_rows($res) > $data['limit']){
                 $next = $offset + $data['limit'];
-                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$next )).
+                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$next, 'dataflt'=>$_GET['dataflt'] )).
                               '" title="'.$this->getLang('next').'" class="next">'.$this->getLang('next').'</a>';
             }
             $renderer->doc .= '</th></tr>';
@@ -276,7 +277,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
             }
         }
 
-        // prepare sorting #FIXME add HTTP GET parameter suport here
+        // prepare sorting
         if($data['sort'][0]){
             $col = $data['sort'][0];
 
@@ -297,23 +298,42 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         }
 
         // add filters
-        foreach((array)$data['filter'] as $filter){
-            $col = $filter['key'];
+        if(is_array($data['filter']) && count($data['filter'])){
+            $where .= ' AND ( 1=1 ';
 
-            if($col == '%pageid%'){
-                $where .= " AND pages.page ".$filter['compare']." '".$filter['value']."'";
-            }else{
-                // filter by hidden column?
-                if(!$tables[$col]){
-                    $tables[$col] = 'T'.(++$cnt);
-                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+            foreach($data['filter'] as $filter){
+                $col = $filter['key'];
+
+                if($col == '%pageid%'){
+                    $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                }else{
+                    // filter by hidden column?
+                    if(!$tables[$col]){
+                        $tables[$col] = 'T'.(++$cnt);
+                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                        $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                    }
+
+                    $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
+                              " '".$filter['value']."'"; //value is already escaped
                 }
-
-                $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
-                          " '".$filter['value']."'"; //value is already escaped
             }
+
+            $where .= ' ) ';
         }
+
+        // add GET filter
+        if($_GET['dataflt']){
+            list($col,$val) = split(':',$_GET['dataflt'],2);
+            if(!$tables[$col]){
+                $tables[$col] = 'T'.(++$cnt);
+                $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+            }
+
+            $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
+        }
+
 
         // build the query
         $sql = "SELECT ".join(', ',$select)."

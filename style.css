@@ -1,0 +1,17 @@
+ul.dataplugin_cloud {
+    overflow: auto;
+}
+
+ul.dataplugin_cloud li {
+    float: left;
+    list-style-type: none;
+    list-style-image: none;
+    margin: 0 1em 0 0;
+    padding: 0;
+}
+
+ul.dataplugin_cloud li.cl0 { font-size: 70% }
+ul.dataplugin_cloud li.cl1 { font-size: 90% }
+ul.dataplugin_cloud li.cl2 { font-size: 110% }
+ul.dataplugin_cloud li.cl3 { font-size: 130% }
+ul.dataplugin_cloud li.cl4 { font-size: 150% }
