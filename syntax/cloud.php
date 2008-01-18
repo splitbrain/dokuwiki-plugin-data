@@ -83,6 +83,10 @@ class syntax_plugin_data_cloud extends syntaxbase_plugin_data {
                 case 'min':
                         $data['min'] = abs((int) $line[1]);
                     break;
+                case 'page':
+                case 'target':
+                        $data['page'] = cleanID($line[1]);
+                    break;
                 default:
                     msg("data plugin: unknown option '".hsc($line[0])."'",-1);
             }
@@ -100,6 +104,8 @@ class syntax_plugin_data_cloud extends syntaxbase_plugin_data {
         if($format != 'xhtml') return false;
         if(!$this->_dbconnect()) return false;
         $renderer->info['cache'] = false;
+
+        if(!$data['page']) $data['page'] = $ID;
 
         // build query
         $sql = "SELECT value, COUNT(pid) as cnt
@@ -126,8 +132,8 @@ class syntax_plugin_data_cloud extends syntaxbase_plugin_data {
         $renderer->doc .= '<ul class="dataplugin_cloud '.hsc($data['classes']).'">';
         foreach($tags as $tag => $lvl){
             $renderer->doc .= '<li class="cl'.$lvl.'">';
-            $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'],
-                                                       'dataflt'=>$data['field'].':'.$tag )).
+            $renderer->doc .= '<a href="'.wl($data['page'],array('datasrt'=>$_GET['datasrt'],
+                                                                 'dataflt'=>$data['field'].':'.$tag )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).'" class="wikilink1">'.hsc($tag).'</a>';
             $renderer->doc .= '</li>';
         }
