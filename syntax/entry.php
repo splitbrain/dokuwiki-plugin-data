@@ -113,7 +113,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
 
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
-            if($val == '') continue;
+            if($val == '' || !count($val)) continue;
 
             $ret .= '<dt>'.hsc($data['meta'][$key]['title']).'<span class="sep">: </span></dt>';
             if(is_array($val)){
