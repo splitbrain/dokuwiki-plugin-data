@@ -107,17 +107,18 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
 
     /**
      * Split a column name into its parts
+     *
+     * @returns array with key, type, ismulti, title
      */
     function _column($col){
-        $col = utf8_strtolower($col);
-        if(substr($col,-1) == 's'){
+        if(strtolower(substr($col,-1)) == 's'){
             $col = substr($col,0,-1);
             $multi = true;
         }else{
             $multi = false;
         }
         list($key,$type) = explode('_',$col,2);
-        return array($key,$type,$multi);
+        return array(utf8_strtolower($key),utf8_strtolower($type),$multi,$key);
     }
 
 

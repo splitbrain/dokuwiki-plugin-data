@@ -67,27 +67,21 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
             if(empty($line)) continue;
             $line = preg_split('/\s*:\s*/',$line,2);
 
-#FIXME use _column() here!
-
-            // multiple values allowed? - vals may be comma separated or in multiple lines
-            if(substr($line[0],-1) == 's'){
-                list($key,$type) = explode('_',substr($line[0],0,-1),2);
-                $key = utf8_strtolower($key);
+            list($key,$type,$multi,$title) = $this->_column($line[0]);
+            if($multi){
                 if(!is_array($data[$key])) $data[$key] = array(); // init with empty array
                 $vals = explode(',',$line[1]);
-                $data[$key] = array_merge($data[$key],$vals);
-                $data[$key] = array_map('trim',$data[$key]);
-                $data[$key] = array_filter($data[$key]);
-                #fixme call cleandata here
-                array_unique($data[$key]);
-                $meta[$key]['multi'] = 1;
+                foreach($vals as $val){
+                    $val = trim($this->_cleanData($val,$type));
+                    if($val == '') continue;
+                    if(!in_array($val,$data[$key])) $data[$key][] = $val;
+                }
             }else{
-                list($key,$type) = explode('_',$line[0],2);
-                $key = utf8_strtolower($key);
-                $data[$key]          = $this->_cleanData($line[1],$type);
-                $meta[$key]['multi'] = 0;
+                $data[$key] = $this->_cleanData($line[1],$type);
             }
-            $meta[$key]['type'] = $type;
+            $meta[$key]['multi'] = $multi;
+            $meta[$key]['type']  = $multi;
+            $meta[$key]['title'] = $title;
         }
         return array('data'=>$data, 'meta'=>$meta, 'classes'=>$class);
     }
@@ -121,7 +115,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
         foreach($data['data'] as $key => $val){
             if($val == '') continue;
 
-            $ret .= '<dt>'.hsc($key).'<span class="sep">: </span></dt>';
+            $ret .= '<dt>'.hsc($data['meta'][$key]['title']).'<span class="sep">: </span></dt>';
             if(is_array($val)){
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
