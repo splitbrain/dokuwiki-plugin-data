@@ -116,28 +116,25 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
     function _showData($data,&$R){
         $ret = '';
 
-        $ret .= '<table class="inline dataplugin_entry '.$data['classes'].'">';
+
+        $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
             if($val == '') continue;
 
-            $ret .= '<tr>';
-            $ret .= '<th>'.hsc($key).'</th>';
-            $ret .= '<td>';
+            $ret .= '<dt>'.hsc($key).'<span class="sep">: </span></dt>';
             if(is_array($val)){
-                $ret .= '<ul>';
-                foreach ($val as $v){
-                    $ret .= '<li><div class="li">';
-                    $ret .= $this->_formatData($v, $data['meta'][$key]['type'], $R);
-                    $ret .= '</div></li>';
+                $cnt = count($val);
+                for ($i=0; $i<$cnt; $i++){
+                    $ret .= '<dd>';
+                    $ret .= $this->_formatData($val[$i], $data['meta'][$key]['type'], $R);
+                    if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
+                    $ret .= '</dd>';
                 }
-                $ret .= '</ul>';
             }else{
-                $ret .= $this->_formatData($val, $data['meta'][$key]['type'], $R);
+                $ret .= '<dd>'.$this->_formatData($val, $data['meta'][$key]['type'], $R).'</dd>';
             }
-            $ret .= '</td>';
-            $ret .= '</tr>';
         }
-        $ret .= '</table>';
+        $ret .= '</dl><div class="clearer"></div></div>';
         return $ret;
     }
 

@@ -1,3 +1,33 @@
+/* default style for the entry mode */
+
+div.dataplugin_entry dl {
+    float: left;
+    border: 1px solid __border__;
+    padding: 1em;
+    margin: 1em;
+    font-size: 90%;
+}
+
+div.dataplugin_entry dl dt {
+    font-weight: bold;
+    clear: left;
+    float: left;
+    width: 10em;
+    text-align: right;
+}
+div.dataplugin_entry dl dd {
+    float: left;
+    margin-left: 0.5em;
+}
+
+/* style to hide the entry data */
+
+div.dataplugin_entry.hidden {
+    display: none;
+}
+
+
+/* default styles for the tag cloud */
 ul.dataplugin_cloud {
     overflow: auto;
 }
