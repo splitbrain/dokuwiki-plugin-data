@@ -97,7 +97,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
                 $renderer->doc .= $this->_showData($data,$renderer);
                 return true;
             case 'metadata':
-                $this->_saveData($data,noNS($ID),$renderer->meta['title']);
+                $this->_saveData($data,$ID,$renderer->meta['title']);
                 return true;
             default:
                 return false;
