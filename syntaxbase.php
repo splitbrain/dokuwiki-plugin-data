@@ -72,19 +72,20 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
      * Makes sure the given data fits with the given type
      */
     function _cleanData($value, $type){
+        $value = trim($value);
+        if(!$value) return '';
         switch($type){
             case 'page':
                 return cleanID($value);
             case 'nspage':
                 return cleanID($value);
             case 'dt':
-                $value = trim($value);
                 if(preg_match('/^(\d\d\d\d)-(\d\d?)-(\d\d?)$/',$value,$m)){
                     return sprintf('%d-%02d-%02d',$m[1],$m[2],$m[3]);
                 }
                 return '';
             case 'url':
-                $value = trim(strtolower($value));
+                $value = strtolower($value);
                 if(!preg_match('!^[a-z]+://!',$value)) $value='http://'.$value;
             default:
                 return $value;
