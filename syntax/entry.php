@@ -159,16 +159,6 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
             return false;
         }
 
-        // update meta info
-        foreach ($data['meta'] as $key => $info){
-            $key   = sqlite_escape_string($key);
-            $type  = sqlite_escape_string($info['type']);
-            $multi = (int) $info['multi'];
-
-            $sql = "REPLACE INTO meta (key, type, multi) VALUES ('$key', '$type', '$multi')";
-            sqlite_query($this->db,$sql);
-        }
-
         // remove old data
         $sql = "DELETE FROM data WHERE pid = $pid";
         sqlite_query($this->db,$sql);
