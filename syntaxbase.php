@@ -75,6 +75,8 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
         switch($type){
             case 'page':
                 return cleanID($value);
+            case 'nspage':
+                return cleanID($value);
             case 'dt':
                 $value = trim($value);
                 if(preg_match('/^(\d\d\d\d)-(\d\d?)-(\d\d?)$/',$value,$m)){
@@ -92,7 +94,7 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
     /**
      * Return XHTML formated data, depending on type
      */
-    function _formatData($value, $type, &$R){
+    function _formatData($key, $value, $type, &$R){
         $vals = explode("\n",$value);
         $outs = array();
         foreach($vals as $val){
@@ -100,7 +102,10 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
             if($val=='') continue;
             switch($type){
                 case 'page':
-                    $outs[] = $R->internallink($val,NULL,NULL,true);
+                    $outs[] = $R->internallink(":$val",NULL,NULL,true);
+                    break;
+                case 'nspage':
+                    $outs[] = $R->internallink(":$key:$val",NULL,NULL,true);
                     break;
                 case 'url':
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';

@@ -120,12 +120,12 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
                     $ret .= '<dd>';
-                    $ret .= $this->_formatData($val[$i], $data['meta'][$key]['type'], $R);
+                    $ret .= $this->_formatData($key, $val[$i], $data['meta'][$key]['type'], $R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
                     $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd>'.$this->_formatData($val, $data['meta'][$key]['type'], $R).'</dd>';
+                $ret .= '<dd>'.$this->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
             }
         }
         $ret .= '</dl><div class="clearer"></div></div>';

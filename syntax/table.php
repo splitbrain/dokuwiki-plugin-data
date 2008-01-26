@@ -207,7 +207,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
             $renderer->doc .= '<tr>';
             foreach($row as $num => $col){
-                $renderer->doc .= '<td>'.$this->_formatData($col,$types[$num],$renderer).'</td>';
+                $renderer->doc .= '<td>'.$this->_formatData($cols[$num],$col,$types[$num],$renderer).'</td>';
             }
             $renderer->doc .= '</tr>';
             $cnt++;
