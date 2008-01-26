@@ -80,6 +80,9 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
                     return sprintf('%d-%02d-%02d',$m[1],$m[2],$m[3]);
                 }
                 return '';
+            case 'url':
+                $value = trim(strtolower($value));
+                if(!preg_match('!^[a-z]+://!',$value)) $value='http://'.$value;
             default:
                 return $value;
         }
@@ -97,6 +100,9 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
             switch($type){
                 case 'page':
                     $outs[] = $R->internallink($val,NULL,NULL,true);
+                    break;
+                case 'url':
+                    $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
                     break;
                 default:
                     $outs[] = hsc($val);

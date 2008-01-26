@@ -80,7 +80,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
                 $data[$key] = $this->_cleanData($line[1],$type);
             }
             $meta[$key]['multi'] = $multi;
-            $meta[$key]['type']  = $multi;
+            $meta[$key]['type']  = $type;
             $meta[$key]['title'] = $title;
         }
         return array('data'=>$data, 'meta'=>$meta, 'classes'=>$class);
