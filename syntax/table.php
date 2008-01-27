@@ -82,6 +82,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
 
                             // fix type for special type
                             if($key == '%pageid%') $data['cols'][$key] = 'page';
+                            if($key == '%title%') $data['cols'][$key] = 'title';
                         }
                     break;
                 case 'title':
@@ -144,6 +145,8 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
             foreach(array_keys($data['cols']) as $col){
                 if($col == '%pageid%'){
                     $data['headers'][] = 'pagename'; #FIXME add lang string
+                }elseif($col == '%title%'){
+                    $data['headers'][] = 'page'; #FIXME add lang string
                 }else{
                     $data['headers'][] = $col;
                 }
@@ -267,6 +270,8 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         foreach (array_keys($data['cols']) as $col){
             if($col == '%pageid%'){
                 $select[] = 'pages.page';
+            }elseif($col == '%title%'){
+                $select[] = "pages.page || '|' || pages.title";
             }else{
                 if(!$tables[$col]){
                     $tables[$col] = 'T'.(++$cnt);
@@ -283,6 +288,8 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
 
             if($col == '%pageid%'){
                 $order = 'ORDER BY pages.page '.$data['sort'][1];
+            }elseif($col == '%title%'){
+                $order = 'ORDER BY pages.title '.$data['sort'][1];
             }else{
                 // sort by hidden column?
                 if(!$tables[$col]){
@@ -306,6 +313,8 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
 
                 if($col == '%pageid%'){
                     $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                }elseif($col == '%title%'){
+                    $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
                 }else{
                     // filter by hidden column?
                     if(!$tables[$col]){

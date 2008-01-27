@@ -135,18 +135,20 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
     /**
      * Save date to the database
      */
-    function _saveData($data,$id){
+    function _saveData($data,$id,$title){
         if(!$this->_dbconnect()) return false;
 
         $error = '';
+        if(!$title) $title = $id;
         $id    = sqlite_escape_string($id);
+        $title = sqlite_escape_string($title);
 
         // begin transaction
         $sql = "BEGIN TRANSACTION";
         sqlite_query($this->db,$sql);
 
         // store page info
-        $sql = "INSERT OR IGNORE INTO pages (page) VALUES ('$id')";
+        $sql = "INSERT OR IGNORE INTO pages (page,title) VALUES ('$id','$title')";
         sqlite_query($this->db,$sql,SQLITE_NUM);
 
         // fetch page id

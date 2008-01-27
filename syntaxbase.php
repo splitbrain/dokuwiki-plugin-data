@@ -105,6 +105,10 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
                 case 'page':
                     $outs[] = $R->internallink(":$val",NULL,NULL,true);
                     break;
+                case 'title':
+                    list($id,$title) = explode('|',$val,2);
+                    $outs[] = $R->internallink(":$id",$title,NULL,true);
+                    break;
                 case 'nspage':
                     $outs[] = $R->internallink(":$key:$val",NULL,NULL,true);
                     break;
@@ -160,7 +164,7 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
      * create the needed tables
      */
     function _initdb(){
-        sqlite_query($this->db,'CREATE TABLE pages (pid INTEGER PRIMARY KEY, page);');
+        sqlite_query($this->db,'CREATE TABLE pages (pid INTEGER PRIMARY KEY, page, title);');
         sqlite_query($this->db,'CREATE UNIQUE INDEX idx_page ON pages(page);');
         sqlite_query($this->db,'CREATE TABLE data (eid INTEGER PRIMARY KEY, pid INTEGER, key, value);');
         sqlite_query($this->db,'CREATE INDEX idx_key ON data(key);');
