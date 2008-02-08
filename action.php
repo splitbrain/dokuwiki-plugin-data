@@ -38,12 +38,13 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     }
 
     /**
-     * Handles the page write event and removes the database info on
-     * page deletions
+     * Handles the page write event and removes the database info
+     * when the plugin code is no longer in the source
      */
     function _handle(&$event, $param){
         $data = $event->data;
-        if(!empty($data[0][1])) return; // no page deletion - do nothing
+        if(strpos($data[0][1],'dataentry') !== false) return; // plugin seems still to be there
+
         if(!$this->dthlp->_dbconnect()) return;
         $id = $data[2];
 
