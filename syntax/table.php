@@ -294,7 +294,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
                     $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
                 }
-                $select[] = 'group_concat('.$tables[$col].".value,', ')";
+                $select[] = 'group_concat('.$tables[$col].".value,'\n')";
             }
         }
 
