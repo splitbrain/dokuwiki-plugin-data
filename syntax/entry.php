@@ -6,13 +6,29 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
+require_once(DOKU_PLUGIN.'syntax.php');
 
-require_once(dirname(__FILE__).'/../syntaxbase.php');
+class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
-/**
- * We extend our own base class here
- */
-class syntax_plugin_data_entry extends syntaxbase_plugin_data {
+    /**
+     * will hold the data helper plugin
+     */
+    var $dthlp = null;
+
+    /**
+     * Constructor. Load helper plugin
+     */
+    function syntax_plugin_data_entry(){
+        $this->dthlp =& plugin_load('helper', 'data');
+        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+    }
+
+    /**
+     * Return some info
+     */
+    function getInfo(){
+        return $this->dthlp->getInfo();
+    }
 
     /**
      * What kind of syntax are we?
@@ -67,17 +83,17 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
             if(empty($line)) continue;
             $line = preg_split('/\s*:\s*/',$line,2);
 
-            list($key,$type,$multi,$title) = $this->_column($line[0]);
+            list($key,$type,$multi,$title) = $this->dthlp->_column($line[0]);
             if($multi){
                 if(!is_array($data[$key])) $data[$key] = array(); // init with empty array
                 $vals = explode(',',$line[1]);
                 foreach($vals as $val){
-                    $val = trim($this->_cleanData($val,$type));
+                    $val = trim($this->dthlp->_cleanData($val,$type));
                     if($val == '') continue;
                     if(!in_array($val,$data[$key])) $data[$key][] = $val;
                 }
             }else{
-                $data[$key] = $this->_cleanData($line[1],$type);
+                $data[$key] = $this->dthlp->_cleanData($line[1],$type);
             }
             $meta[$key]['multi'] = $multi;
             $meta[$key]['type']  = $type;
@@ -120,12 +136,12 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
                     $ret .= '<dd>';
-                    $ret .= $this->_formatData($key, $val[$i], $data['meta'][$key]['type'], $R);
+                    $ret .= $this->dthlp->_formatData($key, $val[$i], $data['meta'][$key]['type'], $R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
                     $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd>'.$this->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
+                $ret .= '<dd>'.$this->dthlp->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
             }
         }
         $ret .= '</dl><div class="clearer"></div></div>';
@@ -136,7 +152,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
      * Save date to the database
      */
     function _saveData($data,$id,$title){
-        if(!$this->_dbconnect()) return false;
+        if(!$this->dthlp->_dbconnect()) return false;
 
         $error = '';
         if(!$title) $title = $id;
@@ -145,15 +161,15 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
 
         // begin transaction
         $sql = "BEGIN TRANSACTION";
-        sqlite_query($this->db,$sql);
+        sqlite_query($this->dthlp->db,$sql);
 
         // store page info
         $sql = "INSERT OR IGNORE INTO pages (page,title) VALUES ('$id','$title')";
-        sqlite_query($this->db,$sql,SQLITE_NUM);
+        sqlite_query($this->dthlp->db,$sql,SQLITE_NUM);
 
         // fetch page id
         $sql = "SELECT pid FROM pages WHERE page = '$id'";
-        $res = sqlite_query($this->db, $sql);
+        $res = sqlite_query($this->dthlp->db, $sql);
         $pid = (int) sqlite_fetch_single($res);
 
         if(!$pid){
@@ -163,7 +179,7 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
 
         // remove old data
         $sql = "DELETE FROM data WHERE pid = $pid";
-        sqlite_query($this->db,$sql);
+        sqlite_query($this->dthlp->db,$sql);
 
         // insert new data
         foreach ($data['data'] as $key => $val){
@@ -171,19 +187,19 @@ class syntax_plugin_data_entry extends syntaxbase_plugin_data {
             if(is_array($val)) foreach($val as $v){
                 $v   = sqlite_escape_string($v);
                 $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
-                sqlite_query($this->db,$sql);
+                sqlite_query($this->dthlp->db,$sql);
             }else {
                 $v   = sqlite_escape_string($val);
                 $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
-                sqlite_query($this->db,$sql);
+                sqlite_query($this->dthlp->db,$sql);
             }
         }
 
         // finish transaction
         $sql = "COMMIT TRANSACTION";
-        sqlite_query($this->db,$sql);
+        sqlite_query($this->dthlp->db,$sql);
 
-        sqlite_close($this->db);
+        sqlite_close($this->dthlp->db);
         return true;
     }
 

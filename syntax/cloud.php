@@ -6,13 +6,29 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
+require_once(DOKU_PLUGIN.'syntax.php');
 
-require_once(dirname(__FILE__).'/../syntaxbase.php');
+class syntax_plugin_data_cloud extends DokuWiki_Syntax_Plugin {
 
-/**
- * We extend our own base class here
- */
-class syntax_plugin_data_cloud extends syntaxbase_plugin_data {
+    /**
+     * will hold the data helper plugin
+     */
+    var $dthlp = null;
+
+    /**
+     * Constructor. Load helper plugin
+     */
+    function syntax_plugin_data_cloud(){
+        $this->dthlp =& plugin_load('helper', 'data');
+        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+    }
+
+    /**
+     * Return some info
+     */
+    function getInfo(){
+        return $this->dthlp->getInfo();
+    }
 
     /**
      * What kind of syntax are we?
@@ -73,7 +89,7 @@ class syntax_plugin_data_cloud extends syntaxbase_plugin_data {
                 case 'field':
                 case 'select':
                 case 'col':
-                        list($key)     = $this->_column($line[1]);
+                        list($key)     = $this->dthlp->_column($line[1]);
                         $data['field'] = $key;
                     break;
                 case 'limit':
@@ -102,7 +118,7 @@ class syntax_plugin_data_cloud extends syntaxbase_plugin_data {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(!$this->_dbconnect()) return false;
+        if(!$this->dthlp->_dbconnect()) return false;
         $renderer->info['cache'] = false;
 
         if(!$data['page']) $data['page'] = $ID;
@@ -118,7 +134,7 @@ class syntax_plugin_data_cloud extends syntaxbase_plugin_data {
 
         // build cloud data
         $tags = array();
-        $res = sqlite_query($this->db,$sql);
+        $res = sqlite_query($this->dthlp->db,$sql);
         $min = 0;
         $max = 0;
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {

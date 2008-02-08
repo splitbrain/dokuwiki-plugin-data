@@ -14,14 +14,14 @@ require_once(DOKU_INC.'inc/infoutils.php');
 /**
  * This is the base class for all syntax classes, providing some general stuff
  */
-class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
+class helper_plugin_data extends DokuWiki_Plugin {
 
     var $db = null;
 
     /**
      * constructor
      */
-    function syntaxbase_plugin_data(){
+    function helper_plugin_data(){
         if (!extension_loaded('sqlite')) {
             $prefix = (PHP_SHLIB_SUFFIX === 'dll') ? 'php_' : '';
             @dl($prefix . 'sqlite.' . PHP_SHLIB_SUFFIX);
@@ -39,33 +39,11 @@ class syntaxbase_plugin_data extends DokuWiki_Syntax_Plugin {
         return array(
             'author' => 'Andreas Gohr',
             'email'  => 'andi@splitbrain.org',
-            'date'   => '2008-01-18',
+            'date'   => '2008-02-08',
             'name'   => 'Structured Data Plugin',
             'desc'   => 'Add and query structured data in your wiki',
             'url'    => 'http://wiki.splitbrain.org/plugins:data',
         );
-    }
-
-
-    /**
-     * What kind of syntax are we?
-     */
-    function getType(){
-        return 'substition';
-    }
-
-    /**
-     * What about paragraphs?
-     */
-    function getPType(){
-        return 'block';
-    }
-
-    /**
-     * Where to sort in?
-     */
-    function getSort(){
-        return 155;
     }
 
     /**

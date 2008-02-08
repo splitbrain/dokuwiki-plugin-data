@@ -6,21 +6,29 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
+require_once(DOKU_PLUGIN.'action.php');
 
-require_once(dirname(__FILE__).'/syntaxbase.php');
+class action_plugin_data extends DokuWiki_Action_Plugin {
 
-/**
- * Action plugin to delete data from DB on page deletion
- *
- * We extend our own base class here
- *
- * Yes, this base class inherits from syntax plugin instead from action plugin.
- * This is nothing to be proud of, but it works around missing multi
- * inheritance in PHP, it does not depend on PHP5 only interfaces, does not fall
- * back to procedural programming style and avoids double coding. Oh and it just
- * works ;-).
- */
-class action_plugin_data extends syntaxbase_plugin_data {
+    /**
+     * will hold the data helper plugin
+     */
+    var $dthlp = null;
+
+    /**
+     * Constructor. Load helper plugin
+     */
+    function action_plugin_data(){
+        $this->dthlp =& plugin_load('helper', 'data');
+        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+    }
+
+    /**
+     * Return some info
+     */
+    function getInfo(){
+        return $this->dthlp->getInfo();
+    }
 
     /**
      * Registers a callback function for a given event
@@ -36,20 +44,20 @@ class action_plugin_data extends syntaxbase_plugin_data {
     function _handle(&$event, $param){
         $data = $event->data;
         if(!empty($data[0][1])) return; // no page deletion - do nothing
-        if(!$this->_dbconnect()) return;
+        if(!$this->dthlp->_dbconnect()) return;
         $id = $data[2];
 
         // get page id
         $sql = "SELECT pid FROM pages WHERE page ='".sqlite_escape_string($id)."'";
-        $res = sqlite_query($this->db, $sql);
+        $res = sqlite_query($this->dthlp->db, $sql);
         $pid = (int) sqlite_fetch_single($res);
         if(!$pid) return; // we have no data for this page
 
         $sql = "DELETE FROM data WHERE pid = $pid";
-        sqlite_query($this->db, $sql);
+        sqlite_query($this->dthlp->db, $sql);
 
         $sql = "DELETE FROM pages WHERE pid = $pid";
-        sqlite_query($this->db, $sql);
+        sqlite_query($this->dthlp->db, $sql);
     }
 }
 

@@ -6,13 +6,29 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
+require_once(DOKU_PLUGIN.'syntax.php');
 
-require_once(dirname(__FILE__).'/../syntaxbase.php');
+class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
-/**
- * We extend our own base class here
- */
-class syntax_plugin_data_table extends syntaxbase_plugin_data {
+    /**
+     * will hold the data helper plugin
+     */
+    var $dthlp = null;
+
+    /**
+     * Constructor. Load helper plugin
+     */
+    function syntax_plugin_data_table(){
+        $this->dthlp =& plugin_load('helper', 'data');
+        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+    }
+
+    /**
+     * Return some info
+     */
+    function getInfo(){
+        return $this->dthlp->getInfo();
+    }
 
     /**
      * What kind of syntax are we?
@@ -77,7 +93,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                         foreach($cols as $col){
                             $col = trim($col);
                             if(!$col) continue;
-                            list($key,$type) = $this->_column($col);
+                            list($key,$type) = $this->dthlp->_column($col);
                             $data['cols'][$key] = $type;
 
                             // fix type for special type
@@ -102,7 +118,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                     break;
                 case 'order':
                 case 'sort':
-                        list($sort) = $this->_column($line[1]);
+                        list($sort) = $this->dthlp->_column($line[1]);
                         if(substr($sort,0,1) == '^'){
                             $data['sort'] = array(substr($sort,1),'DESC');
                         }else{
@@ -117,7 +133,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
                 case 'filteror':
                 case 'or':
                         if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~)(.*)$/',$line[1],$matches)){
-                            list($key) = $this->_column(trim($matches[1]));
+                            list($key) = $this->dthlp->_column(trim($matches[1]));
                             $val = trim($matches[3]);
                             $val = sqlite_escape_string($val); //pre escape
                             $com = $matches[2];
@@ -163,7 +179,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(!$this->_dbconnect()) return false;
+        if(!$this->dthlp->_dbconnect()) return false;
         $renderer->info['cache'] = false;
 
         #dbg($data);
@@ -171,14 +187,14 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         #dbg($sql);
 
         // register our custom aggregate function
-        sqlite_create_aggregate($this->db,'group_concat',
+        sqlite_create_aggregate($this->dthlp->db,'group_concat',
                                 array($this,'_sqlite_group_concat_step'),
                                 array($this,'_sqlite_group_concat_finalize'), 2);
 
 
         // run query
         $types = array_values($data['cols']);
-        $res = sqlite_query($this->db,$sql);
+        $res = sqlite_query($this->dthlp->db,$sql);
 
         // build table
         $renderer->doc .= '<table class="inline dataplugin_table '.$data['classes'].'">';
@@ -210,7 +226,7 @@ class syntax_plugin_data_table extends syntaxbase_plugin_data {
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
             $renderer->doc .= '<tr>';
             foreach($row as $num => $col){
-                $renderer->doc .= '<td>'.$this->_formatData($cols[$num],$col,$types[$num],$renderer).'</td>';
+                $renderer->doc .= '<td>'.$this->dthlp->_formatData($cols[$num],$col,$types[$num],$renderer).'</td>';
             }
             $renderer->doc .= '</tr>';
             $cnt++;
