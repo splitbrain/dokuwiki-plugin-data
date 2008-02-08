@@ -359,11 +359,17 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
         }
 
+        // were any data tables used?
+        if(count($tables)){
+            $where = 'pages.pid = T1.pid '.$where;
+        }else{
+            $where = '1 = 1 '.$where;
+        }
 
         // build the query
         $sql = "SELECT ".join(', ',$select)."
                   FROM pages $from
-                 WHERE pages.pid = T1.pid $where
+                 WHERE $where
               GROUP BY pages.page
                 $order";
 
