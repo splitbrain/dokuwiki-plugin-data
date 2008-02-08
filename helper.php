@@ -93,6 +93,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 case 'url':
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
                     break;
+                case 'tag':
+                    $outs[] = '<a href="'.wl(str_replace('/',':',":$key"),array('dataflt'=>$key.':'.$val )).
+                              '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
+                              '" class="wikilink1">'.hsc($val).'</a>';
+                    break;
                 default:
                     $outs[] = hsc($val);
             }
