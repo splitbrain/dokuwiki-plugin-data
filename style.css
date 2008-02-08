@@ -45,3 +45,16 @@ ul.dataplugin_cloud li.cl1 { font-size: 90% }
 ul.dataplugin_cloud li.cl2 { font-size: 110% }
 ul.dataplugin_cloud li.cl3 { font-size: 130% }
 ul.dataplugin_cloud li.cl4 { font-size: 150% }
+
+/* default styles for the related mode */
+dl.datarelated {
+    margin-left: 1em;
+}
+
+dl.datarelated dd {
+    margin-left: 1em;
+}
+
+dl.datarelated dt {
+    font-weight: bold;
+}
