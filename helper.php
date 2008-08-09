@@ -126,7 +126,14 @@ class helper_plugin_data extends DokuWiki_Plugin {
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
                 default:
-                    $outs[] = hsc($val);
+                    if(substr($type,0,3) == 'img'){
+                        $sz = (int) substr($type,3);
+                        if(!$sz) $sz = 40;
+
+                        $outs[] = '<a href="'.ml($val).'" class="media"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($key).'" title="'.hsc($key).'" width="'.$sz.'" /></a>';
+                    }else{
+                        $outs[] = hsc($val);
+                    }
             }
         }
         return join(', ',$outs);
