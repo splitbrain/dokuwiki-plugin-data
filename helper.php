@@ -129,8 +129,8 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     if(substr($type,0,3) == 'img'){
                         $sz = (int) substr($type,3);
                         if(!$sz) $sz = 40;
-
-                        $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($key).'" title="'.hsc($key).'" width="'.$sz.'" /></a>';
+                        $title = $key.': '.basename(str_replace(':','/',$val));
+                        $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($title).'" title="'.hsc($title).'" width="'.$sz.'" /></a>';
                     }else{
                         $outs[] = hsc($val);
                     }
