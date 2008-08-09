@@ -65,6 +65,21 @@ class helper_plugin_data extends DokuWiki_Plugin {
             case 'url':
                 $value = strtolower($value);
                 if(!preg_match('!^[a-z]+://!',$value)) $value='http://'.$value;
+                return $value;
+            case 'mail':
+                $mail = '';
+                $name = '';
+                $part = '';
+                $parts = preg_split('/\s+/',$value);
+                do{
+                    $part = array_shift($parts);
+                    if(!$email && isvalidemail($part)){
+                        $email = strtolower($part);
+                        continue;
+                    }
+                    $name .= $part.' ';
+                }while($part);
+                return trim($email.' '.$name);
             default:
                 return $value;
         }
@@ -74,6 +89,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * Return XHTML formated data, depending on type
      */
     function _formatData($key, $value, $type, &$R){
+        global $conf;
         $vals = explode("\n",$value);
         $outs = array();
         foreach($vals as $val){
@@ -89,6 +105,17 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     break;
                 case 'nspage':
                     $outs[] = $R->internallink(":$key:$val",NULL,NULL,true);
+                    break;
+                case 'mail':
+                    list($id,$title) = explode(' ',$val,2);
+                    $id = obfuscate(hsc($id));
+                    if(!$title){
+                        $title = $id;
+                    }else{
+                        $title = hsc($title);
+                    }
+                    if($conf['mailguard'] == 'visible') $id = rawurlencode($id);
+                    $outs[] = '<a href="mailto:'.$id.'" class="mail" title="'.$id.'">'.$title.'</a>';
                     break;
                 case 'url':
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
