@@ -130,7 +130,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                         $sz = (int) substr($type,3);
                         if(!$sz) $sz = 40;
 
-                        $outs[] = '<a href="'.ml($val).'" class="media"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($key).'" title="'.hsc($key).'" width="'.$sz.'" /></a>';
+                        $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($key).'" title="'.hsc($key).'" width="'.$sz.'" /></a>';
                     }else{
                         $outs[] = hsc($val);
                     }
