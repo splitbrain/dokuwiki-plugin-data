@@ -39,7 +39,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
         return array(
             'author' => 'Andreas Gohr',
             'email'  => 'andi@splitbrain.org',
-            'date'   => '2008-02-08',
+            'date'   => '2008-10-06',
             'name'   => 'Structured Data Plugin',
             'desc'   => 'Add and query structured data in your wiki',
             'url'    => 'http://wiki.splitbrain.org/plugins:data',
@@ -63,8 +63,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 }
                 return '';
             case 'url':
-                $value = strtolower($value);
-                if(!preg_match('!^[a-z]+://!',$value)) $value='http://'.$value;
+                if(!preg_match('!^[a-z]+://!i',$value)) $value='http://'.$value;
                 return $value;
             case 'mail':
                 $mail = '';
