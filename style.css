@@ -1,11 +1,12 @@
 /* default style for the entry mode */
 
 div.dataplugin_entry dl {
-    float: left;
     border: 1px solid __border__;
     padding: 1em;
     margin: 1em;
     font-size: 90%;
+    overflow: auto;
+    width: 50%;
 }
 
 div.dataplugin_entry dl dt {

@@ -144,7 +144,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $ret .= '<dd>'.$this->dthlp->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
             }
         }
-        $ret .= '</dl><div class="clearer"></div></div>';
+        $ret .= '</dl></div>';
         return $ret;
     }
 
