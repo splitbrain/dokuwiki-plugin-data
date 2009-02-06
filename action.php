@@ -33,7 +33,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     /**
      * Registers a callback function for a given event
      */
-    function register($controller) {
+    function register(&$controller) {
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'BEFORE', $this, '_handle');
     }
 
@@ -46,7 +46,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         if(strpos($data[0][1],'dataentry') !== false) return; // plugin seems still to be there
 
         if(!$this->dthlp->_dbconnect()) return;
-        $id = $data[2];
+        $id = $data[1].":".$data[2];
 
         // get page id
         $sql = "SELECT pid FROM pages WHERE page ='".sqlite_escape_string($id)."'";
