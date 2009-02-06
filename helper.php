@@ -39,10 +39,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
         return array(
             'author' => 'Andreas Gohr',
             'email'  => 'andi@splitbrain.org',
-            'date'   => '2009-01-05',
+            'date'   => '2009-02-06',
             'name'   => 'Structured Data Plugin',
             'desc'   => 'Add and query structured data in your wiki',
-            'url'    => 'http://wiki.splitbrain.org/plugins:data',
+            'url'    => 'http://www.dokuwiki.org/plugin:data',
         );
     }
 
