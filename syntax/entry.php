@@ -131,17 +131,17 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
 
-            $ret .= '<dt>'.hsc($data['meta'][$key]['title']).'<span class="sep">: </span></dt>';
+            $ret .= '<dt class="' . $key . '">'.hsc($data['meta'][$key]['title']).'<span class="sep">: </span></dt>';
             if(is_array($val)){
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
-                    $ret .= '<dd>';
+                    $ret .= '<dd class="' . $key . '">';
                     $ret .= $this->dthlp->_formatData($key, $val[$i], $data['meta'][$key]['type'], $R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
                     $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd>'.$this->dthlp->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
+                $ret .= '<dd class="' . $key . '">'.$this->dthlp->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
             }
         }
         $ret .= '</dl></div>';
