@@ -167,6 +167,10 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $sql = "INSERT OR IGNORE INTO pages (page,title) VALUES ('$id','$title')";
         sqlite_query($this->dthlp->db,$sql,SQLITE_NUM);
 
+        // Update title if insert failed (record already saved before)
+        $sql = "UPDATE pages SET title = '$title' WHERE page = '$id'";
+        sqlite_query($this->dthlp->db,$sql,SQLITE_NUM);
+
         // fetch page id
         $sql = "SELECT pid FROM pages WHERE page = '$id'";
         $res = sqlite_query($this->dthlp->db, $sql);
