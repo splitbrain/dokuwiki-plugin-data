@@ -33,20 +33,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
-     * return some info
-     */
-    function getInfo(){
-        return array(
-            'author' => 'Andreas Gohr',
-            'email'  => 'andi@splitbrain.org',
-            'date'   => '2009-08-10',
-            'name'   => 'Structured Data Plugin',
-            'desc'   => 'Add and query structured data in your wiki',
-            'url'    => 'http://www.dokuwiki.org/plugin:data',
-        );
-    }
-
-    /**
      * Makes sure the given data fits with the given type
      */
     function _cleanData($value, $type){

@@ -24,13 +24,6 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     }
 
     /**
-     * Return some info
-     */
-    function getInfo(){
-        return $this->dthlp->getInfo();
-    }
-
-    /**
      * What kind of syntax are we?
      */
     function getType(){
