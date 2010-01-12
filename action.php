@@ -16,13 +16,6 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     var $dthlp = null;
 
     /**
-     * Return some info
-     */
-    function getInfo(){
-        return $this->dthlp->getInfo();
-    }
-
-    /**
      * Registers a callback function for a given event
      */
     function register(&$controller) {
