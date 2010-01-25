@@ -354,10 +354,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
         }
 
+	if(!empty($where)) $where = "WHERE $where";
+
         // build the query
         $sql = "SELECT ".join(', ',$select)."
                   FROM pages $from
-                 WHERE $where
+                  $where
               GROUP BY pages.page
                 $order";
 
