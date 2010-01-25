@@ -189,7 +189,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         #dbg($data);
         $sql = $this->_buildSQL($data); // handles GET params, too
-        #dbg($sql);
+        #dbglog($sql);
 
         // run query
         $types = array_values($data['cols']);
@@ -319,7 +319,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // add filters
         if(is_array($data['filter']) && count($data['filter'])){
-            $where .= ' AND ( 1=1 ';
+            $where .= ' 1=1 ';
 
             foreach($data['filter'] as $filter){
                 $col = $filter['key'];
@@ -340,8 +340,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                               " '".$filter['value']."'"; //value is already escaped
                 }
             }
-
-            $where .= ' ) ';
         }
 
         // add GET filter
@@ -354,13 +352,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }
 
             $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
-        }
-
-        // were any data tables used?
-        if(count($tables)){
-            $where = 'pages.pid = T1.pid '.$where;
-        }else{
-            $where = '1 = 1 '.$where;
         }
 
         // build the query
@@ -378,7 +369,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $sql .= ' OFFSET '.((int) $_GET['dataofs']);
             }
         }
-
 
         return $sql;
     }
