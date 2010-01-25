@@ -30,6 +30,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
 
         if($format != 'xhtml') return false;
         if(!$this->dthlp->_dbconnect()) return false;
+        if(is_null($data)) return false;
         $renderer->info['cache'] = false;
 
         #dbg($data);

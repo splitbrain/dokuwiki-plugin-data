@@ -149,6 +149,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }
         }
 
+        // we need at least one column to display
+        if(!is_array($data['cols']) || !count($data['cols'])){
+            msg('data plugin: no columns selected',-1);
+            return null;
+        }
+
         // if no header titles were given, use column names
         if(!is_array($data['headers'])){
             foreach(array_keys($data['cols']) as $col){
@@ -173,6 +179,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         if($format != 'xhtml') return false;
         if(!$this->dthlp->_dbconnect()) return false;
+        if(is_null($data)) return false;
         $renderer->info['cache'] = false;
 
         #dbg($data);
@@ -258,7 +265,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $where  = '';
         $order  = '';
 
-
         // take overrides from HTTP GET params into account
         if($_GET['datasrt']){
             if($_GET['datasrt']{0} == '^'){
@@ -267,7 +273,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $data['sort'] = array($_GET['datasrt'],'ASC');
             }
         }
-
 
         // prepare the columns to show
         foreach (array_keys($data['cols']) as $col){
