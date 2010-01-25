@@ -15,13 +15,13 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      */
     var $dthlp = null;
 
-   /**
-    * Constructor. Load helper plugin
-    */
-   function action_plugin_data(){
-       $this->dthlp =& plugin_load('helper', 'data');
-       if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
-   }
+    /**
+     * Constructor. Load helper plugin
+     */
+    function action_plugin_data(){
+        $this->dthlp =& plugin_load('helper', 'data');
+        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+    }
 
     /**
      * Registers a callback function for a given event

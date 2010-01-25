@@ -166,7 +166,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     }
 
     /**
-     * Create output or save the data
+     * Create output
      */
     function render($format, &$renderer, $data) {
         global $ID;
@@ -178,12 +178,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         #dbg($data);
         $sql = $this->_buildSQL($data); // handles GET params, too
         #dbg($sql);
-
-        // register our custom aggregate function
-        sqlite_create_aggregate($this->dthlp->db,'group_concat',
-                                array($this,'_sqlite_group_concat_step'),
-                                array($this,'_sqlite_group_concat_finalize'), 2);
-
 
         // run query
         $types = array_values($data['cols']);
@@ -379,24 +373,5 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         return $sql;
     }
 
-    /**
-     * Aggregation function for SQLite
-     *
-     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
-     */
-    function _sqlite_group_concat_step(&$context, $string, $separator = ',') {
-         $context['sep']    = $separator;
-         $context['data'][] = $string;
-    }
-
-    /**
-     * Aggregation function for SQLite
-     *
-     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
-     */
-    function _sqlite_group_concat_finalize(&$context) {
-         $context['data'] = array_unique($context['data']);
-         return join($context['sep'],$context['data']);
-    }
 }
 

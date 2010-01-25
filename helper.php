@@ -158,6 +158,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }
 
         if($init) $this->_initdb();
+
+        // register our custom aggregate function
+        sqlite_create_aggregate($this->db,'group_concat',
+                                array($this,'_sqlite_group_concat_step'),
+                                array($this,'_sqlite_group_concat_finalize'), 2);
+
         return true;
     }
 
@@ -171,4 +177,26 @@ class helper_plugin_data extends DokuWiki_Plugin {
         sqlite_query($this->db,'CREATE TABLE data (eid INTEGER PRIMARY KEY, pid INTEGER, key, value);');
         sqlite_query($this->db,'CREATE INDEX idx_key ON data(key);');
     }
+
+
+    /**
+     * Aggregation function for SQLite
+     *
+     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
+     */
+    function _sqlite_group_concat_step(&$context, $string, $separator = ',') {
+         $context['sep']    = $separator;
+         $context['data'][] = $string;
+    }
+
+    /**
+     * Aggregation function for SQLite
+     *
+     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
+     */
+    function _sqlite_group_concat_finalize(&$context) {
+         $context['data'] = array_unique($context['data']);
+         return join($context['sep'],$context['data']);
+    }
+
 }
