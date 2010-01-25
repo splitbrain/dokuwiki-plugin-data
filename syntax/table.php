@@ -128,6 +128,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~)(.*)$/',$line[1],$matches)){
                             list($key) = $this->dthlp->_column(trim($matches[1]));
                             $val = trim($matches[3]);
+                            // allow current user name in filter:
+                            $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
                             $val = sqlite_escape_string($val); //pre escape
                             $com = $matches[2];
                             if($com == '<>'){
