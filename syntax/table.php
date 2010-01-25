@@ -125,7 +125,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $logic = 'AND';
                 case 'filteror':
                 case 'or':
-                        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~)(.*)$/',$line[1],$matches)){
+                        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~|!~)(.*)$/',$line[1],$matches)){
                             list($key) = $this->dthlp->_column(trim($matches[1]));
                             $val = trim($matches[3]);
                             // allow current user name in filter:
@@ -134,9 +134,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                             $com = $matches[2];
                             if($com == '<>'){
                                 $com = '!=';
-                            }elseif($com == '=~' || $com == '~'){
+                            }elseif($com == '=~' || $com == '~' || $com == '!~'){
                                 $com = 'LIKE';
                                 $val = str_replace('*','%',$val);
+                                if ($com == '!~'){
+                                    $com = 'NOT '.$com;
+                                }
                             }
 
                             $data['filter'][] = array('key'     => $key,
