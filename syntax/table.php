@@ -59,7 +59,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $lines = explode("\n",$match);
         array_pop($lines);
         $class = array_shift($lines);
-        $class = str_replace('datatable','',$class);
+        $class = preg_replace('/^----+ *data[a-z]+/','',$class);
         $class = trim($class,'- ');
 
         $data = array();
@@ -89,7 +89,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         }
                     break;
                 case 'title':
-                case 'titles':
+                        $data['title'] = $line[1];
+                    break;
                 case 'head':
                 case 'header':
                 case 'headers':
