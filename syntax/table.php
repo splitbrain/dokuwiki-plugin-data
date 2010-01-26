@@ -20,7 +20,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      */
     function syntax_plugin_data_table(){
         $this->dthlp =& plugin_load('helper', 'data');
-        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
     }
 
     /**
@@ -43,7 +42,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     function getSort(){
         return 155;
     }
-
 
     /**
      * Connect pattern to lexer
@@ -183,9 +181,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(!$this->dthlp->_dbconnect()) return false;
         if(is_null($data)) return false;
         $renderer->info['cache'] = false;
+
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
 
         #dbg($data);
         $sql = $this->_buildSQL($data); // handles GET params, too
@@ -193,7 +193,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // run query
         $types = array_values($data['cols']);
-        $res = sqlite_query($this->dthlp->db,$sql);
+        $res = $sqlite->query($sql);
 
         // build table
         $renderer->doc .= '<table class="inline dataplugin_table '.$data['classes'].'">';

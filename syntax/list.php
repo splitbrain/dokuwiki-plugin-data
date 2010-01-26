@@ -29,9 +29,11 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(!$this->dthlp->_dbconnect()) return false;
         if(is_null($data)) return false;
         $renderer->info['cache'] = false;
+
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
 
         #dbg($data);
         $sql = $this->_buildSQL($data); // handles GET params, too
@@ -39,7 +41,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
 
         // run query
         $types = array_values($data['cols']);
-        $res = sqlite_query($this->dthlp->db,$sql);
+        $res = $sqlite->query($sql);
 
         // build table
         $renderer->doc .= '<ul class="inline dataplugin_table '.$data['classes'].'">';
