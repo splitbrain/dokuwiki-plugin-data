@@ -68,16 +68,16 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
-     * Return XHTML formated data, depending on type
+     * Return XHTML formated data, depending on column type
      */
-    function _formatData($key, $value, $type, &$R){
+    function _formatData($column, $value, &$R){
         global $conf;
         $vals = explode("\n",$value);
         $outs = array();
         foreach($vals as $val){
             $val = trim($val);
             if($val=='') continue;
-            switch($type){
+            switch($column['type']){
                 case 'page':
                     $outs[] = $R->internallink(":$val",NULL,NULL,true);
                     break;
@@ -86,7 +86,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = $R->internallink(":$id",$title,NULL,true);
                     break;
                 case 'nspage':
-                    $outs[] = $R->internallink(":$key:$val",NULL,NULL,true);
+                    $outs[] = $R->internallink(':'.$column['key'].":$val",NULL,NULL,true);
                     break;
                 case 'mail':
                     list($id,$title) = explode(' ',$val,2);
@@ -103,12 +103,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
                     break;
                 case 'tag':
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($key)),array('dataflt'=>$key.':'.$val )).
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($key)),array('dataflt'=>$column['key'].':'.$val )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
                 default:
-                    if(substr($type,0,3) == 'img'){
+                    if(substr($column['type'],0,3) == 'img'){
                         $sz = (int) substr($type,3);
                         if(!$sz) $sz = 40;
                         $title = $key.': '.basename(str_replace(':','/',$val));
@@ -124,17 +124,64 @@ class helper_plugin_data extends DokuWiki_Plugin {
     /**
      * Split a column name into its parts
      *
-     * @returns array with key, type, ismulti, title
+     * @returns array with key, type, ismulti, title, opt
      */
     function _column($col){
+        $column = array();
+
+        // are mutliple values expected?
         if(strtolower(substr($col,-1)) == 's'){
             $col = substr($col,0,-1);
-            $multi = true;
+            $column['multi'] = true;
         }else{
-            $multi = false;
+            $column['multi'] = false;
         }
+
+        // get key and type
         list($key,$type) = explode('_',$col,2);
-        return array(utf8_strtolower($key),utf8_strtolower($type),$multi,$key);
+        $column['title'] = $key;
+        $key  = utf8_strtolower($key);
+        $type = utf8_strtolower($type);
+        $column['key']   = $key;
+
+        // fix title for special columns
+        if($column['title'] == '%title%')  $column['title'] = 'page'; #FIXME localize
+        if($column['title'] == '%pageid%') $column['title'] = 'pagename'; #FIXME localize
+
+        // check if the type is some alias
+        $aliases = $this->_aliases();
+        if($aliases[$type]){
+            $column['prefix']  = $aliases[$type]['prefix'];
+            $column['postfix'] = $aliases[$type]['postfix'];
+            $column['type']    = utf8_strtolower($aliases[$type]['type']);
+        }else{
+            $column['type'] = $type;
+        }
+
+        return $column;
+    }
+
+    /**
+     * Load defined type aliases
+     */
+    function _aliases(){
+        static $aliases = null;
+        if(!is_null($aliases)) return $aliases;
+
+        $sqlite = $this->_getDB();
+        if(!$sqlite) return array();
+
+        $aliases = array();
+        $res = $sqlite->query("SELECT * FROM aliases");
+        $rows = $sqlite->res2arr($res);
+        foreach($rows as $row){
+            $aliases[$row['name']] = array(
+                'type'    => $row['type'],
+                'prefix'  => $row['prefix'],
+                'postfix' => $row['postfix'],
+            );
+        }
+        return $aliases;
     }
 
 }
