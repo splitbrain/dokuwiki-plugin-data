@@ -145,28 +145,25 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * Save date to the database
      */
     function _saveData($data,$id,$title){
-        if(!$this->dthlp->_dbconnect()) return false;
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
 
         $error = '';
         if(!$title) $title = $id;
-        $id    = sqlite_escape_string($id);
-        $title = sqlite_escape_string($title);
 
         // begin transaction
-        $sql = "BEGIN TRANSACTION";
-        sqlite_query($this->dthlp->db,$sql);
+        $sqlite->query("BEGIN TRANSACTION");
 
         // store page info
-        $sql = "INSERT OR IGNORE INTO pages (page,title) VALUES ('$id','$title')";
-        sqlite_query($this->dthlp->db,$sql,SQLITE_NUM);
+        $sqlite->query("INSERT OR IGNORE INTO pages (page,title) VALUES (?,?)",
+                       $id,$title);
 
         // Update title if insert failed (record already saved before)
-        $sql = "UPDATE pages SET title = '$title' WHERE page = '$id'";
-        sqlite_query($this->dthlp->db,$sql,SQLITE_NUM);
+        $sqlite->query("UPDATE pages SET title = ? WHERE page = ?",
+                       $id,$title);
 
         // fetch page id
-        $sql = "SELECT pid FROM pages WHERE page = '$id'";
-        $res = sqlite_query($this->dthlp->db, $sql);
+        $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
         $pid = (int) sqlite_fetch_single($res);
 
         if(!$pid){
@@ -175,28 +172,22 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         }
 
         // remove old data
-        $sql = "DELETE FROM data WHERE pid = $pid";
-        sqlite_query($this->dthlp->db,$sql);
+        $sqlite->query("DELETE FROM data WHERE pid = ?",$pid);
 
         // insert new data
         foreach ($data['data'] as $key => $val){
-            $k = sqlite_escape_string($key);
             if(is_array($val)) foreach($val as $v){
-                $v   = sqlite_escape_string($v);
-                $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
-                sqlite_query($this->dthlp->db,$sql);
+                $sqlite->query("INSERT INTO data (pid, key, value) VALUES (?, ?, ?)",
+                               $pid,$key,$v);
             }else {
-                $v   = sqlite_escape_string($val);
-                $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
-                sqlite_query($this->dthlp->db,$sql);
+                $sqlite->query("INSERT INTO data (pid, key, value) VALUES (?, ?, ?)",
+                               $pid,$key,$val);
             }
         }
 
         // finish transaction
-        $sql = "COMMIT TRANSACTION";
-        sqlite_query($this->dthlp->db,$sql);
+        $sqlite->query("COMMIT TRANSACTION");
 
-        sqlite_close($this->dthlp->db);
         return true;
     }
 

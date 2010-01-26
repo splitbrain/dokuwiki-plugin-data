@@ -16,19 +16,16 @@ require_once(DOKU_INC.'inc/infoutils.php');
  */
 class helper_plugin_data extends DokuWiki_Plugin {
 
-    var $db = null;
 
     /**
-     * constructor
+     * load the sqlite helper
      */
-    function helper_plugin_data(){
-        if (!extension_loaded('sqlite')) {
-            $prefix = (PHP_SHLIB_SUFFIX === 'dll') ? 'php_' : '';
-            @dl($prefix . 'sqlite.' . PHP_SHLIB_SUFFIX);
-        }
-
-        if(!function_exists('sqlite_open')){
-            msg('data plugin: SQLite support missing in this PHP install - plugin will not work',-1);
+    function _getDB(){
+        $db =& plugin_load('helper', 'sqlite');
+        if($db->init('data',dirname(__FILE__).'/db/')){
+            return $db;
+        }else{
+            return false;
         }
     }
 
@@ -138,65 +135,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }
         list($key,$type) = explode('_',$col,2);
         return array(utf8_strtolower($key),utf8_strtolower($type),$multi,$key);
-    }
-
-
-    /**
-     * Open the database
-     */
-    function _dbconnect(){
-        global $conf;
-
-        $dbfile = $conf['cachedir'].'/dataplugin.sqlite';
-        $init   = (!@file_exists($dbfile) || !@filesize($dbfile));
-
-        $error='';
-        $this->db = sqlite_open($dbfile, 0666, $error);
-        if(!$this->db){
-            msg("data plugin: failed to open SQLite database ($error)",-1);
-            return false;
-        }
-
-        if($init) $this->_initdb();
-
-        // register our custom aggregate function
-        sqlite_create_aggregate($this->db,'group_concat',
-                                array($this,'_sqlite_group_concat_step'),
-                                array($this,'_sqlite_group_concat_finalize'), 2);
-
-        return true;
-    }
-
-
-    /**
-     * create the needed tables
-     */
-    function _initdb(){
-        sqlite_query($this->db,'CREATE TABLE pages (pid INTEGER PRIMARY KEY, page, title);');
-        sqlite_query($this->db,'CREATE UNIQUE INDEX idx_page ON pages(page);');
-        sqlite_query($this->db,'CREATE TABLE data (eid INTEGER PRIMARY KEY, pid INTEGER, key, value);');
-        sqlite_query($this->db,'CREATE INDEX idx_key ON data(key);');
-    }
-
-
-    /**
-     * Aggregation function for SQLite
-     *
-     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
-     */
-    function _sqlite_group_concat_step(&$context, $string, $separator = ',') {
-         $context['sep']    = $separator;
-         $context['data'][] = $string;
-    }
-
-    /**
-     * Aggregation function for SQLite
-     *
-     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
-     */
-    function _sqlite_group_concat_finalize(&$context) {
-         $context['data'] = array_unique($context['data']);
-         return join($context['sep'],$context['data']);
     }
 
 }
