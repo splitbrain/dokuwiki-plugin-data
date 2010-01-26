@@ -44,14 +44,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         return 155;
     }
 
-
     /**
      * Connect pattern to lexer
      */
     function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *dataentry(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_entry');
     }
-
 
     /**
      * Handle the match - parse the data
@@ -64,7 +62,6 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $class = str_replace('datatable','',$class);
         $class = trim($class,'- ');
 
-
         // parse info
         $data = array();
         $meta = array();
@@ -76,23 +73,21 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             if(empty($line)) continue;
             $line = preg_split('/\s*:\s*/',$line,2);
 
-            list($key,$type,$multi,$title) = $this->dthlp->_column($line[0]);
-            if($multi){
-                if(!is_array($data[$key])) $data[$key] = array(); // init with empty array
+            $column = $this->dthlp->_column($line[0]);
+            if($column['multi']){
+                if(!is_array($data[$column['key']])) $data[$column['key']] = array(); // init with empty array
                 $vals = explode(',',$line[1]);
                 foreach($vals as $val){
-                    $val = trim($this->dthlp->_cleanData($val,$type));
+                    $val = trim($this->dthlp->_cleanData($val,$column['type']));
                     if($val == '') continue;
-                    if(!in_array($val,$data[$key])) $data[$key][] = $val;
+                    if(!in_array($val,$data[$column['key']])) $data[$column['key']][] = $val;
                 }
             }else{
-                $data[$key] = $this->dthlp->_cleanData($line[1],$type);
+                $data[$column['key']] = $this->dthlp->_cleanData($line[1],$column['type']);
             }
-            $meta[$key]['multi'] = $multi;
-            $meta[$key]['type']  = $type;
-            $meta[$key]['title'] = $title;
+            $columns[$column['key']]  = $column;
         }
-        return array('data'=>$data, 'meta'=>$meta, 'classes'=>$class);
+        return array('data'=>$data, 'cols'=>$columns, 'classes'=>$class);
     }
 
     /**
@@ -119,22 +114,22 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     function _showData($data,&$R){
         $ret = '';
 
-
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
 
-            $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['meta'][$key]['title']).'<span class="sep">: </span></dt>';
+            $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
             if(is_array($val)){
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
                     $ret .= '<dd class="' . hsc($key) . '">';
-                    $ret .= $this->dthlp->_formatData($key, $val[$i], $data['meta'][$key]['type'], $R);
+                    $ret .= $this->dthlp->_formatData($data['cols'][$key], $val[$i],$R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
                     $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd class="' . hsc($key) . '">'.$this->dthlp->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
+                $ret .= '<dd class="' . hsc($key) . '">'.
+                        $this->dthlp->_formatData($data['cols'][$key], $val, $R).'</dd>';
             }
         }
         $ret .= '</dl></div>';

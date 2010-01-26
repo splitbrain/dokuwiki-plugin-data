@@ -84,12 +84,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         foreach($cols as $col){
                             $col = trim($col);
                             if(!$col) continue;
-                            list($key,$type) = $this->dthlp->_column($col);
-                            $data['cols'][$key] = $type;
-
-                            // fix type for special type
-                            if($key == '%pageid%') $data['cols'][$key] = 'page';
-                            if($key == '%title%') $data['cols'][$key] = 'title';
+                            $column = $this->dthlp->_column($col);
+                            $data['cols'][$column['key']] = $column;
                         }
                     break;
                 case 'title':
@@ -109,7 +105,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     break;
                 case 'order':
                 case 'sort':
-                        list($sort) = $this->dthlp->_column($line[1]);
+                        $column = $this->dthlp->_column($line[1]);
+                        $sort = $column['key'];
                         if(substr($sort,0,1) == '^'){
                             $data['sort'] = array(substr($sort,1),'DESC');
                         }else{
@@ -124,7 +121,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'filteror':
                 case 'or':
                         if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~|!~)(.*)$/',$line[1],$matches)){
-                            list($key) = $this->dthlp->_column(trim($matches[1]));
+                            $column = $this->dthlp->_column(trim($matches[1]));
                             $val = trim($matches[3]);
                             // allow current user name in filter:
                             $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
@@ -140,7 +137,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                                 }
                             }
 
-                            $data['filter'][] = array('key'     => $key,
+                            $data['filter'][] = array('key'     => $column['key'],
                                                       'value'   => $val,
                                                       'compare' => $com,
                                                       'logic'   => $logic
@@ -160,14 +157,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // if no header titles were given, use column names
         if(!is_array($data['headers'])){
-            foreach(array_keys($data['cols']) as $col){
-                if($col == '%pageid%'){
-                    $data['headers'][] = 'pagename'; #FIXME add lang string
-                }elseif($col == '%title%'){
-                    $data['headers'][] = 'page'; #FIXME add lang string
-                }else{
-                    $data['headers'][] = $col;
-                }
+            foreach($data['cols'] as $col){
+                    $data['headers'][] = $col['title'];
             }
         }
 
@@ -177,12 +168,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     /**
      * Create output
      */
-    function render($format, &$renderer, $data) {
+    function render($format, &$R, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;
         if(is_null($data)) return false;
-        $renderer->info['cache'] = false;
+        $R->info['cache'] = false;
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
@@ -192,69 +183,88 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         #dbglog($sql);
 
         // run query
-        $types = array_values($data['cols']);
         $res = $sqlite->query($sql);
 
         // build table
-        $renderer->doc .= '<table class="inline dataplugin_table '.$data['classes'].'">';
+        $R->doc .= '<table class="inline dataplugin_table '.$data['classes'].'">';
+
+        $clist = array_keys($data['cols']);
 
         // build column headers
-        $renderer->doc .= '<tr>';
-        $cols = array_keys($data['cols']);
+        $R->doc .= '<tr>';
         foreach($data['headers'] as $num => $head){
-            $col = $cols[$num];
+            $ckey = $clist[$num];
 
-            $renderer->doc .= '<th>';
-            if($col == $data['sort'][0]){
+            $R->doc .= '<th>';
+
+            // add sort arrow
+            if($ckey == $data['sort'][0]){
                 if($data['sort'][1] == 'ASC'){
-                    $renderer->doc .= '<span>&darr;</span> ';
-                    $col = '^'.$col;
+                    $R->doc .= '<span>&darr;</span> ';
+                    $ckey = '^'.$ckey;
                 }else{
-                    $renderer->doc .= '<span>&uarr;</span> ';
+                    $R->doc .= '<span>&uarr;</span> ';
                 }
             }
-            $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$col, 'dataofs'=>$_GET['dataofs'], 'dataflt'=>$_GET['dataflt'])).
-                              '" title="'.$this->getLang('sort').'">'.hsc($head).'</a>';
 
-            $renderer->doc .= '</th>';
+            // clickable header
+            $R->doc .= '<a href="'.wl($ID,array(
+                                            'datasrt' => $ckey,
+                                            'dataofs' => $_GET['dataofs'],
+                                            'dataflt' => $_GET['dataflt'])).
+                       '" title="'.$this->getLang('sort').'">'.hsc($head).'</a>';
+
+            $R->doc .= '</th>';
         }
-        $renderer->doc .= '</tr>';
+        $R->doc .= '</tr>';
 
         // build data rows
         $cnt = 0;
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
-            $renderer->doc .= '<tr>';
-            foreach($row as $num => $col){
-                $renderer->doc .= '<td>'.$this->dthlp->_formatData($cols[$num],$col,$types[$num],$renderer).'</td>';
+            $R->doc .= '<tr>';
+            foreach($row as $num => $cval){
+                $R->doc .= '<td>';
+                $R->doc .= $this->dthlp->_formatData(
+                                $data['cols'][$clist[$num]],
+                                $cval,$R);
+                $R->doc .= '</td>';
             }
-            $renderer->doc .= '</tr>';
+            $R->doc .= '</tr>';
             $cnt++;
             if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
         }
 
         // if limit was set, add control
         if($data['limit']){
-            $renderer->doc .= '<tr><th colspan="'.count($data['cols']).'">';
+            $R->doc .= '<tr><th colspan="'.count($data['cols']).'">';
             $offset = (int) $_GET['dataofs'];
             if($offset){
                 $prev = $offset - $data['limit'];
                 if($prev < 0) $prev = 0;
 
-                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$prev, 'dataflt'=>$_GET['dataflt'] )).
-                              '" title="'.$this->getLang('prev').'" class="prev">'.$this->getLang('prev').'</a>';
+                $R->doc .= '<a href="'.wl($ID,array(
+                                                'datasrt' => $_GET['datasrt'],
+                                                'dataofs' => $prev,
+                                                'dataflt' => $_GET['dataflt'] )).
+                              '" title="'.$this->getLang('prev').
+                              '" class="prev">'.$this->getLang('prev').'</a>';
             }
 
-            $renderer->doc .= '&nbsp;';
+            $R->doc .= '&nbsp;';
 
             if(sqlite_num_rows($res) > $data['limit']){
                 $next = $offset + $data['limit'];
-                $renderer->doc .= '<a href="'.wl($ID,array('datasrt'=>$_GET['datasrt'], 'dataofs'=>$next, 'dataflt'=>$_GET['dataflt'] )).
-                              '" title="'.$this->getLang('next').'" class="next">'.$this->getLang('next').'</a>';
+                $R->doc .= '<a href="'.wl($ID,array(
+                                                'datasrt' => $_GET['datasrt'],
+                                                'dataofs' => $next,
+                                                'dataflt'=>$_GET['dataflt'] )).
+                              '" title="'.$this->getLang('next').
+                              '" class="next">'.$this->getLang('next').'</a>';
             }
-            $renderer->doc .= '</th></tr>';
+            $R->doc .= '</th></tr>';
         }
 
-        $renderer->doc .= '</table>';
+        $R->doc .= '</table>';
 
         return true;
     }
@@ -280,16 +290,17 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         // prepare the columns to show
-        foreach (array_keys($data['cols']) as $col){
-            if($col == '%pageid%'){
+        foreach ($data['cols'] as $col){
+            $key = $col['key'];
+            if($key == '%pageid%'){
                 $select[] = 'pages.page';
-            }elseif($col == '%title%'){
+            }elseif($key == '%title%'){
                 $select[] = "pages.page || '|' || pages.title";
             }else{
-                if(!$tables[$col]){
-                    $tables[$col] = 'T'.(++$cnt);
-                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                if(!$tables[$key]){
+                    $tables[$key] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
+                    $from  .= ' AND '.$tables[$key].".key = '".sqlite_escape_string($key)."'";
                 }
                 if ($data['cols'][$col] === 'pageid') {
                     $select[] = "pages.page || '|' || group_concat(".$tables[$col].".value,'\n')";
@@ -359,7 +370,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
         }
 
-	if(!empty($where)) $where = "WHERE $where";
+        if(!empty($where)) $where = "WHERE $where";
 
         // build the query
         $sql = "SELECT ".join(', ',$select)."
