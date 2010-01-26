@@ -145,8 +145,14 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $column['key']   = $key;
 
         // fix title for special columns
-        if($column['title'] == '%title%')  $column['title'] = 'page'; #FIXME localize
-        if($column['title'] == '%pageid%') $column['title'] = 'pagename'; #FIXME localize
+        if($column['title'] == '%title%'){
+            $column['title'] = 'page'; #FIXME localize
+            if(!$type) $type = 'page';
+        }
+        if($column['title'] == '%pageid%'){
+            $column['title'] = 'pagename'; #FIXME localize
+            if(!$type) $type = 'page';
+        }
 
         // check if the type is some alias
         $aliases = $this->_aliases();
