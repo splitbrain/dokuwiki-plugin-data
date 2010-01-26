@@ -20,7 +20,6 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      */
     function action_plugin_data(){
         $this->dthlp =& plugin_load('helper', 'data');
-        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
     }
 
     /**
@@ -38,20 +37,17 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $data = $event->data;
         if(strpos($data[0][1],'dataentry') !== false) return; // plugin seems still to be there
 
-        if(!$this->dthlp->_dbconnect()) return;
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return;
         $id = ltrim($data[1].':'.$data[2],':');
 
         // get page id
-        $sql = "SELECT pid FROM pages WHERE page ='".sqlite_escape_string($id)."'";
-        $res = sqlite_query($this->dthlp->db, $sql);
+        $res = $sqlite->query('SELECT pid FROM pages WHERE page = ?',$id);
         $pid = (int) sqlite_fetch_single($res);
         if(!$pid) return; // we have no data for this page
 
-        $sql = "DELETE FROM data WHERE pid = $pid";
-        sqlite_query($this->dthlp->db, $sql);
-
-        $sql = "DELETE FROM pages WHERE pid = $pid";
-        sqlite_query($this->dthlp->db, $sql);
+        $sqlite->query('DELETE FROM data WHERE pid = ?',$pid);
+        $sqlite->query('DELETE FROM pages WHERE pid = ?',$pid);
     }
 }
 
