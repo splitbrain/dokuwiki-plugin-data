@@ -111,8 +111,11 @@ class syntax_plugin_data_cloud extends DokuWiki_Syntax_Plugin {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(!$this->dthlp->_dbconnect()) return false;
         $renderer->info['cache'] = false;
+        if(is_null($data)) return;
+
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
 
         if(!$data['page']) $data['page'] = $ID;
 
@@ -127,7 +130,7 @@ class syntax_plugin_data_cloud extends DokuWiki_Syntax_Plugin {
 
         // build cloud data
         $tags = array();
-        $res = sqlite_query($this->dthlp->db,$sql);
+        $res = $sqlite->query($sql);
         $min = 0;
         $max = 0;
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
