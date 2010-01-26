@@ -183,12 +183,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         #dbglog($sql);
 
         // run query
+        $clist = array_keys($data['cols']);
         $res = $sqlite->query($sql);
 
         // build table
         $R->doc .= '<table class="inline dataplugin_table '.$data['classes'].'">';
-
-        $clist = array_keys($data['cols']);
 
         // build column headers
         $R->doc .= '<tr>';

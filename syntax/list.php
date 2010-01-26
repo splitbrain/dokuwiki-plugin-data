@@ -25,12 +25,12 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
     /**
      * Create output
      */
-    function render($format, &$renderer, $data) {
+    function render($format, &$R, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;
         if(is_null($data)) return false;
-        $renderer->info['cache'] = false;
+        $R->info['cache'] = false;
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
@@ -40,26 +40,24 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         #dbg($sql);
 
         // run query
-        $types = array_values($data['cols']);
+        $clist = array_keys($data['cols']);
         $res = $sqlite->query($sql);
 
-        // build table
-        $renderer->doc .= '<ul class="inline dataplugin_table '.$data['classes'].'">';
-
+        // build list
+        $R->doc .= '<ul class="dataplugin_list '.$data['classes'].'">';
 
         $cnt = 0;
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
-            $renderer->doc .= '<li><div class="li">';
-            foreach($row as $num => $col){
-                $renderer->doc .= $this->dthlp->_formatData($data['cols'][$num],$col,$types[$num],$renderer)."\n";
+            $R->doc .= '<li><div class="li">';
+            foreach($row as $num => $cval){
+                $R->doc .= $this->dthlp->_formatData($data['cols'][$clist[$num]],$cval,$R)."\n";
             }
-            $renderer->doc .= '</div></li>';
+            $R->doc .= '</div></li>';
             $cnt++;
             if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
         }
 
-
-        $renderer->doc .= '</ul>';
+        $R->doc .= '</ul>';
     }
 
 }
