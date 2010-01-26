@@ -25,12 +25,15 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(!$this->dthlp->_dbconnect()) return false;
+        if(is_null($data)) return false;
+
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
 
         $sql = $this->_buildSQL($data,$ID);
         if(!$sql) return true; // sql build
 
-        $res = sqlite_query($this->dthlp->db,$sql);
+        $res = $sqlite->query($sql);
         if(!sqlite_num_rows($res)) return true; // no rows matched
 
         $renderer->doc .= '<dl class="'.$data['classes'].'">';
@@ -46,7 +49,6 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         $renderer->doc .= '</dd>';
         $renderer->doc .= '</dl>';
 
-
         return true;
     }
 
@@ -61,6 +63,8 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         $where  = '';
         $order  = '';
 
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
 
         // prepare the columns to match against
         $found = false;
@@ -69,10 +73,10 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
             $values = array();
             $sql = "SELECT A.value
                       FROM data A, pages B
-                     WHERE key = '".sqlite_escape_string($col)."'
+                     WHERE key = ?
                        AND A.pid = B.pid
-                       AND B.page = '".sqlite_escape_string($id)."'";
-            $res = sqlite_query($this->dthlp->db,$sql);
+                       AND B.page = ?";
+            $res = $sqlite->query($sql,$col,$id);
             while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
                 if($row[0]) $values[] = $row[0];
             }
