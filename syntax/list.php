@@ -51,7 +51,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
             foreach($row as $num => $col){
                 $renderer->doc .= $this->dthlp->_formatData($cols[$num],$col,$types[$num],$renderer)."\n";
             }
-            $renderer->doc .= '</li>';
+            $renderer->doc .= '</div></li>';
             $cnt++;
             if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
         }
