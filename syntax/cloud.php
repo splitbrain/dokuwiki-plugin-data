@@ -6,9 +6,9 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-require_once(DOKU_PLUGIN.'syntax.php');
+require_once(dirname(__FILE__).'/table.php');
 
-class syntax_plugin_data_cloud extends DokuWiki_Syntax_Plugin {
+class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
     /**
      * will hold the data helper plugin
@@ -52,58 +52,6 @@ class syntax_plugin_data_cloud extends DokuWiki_Syntax_Plugin {
         $this->Lexer->addSpecialPattern('----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_cloud');
     }
 
-
-    /**
-     * Handle the match - parse the data
-     */
-    function handle($match, $state, $pos, &$handler){
-        // get lines and additional class
-        $lines = explode("\n",$match);
-        array_pop($lines);
-        $class = array_shift($lines);
-        $class = str_replace('datatcloud','',$class);
-        $class = trim($class,'- ');
-
-        $data = array();
-        $data['classes'] = $class;
-
-        // parse info
-        foreach ( $lines as $line ) {
-            // ignore comments
-            $line = preg_replace('/(?<![&\\\\])#.*$/','',$line);
-            $line = str_replace('\\#','#',$line);
-            $line = trim($line);
-            if(empty($line)) continue;
-            $line = preg_split('/\s*:\s*/',$line,2);
-            $line[0] = strtolower($line[0]);
-
-            // handle line commands (we allow various aliases here)
-            switch($line[0]){
-                case 'field':
-                case 'select':
-                case 'col':
-                        list($key)     = $this->dthlp->_column($line[1]);
-                        $data['field'] = $key;
-                    break;
-                case 'limit':
-                case 'max':
-                        $data['limit'] = abs((int) $line[1]);
-                    break;
-                case 'min':
-                        $data['min'] = abs((int) $line[1]);
-                    break;
-                case 'page':
-                case 'target':
-                        $data['page'] = cleanID($line[1]);
-                    break;
-                default:
-                    msg("data plugin: unknown option '".hsc($line[0])."'",-1);
-            }
-        }
-
-        return $data;
-    }
-
     /**
      * Create output or save the data
      */
@@ -116,10 +64,13 @@ class syntax_plugin_data_cloud extends DokuWiki_Syntax_Plugin {
 
         if(!$data['page']) $data['page'] = $ID;
 
+        $ckey = array_keys($data['cols']);
+        $ckey = $ckey[0];
+
         // build query
         $sql = "SELECT value, COUNT(pid) as cnt
                   FROM data
-                 WHERE key = '".sqlite_escape_string($data['field'])."'
+                 WHERE key = '".sqlite_escape_string($ckey)."'
               GROUP BY value";
         if($data['min'])   $sql .= ' HAVING cnt >= '.$data['min'];
         $sql .= ' ORDER BY cnt DESC';
@@ -142,7 +93,7 @@ class syntax_plugin_data_cloud extends DokuWiki_Syntax_Plugin {
         foreach($tags as $tag => $lvl){
             $renderer->doc .= '<li class="cl'.$lvl.'">';
             $renderer->doc .= '<a href="'.wl($data['page'],array('datasrt'=>$_GET['datasrt'],
-                                                                 'dataflt'=>$data['field'].':'.$tag )).
+                                                                 'dataflt'=>$ckey.':'.$tag )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).'" class="wikilink1">'.hsc($tag).'</a>';
             $renderer->doc .= '</li>';
         }
