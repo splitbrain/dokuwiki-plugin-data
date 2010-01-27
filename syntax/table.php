@@ -6,7 +6,6 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-require_once(DOKU_PLUGIN.'syntax.php');
 
 class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
@@ -53,6 +52,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     /**
      * Handle the match - parse the data
+     *
+     * This parsing is shared between the multiple different output/control
+     * syntaxes
      */
     function handle($match, $state, $pos, &$handler){
         // get lines and additional class
@@ -80,6 +82,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             switch($line[0]){
                 case 'select':
                 case 'cols':
+                case 'field':
+                case 'col':
                         $cols = explode(',',$line[1]);
                         foreach($cols as $col){
                             $col = trim($col);
@@ -99,6 +103,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                             $col = trim($col);
                             $data['headers'][] = $col;
                         }
+                    break;
+                case 'min':
+                        $data['min']   = abs((int) $line[1]);
                     break;
                 case 'limit':
                 case 'max':
@@ -144,6 +151,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                                                       'logic'   => $logic
                                                      );
                         }
+                    break;
+                case 'page':
+                case 'target':
+                        $data['page'] = cleanID($line[1]);
                     break;
                 default:
                     msg("data plugin: unknown option '".hsc($line[0])."'",-1);
@@ -277,7 +288,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $tables = array();
         $select = array();
         $from   = '';
-        $where  = '';
+        $where  = '1 = 1';
         $order  = '';
 
         // take overrides from HTTP GET params into account
@@ -335,7 +346,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // add filters
         if(is_array($data['filter']) && count($data['filter'])){
-            $where .= ' 1=1 ';
 
             foreach($data['filter'] as $filter){
                 $col = $filter['key'];
@@ -370,12 +380,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
         }
 
-        if(!empty($where)) $where = "WHERE $where";
 
         // build the query
         $sql = "SELECT ".join(', ',$select)."
                   FROM pages $from
-                  $where
+                 WHERE $where
               GROUP BY pages.page
                 $order";
 
