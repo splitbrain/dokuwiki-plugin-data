@@ -37,6 +37,8 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
         $sqlite->query("DELETE FROM aliases");
         foreach($_REQUEST['d'] as $row){
             $row = array_map('trim',$row);
+            $row['name'] = utf8_strtolower($row['name']);
+            $row['name'] = rtrim($row['name'],'s');
             if(!$row['name']) continue;
             $sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, comment)
                                  VALUES (?,?,?,?,?)",$row);
