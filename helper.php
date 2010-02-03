@@ -166,6 +166,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
             $column['title'] = $this->getLang('title');
             if(!$type) $type = 'page';
         }
+        if($column['title'] == '%class%'){
+            $column['title'] = $this->getLang('class');
+        }
 
         // check if the type is some alias
         $aliases = $this->_aliases();

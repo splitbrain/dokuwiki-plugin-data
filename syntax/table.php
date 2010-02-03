@@ -307,6 +307,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $key = $col['key'];
             if($key == '%pageid%'){
                 $select[] = 'pages.page';
+            }elseif($key == '%class%'){
+                $select[] = 'pages.class';
             }elseif($key == '%title%'){
                 $select[] = "pages.page || '|' || pages.title";
             }else{
@@ -330,6 +332,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
             if($col == '%pageid%'){
                 $order = 'ORDER BY pages.page '.$data['sort'][1];
+            }elseif($col == '%pageid%'){
+                $order = 'ORDER BY pages.class '.$data['sort'][1];
             }elseif($col == '%title%'){
                 $order = 'ORDER BY pages.title '.$data['sort'][1];
             }else{
@@ -354,6 +358,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
                 if($col == '%pageid%'){
                     $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                }elseif($col == '%class%'){
+                    $where .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%title%'){
                     $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
                 }else{
