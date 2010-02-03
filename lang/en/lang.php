@@ -1,5 +1,7 @@
 <?php
 
+$lang['menu']      = 'Data Field Aliases';
+
 $lang['sort']      = 'Sort by this column';
 $lang['next']      = 'Next page';
 $lang['prev']      = 'Previous page';
@@ -9,6 +11,7 @@ $lang['related']   = 'Related pages:';
 
 $lang['page']      = 'Page';
 $lang['title']     = 'Page Name';
+$lang['class']     = 'Page Class';
 
 $lang['name']      = 'Type Alias';
 $lang['type']      = 'Original Type';

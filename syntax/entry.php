@@ -59,7 +59,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $lines = explode("\n",$match);
         array_pop($lines);
         $class = array_shift($lines);
-        $class = str_replace('datatable','',$class);
+        $class = str_replace('dataentry','',$class);
         $class = trim($class,'- ');
 
         // parse info
@@ -146,16 +146,18 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $error = '';
         if(!$title) $title = $id;
 
+        $class = $data['classes'];
+
         // begin transaction
         $sqlite->query("BEGIN TRANSACTION");
 
         // store page info
-        $sqlite->query("INSERT OR IGNORE INTO pages (page,title) VALUES (?,?)",
-                       $id,$title);
+        $sqlite->query("INSERT OR IGNORE INTO pages (page,title,class) VALUES (?,?,?)",
+                       $id,$title,$class);
 
         // Update title if insert failed (record already saved before)
-        $sqlite->query("UPDATE pages SET title = ? WHERE page = ?",
-                       $id,$title);
+        $sqlite->query("UPDATE pages SET title = ?, class = ? WHERE page = ?",
+                       $title,$class,$id);
 
         // fetch page id
         $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
