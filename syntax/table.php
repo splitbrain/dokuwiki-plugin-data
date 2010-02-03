@@ -167,11 +167,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             return null;
         }
 
-        // if no header titles were given, use column names
-        if(!is_array($data['headers'])){
-            foreach($data['cols'] as $col){
-                    $data['headers'][] = $col['title'];
-            }
+        // fill up headers with field names if necessary
+        $data['headers'] = (array) $data['headers'];
+        $cnth = count($data['headers']);
+        $cntf = count($data['cols']);
+        for($i=$cnth; $i<$cntf; $i++){
+            $item = array_pop(array_slice($data['cols'],$i,1));
+            $data['headers'][] = $item['title'];
         }
 
         return $data;
