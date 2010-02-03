@@ -79,17 +79,27 @@ class helper_plugin_data extends DokuWiki_Plugin {
             if($val=='') continue;
             switch($column['type']){
                 case 'page':
+                    if($column['prefix']){
+                        $val = $column['prefix'].$val;
+                    }else{
+                        $val = ':'.$val;
+                    }
+                    $val .= $column['postfix'];
+
                     $outs[] = $R->internallink(":$val",NULL,NULL,true);
                     break;
                 case 'title':
                     list($id,$title) = explode('|',$val,2);
+                    $val = $column['prefix'].$val.$column['postfix'];
                     $outs[] = $R->internallink(":$id",$title,NULL,true);
                     break;
                 case 'nspage':
+                    // no prefix/postfix here
                     $outs[] = $R->internallink(':'.$column['key'].":$val",NULL,NULL,true);
                     break;
                 case 'mail':
                     list($id,$title) = explode(' ',$val,2);
+                    $val = $column['prefix'].$val.$column['postfix'];
                     $id = obfuscate(hsc($id));
                     if(!$title){
                         $title = $id;
@@ -100,18 +110,21 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = '<a href="mailto:'.$id.'" class="mail" title="'.$id.'">'.$title.'</a>';
                     break;
                 case 'url':
+                    $val = $column['prefix'].$val.$column['postfix'];
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
                     break;
                 case 'tag':
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($key)),array('dataflt'=>$column['key'].':'.$val )).
+                    #FIXME handle pre/postfix
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($column['key'])),array('dataflt'=>$column['key'].':'.$val )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
                 default:
+                    $val = $column['prefix'].$val.$column['postfix'];
                     if(substr($column['type'],0,3) == 'img'){
                         $sz = (int) substr($type,3);
                         if(!$sz) $sz = 40;
-                        $title = $key.': '.basename(str_replace(':','/',$val));
+                        $title = $column['key'].': '.basename(str_replace(':','/',$val));
                         $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($title).'" title="'.hsc($title).'" width="'.$sz.'" /></a>';
                     }else{
                         $outs[] = hsc($val);
