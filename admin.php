@@ -50,23 +50,20 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
 
         echo $this->locale_xhtml('intro');
 
-
         $sql = "SELECT * FROM aliases ORDER BY name";
         $res = $sqlite->query($sql);
         $rows = $sqlite->res2arr($res);
 
-        #FIXME localize
         $form = new Doku_Form(array('method'=>'post'));
-
         $form->addHidden('page','data');
         $form->addElement(
             '<table class="inline">'.
             '<tr>'.
-            '<th>'.'name'.'</th>'.
-            '<th>'.'type'.'</th>'.
-            '<th>'.'prefix'.'</th>'.
-            '<th>'.'postfix'.'</th>'.
-            '<th>'.'comment'.'</th>'.
+            '<th>'.$this->getLang('name').'</th>'.
+            '<th>'.$this->getLang('type').'</th>'.
+            '<th>'.$this->getLang('prefix').'</th>'.
+            '<th>'.$this->getLang('postfix').'</th>'.
+            '<th>'.$this->getLang('comment').'</th>'.
             '</tr>'
         );
 
@@ -104,7 +101,7 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
         }
 
         $form->addElement('</table>');
-        $form->addElement(form_makeButton('submit','admin','FIXME local'));
+        $form->addElement(form_makeButton('submit','admin',$this->getLang('submit')));
         $form->printForm();
     }
 
