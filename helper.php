@@ -146,11 +146,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
         // fix title for special columns
         if($column['title'] == '%title%'){
-            $column['title'] = 'page'; #FIXME localize
+            $column['title'] = $this->getLang('page');
             if(!$type) $type = 'title';
         }
         if($column['title'] == '%pageid%'){
-            $column['title'] = 'pagename'; #FIXME localize
+            $column['title'] = $this->getLang('title');
             if(!$type) $type = 'page';
         }
 

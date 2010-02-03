@@ -6,3 +6,6 @@ $lang['prev'] = 'Previous page';
 
 $lang['tagfilter'] = "Show pages matching '%s'";
 $lang['related']   = 'Related pages:';
+
+$lang['page'] = 'Page';
+$lang['title'] = 'Page Name';
