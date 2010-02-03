@@ -56,35 +56,56 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
         $rows = $sqlite->res2arr($res);
 
         #FIXME localize
-        echo '<form method="post" action="">';
-        formSecurityToken();
-        echo '<table class="inline">';
-        echo '<tr>';
-        echo '<th>'.'name'.'</th>';
-        echo '<th>'.'type'.'</th>';
-        echo '<th>'.'prefix'.'</th>';
-        echo '<th>'.'postfix'.'</th>';
-        echo '<th>'.'comment'.'</th>';
-        echo '</tr>';
+        $form = new Doku_Form(array('method'=>'post'));
+
+        $form->addHidden('page','data');
+        $form->addElement(
+            '<table class="inline">'.
+            '<tr>'.
+            '<th>'.'name'.'</th>'.
+            '<th>'.'type'.'</th>'.
+            '<th>'.'prefix'.'</th>'.
+            '<th>'.'postfix'.'</th>'.
+            '<th>'.'comment'.'</th>'.
+            '</tr>'
+        );
 
         // add empty row for adding a new entry
         $rows[] = array('name'=>'','type'=>'','prefix'=>'','postfix'=>'','comment'=>'');
 
         $cur = 0;
         foreach($rows as $row){
-            echo '<tr>';
-            echo '<td><input type="text" name="d['.$cur.'][name]" class="edit" value="'.hsc($row['name']).'" /></td>';
-            echo '<td><input type="text" name="d['.$cur.'][type]" class="edit" value="'.hsc($row['type']).'" /></td>'; #FIXME make dropdown
-            echo '<td><input type="text" name="d['.$cur.'][prefix]" class="edit" value="'.hsc($row['prefix']).'" /></td>';
-            echo '<td><input type="text" name="d['.$cur.'][postfix]" class="edit" value="'.hsc($row['postfix']).'" /></td>';
-            echo '<td><input type="text" name="d['.$cur.'][comment]" class="edit" value="'.hsc($row['comment']).'" /></td>';
-            echo '</tr>';
+            $form->addElement('<tr>');
+
+            $form->addElement('<td>');
+            $form->addElement(form_makeTextField('d['.$cur.'][name]',$row['name'],''));
+            $form->addElement('</td>');
+
+            $form->addElement('<td>');
+            $form->addElement(form_makeMenuField('d['.$cur.'][type]',
+                                array('','page','title','mail','url'),$row['type'],''));
+            $form->addElement('</td>');
+
+            $form->addElement('<td>');
+            $form->addElement(form_makeTextField('d['.$cur.'][prefix]',$row['prefix'],''));
+            $form->addElement('</td>');
+
+            $form->addElement('<td>');
+            $form->addElement(form_makeTextField('d['.$cur.'][postfix]',$row['postfix'],''));
+            $form->addElement('</td>');
+
+            $form->addElement('<td>');
+            $form->addElement(form_makeTextField('d['.$cur.'][comment]',$row['comment'],''));
+            $form->addElement('</td>');
+
+            $form->addElement('</tr>');
 
             $cur++;
         }
-        echo '</table>';
-        echo '<input type="submit" class="button" />';
-        echo '</form>';
+
+        $form->addElement('</table>');
+        $form->addElement(form_makeButton('submit','admin','FIXME local'));
+        $form->printForm();
     }
 
 }
