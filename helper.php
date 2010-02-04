@@ -36,10 +36,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $value = trim($value);
         if(!$value) return '';
         switch($type){
-            case 'page':
-                return cleanID($value);
-            case 'nspage':
-                return cleanID($value);
             case 'dt':
                 if(preg_match('/^(\d\d\d\d)-(\d\d?)-(\d\d?)$/',$value,$m)){
                     return sprintf('%d-%02d-%02d',$m[1],$m[2],$m[3]);
@@ -79,23 +75,31 @@ class helper_plugin_data extends DokuWiki_Plugin {
             if($val=='') continue;
             switch($column['type']){
                 case 'page':
+                    $title = noNS($val);
                     if($column['prefix']){
                         $val = $column['prefix'].$val;
                     }else{
                         $val = ':'.$val;
                     }
                     $val .= $column['postfix'];
+                    $val = cleanID($val);
 
-                    $outs[] = $R->internallink(":$val",NULL,NULL,true);
+                    $outs[] = $R->internallink(":$val",$title,NULL,true);
                     break;
                 case 'title':
                     list($id,$title) = explode('|',$val,2);
                     $val = $column['prefix'].$val.$column['postfix'];
+                    $val = cleanID($val);
+
                     $outs[] = $R->internallink(":$id",$title,NULL,true);
                     break;
                 case 'nspage':
                     // no prefix/postfix here
-                    $outs[] = $R->internallink(':'.$column['key'].":$val",NULL,NULL,true);
+                    $title = noNS($val);
+                    $val = ':'.$column['key'].":$val";
+                    $val = cleanID($val);
+
+                    $outs[] = $R->internallink($val,$title,NULL,true);
                     break;
                 case 'mail':
                     list($id,$title) = explode(' ',$val,2);
