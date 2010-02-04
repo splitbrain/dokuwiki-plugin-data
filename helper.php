@@ -64,6 +64,14 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
+     * Decide what to use as title on page and pagens data
+     */
+    function _title($val){
+        if(useHeading('content')) return null;
+        return noNS($val);
+    }
+
+    /**
      * Return XHTML formated data, depending on column type
      */
     function _formatData($column, $value, &$R){
@@ -75,7 +83,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             if($val=='') continue;
             switch($column['type']){
                 case 'page':
-                    $title = noNS($val);
+                    $title = $this->_title($val);
                     if($column['prefix']){
                         $val = $column['prefix'].$val;
                     }else{
@@ -95,7 +103,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     break;
                 case 'nspage':
                     // no prefix/postfix here
-                    $title = noNS($val);
+                    $title = $this->_title($val);
                     $val = ':'.$column['key'].":$val";
                     $val = cleanID($val);
 
