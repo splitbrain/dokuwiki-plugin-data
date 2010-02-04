@@ -390,7 +390,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
 
         // build the query
-        $sql = "SELECT ".join(', ',$select)."
+        $sql = "SELECT DISTINCT ".join(', ',$select)."
                   FROM pages $from
                  WHERE $where
               GROUP BY pages.page
