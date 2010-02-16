@@ -49,7 +49,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
             $renderer->doc .= '<li><div class="li">';
             foreach($row as $num => $col){
-                $renderer->doc .= $this->dthlp->_formatData($cols[$num],$col,$types[$num],$renderer)."\n";
+                $renderer->doc .= $this->dthlp->_formatData($data['cols'][$num],$col,$types[$num],$renderer)."\n";
             }
             $renderer->doc .= '</div></li>';
             $cnt++;
