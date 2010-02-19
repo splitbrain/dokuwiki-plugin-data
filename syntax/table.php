@@ -303,7 +303,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         // prepare the columns to show
-        foreach ($data['cols'] as $col){
+        foreach ($data['cols'] as &$col){
             $key = $col['key'];
             if($key == '%pageid%'){
                 $select[] = 'pages.page';
@@ -317,14 +317,15 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
                     $from  .= ' AND '.$tables[$key].".key = '".sqlite_escape_string($key)."'";
                 }
-                if ($data['cols'][$col] === 'pageid') {
-                    $select[] = "pages.page || '|' || group_concat(".$tables[$col].".value,'\n')";
-                    $data['cols'][$col] = 'title';
+                if ($col['type'] === 'pageid') {
+                    $select[] = "pages.page || '|' || group_concat(".$tables[$key].".value,'\n')";
+                    $col['type'] = 'title';
                 } else {
-                    $select[] = 'group_concat('.$tables[$col].".value,'\n')";
+                    $select[] = 'group_concat('.$tables[$key].".value,'\n')";
                 }
             }
         }
+        unset($col);
 
         // prepare sorting
         if($data['sort'][0]){
