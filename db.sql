@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS pages (pid INTEGER PRIMARY KEY, page, title);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_page ON pages(page);
+CREATE TABLE IF NOT EXISTS data (eid INTEGER PRIMARY KEY, pid INTEGER, key, value);
+CREATE INDEX IF NOT EXISTS idx_key ON data(key);
+CREATE TABLE IF NOT EXISTS meta (key PRIMARY KEY, type, multi);
+

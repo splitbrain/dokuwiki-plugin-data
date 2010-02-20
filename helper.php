@@ -16,16 +16,19 @@ require_once(DOKU_INC.'inc/infoutils.php');
  */
 class helper_plugin_data extends DokuWiki_Plugin {
 
+    var $db = null;
 
     /**
-     * load the sqlite helper
+     * constructor
      */
-    function _getDB(){
-        $db =& plugin_load('helper', 'sqlite');
-        if($db->init('data',dirname(__FILE__).'/db/')){
-            return $db;
-        }else{
-            return false;
+    function helper_plugin_data(){
+        if (!extension_loaded('sqlite')) {
+            $prefix = (PHP_SHLIB_SUFFIX === 'dll') ? 'php_' : '';
+            @dl($prefix . 'sqlite.' . PHP_SHLIB_SUFFIX);
+        }
+
+        if(!function_exists('sqlite_open')){
+            msg('data plugin: SQLite support missing in this PHP install - plugin will not work',-1);
         }
     }
 
@@ -36,6 +39,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $value = trim($value);
         if(!$value) return '';
         switch($type){
+            case 'page':
+                return cleanID($value);
+            case 'nspage':
+                return cleanID($value);
             case 'dt':
                 if(preg_match('/^(\d\d\d\d)-(\d\d?)-(\d\d?)$/',$value,$m)){
                     return sprintf('%d-%02d-%02d',$m[1],$m[2],$m[3]);
@@ -64,41 +71,28 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
-     * Return XHTML formated data, depending on column type
+     * Return XHTML formated data, depending on type
      */
-    function _formatData($column, $value, &$R){
+    function _formatData($key, $value, $type, &$R){
         global $conf;
         $vals = explode("\n",$value);
         $outs = array();
         foreach($vals as $val){
             $val = trim($val);
             if($val=='') continue;
-            switch($column['type']){
+            switch($type){
                 case 'page':
-                    if($column['prefix']){
-                        $val = $column['prefix'].$val;
-                    }else{
-                        $val = ':'.$val;
-                    }
-                    $val .= $column['postfix'];
-
                     $outs[] = $R->internallink(":$val",NULL,NULL,true);
                     break;
                 case 'title':
                     list($id,$title) = explode('|',$val,2);
-                    $id = $column['prefix'].$id.$column['postfix'];
-
                     $outs[] = $R->internallink(":$id",$title,NULL,true);
                     break;
                 case 'nspage':
-                    // no prefix/postfix here
-                    $val = ':'.$column['key'].":$val";
-
-                    $outs[] = $R->internallink($val,NULL,NULL,true);
+                    $outs[] = $R->internallink(":$key:$val",NULL,NULL,true);
                     break;
                 case 'mail':
                     list($id,$title) = explode(' ',$val,2);
-                    $val = $column['prefix'].$val.$column['postfix'];
                     $id = obfuscate(hsc($id));
                     if(!$title){
                         $title = $id;
@@ -109,21 +103,18 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = '<a href="mailto:'.$id.'" class="mail" title="'.$id.'">'.$title.'</a>';
                     break;
                 case 'url':
-                    $val = $column['prefix'].$val.$column['postfix'];
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
                     break;
                 case 'tag':
-                    #FIXME handle pre/postfix
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($column['key'])),array('dataflt'=>$column['key'].':'.$val )).
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($key)),array('dataflt'=>$key.':'.$val )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
                 default:
-                    $val = $column['prefix'].$val.$column['postfix'];
-                    if(substr($column['type'],0,3) == 'img'){
+                    if(substr($type,0,3) == 'img'){
                         $sz = (int) substr($type,3);
                         if(!$sz) $sz = 40;
-                        $title = $column['key'].': '.basename(str_replace(':','/',$val));
+                        $title = $key.': '.basename(str_replace(':','/',$val));
                         $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($title).'" title="'.hsc($title).'" width="'.$sz.'" /></a>';
                     }else{
                         $outs[] = hsc($val);
@@ -136,73 +127,76 @@ class helper_plugin_data extends DokuWiki_Plugin {
     /**
      * Split a column name into its parts
      *
-     * @returns array with key, type, ismulti, title, opt
+     * @returns array with key, type, ismulti, title
      */
     function _column($col){
-        $column = array();
-
-        // are mutliple values expected?
         if(strtolower(substr($col,-1)) == 's'){
             $col = substr($col,0,-1);
-            $column['multi'] = true;
+            $multi = true;
         }else{
-            $column['multi'] = false;
+            $multi = false;
         }
-
-        // get key and type
         list($key,$type) = explode('_',$col,2);
-        $column['title'] = $key;
-        $key  = utf8_strtolower($key);
-        $type = utf8_strtolower($type);
-        $column['key']   = $key;
+        return array(utf8_strtolower($key),utf8_strtolower($type),$multi,$key);
+    }
 
-        // fix title for special columns
-        if($column['title'] == '%title%'){
-            $column['title'] = $this->getLang('page');
-            if(!$type) $type = 'title';
-        }
-        if($column['title'] == '%pageid%'){
-            $column['title'] = $this->getLang('title');
-            if(!$type) $type = 'page';
-        }
-        if($column['title'] == '%class%'){
-            $column['title'] = $this->getLang('class');
-        }
 
-        // check if the type is some alias
-        $aliases = $this->_aliases();
-        if($aliases[$type]){
-            $column['prefix']  = $aliases[$type]['prefix'];
-            $column['postfix'] = $aliases[$type]['postfix'];
-            $column['type']    = utf8_strtolower($aliases[$type]['type']);
-        }else{
-            $column['type'] = $type;
+    /**
+     * Open the database
+     */
+    function _dbconnect(){
+        global $conf;
+
+        $dbfile = $conf['cachedir'].'/dataplugin.sqlite';
+        $init   = (!@file_exists($dbfile) || !@filesize($dbfile));
+
+        $error='';
+        $this->db = sqlite_open($dbfile, 0666, $error);
+        if(!$this->db){
+            msg("data plugin: failed to open SQLite database ($error)",-1);
+            return false;
         }
 
-        return $column;
+        if($init) $this->_initdb();
+
+        // register our custom aggregate function
+        sqlite_create_aggregate($this->db,'group_concat',
+                                array($this,'_sqlite_group_concat_step'),
+                                array($this,'_sqlite_group_concat_finalize'), 2);
+
+        return true;
+    }
+
+
+    /**
+     * create the needed tables
+     */
+    function _initdb(){
+        sqlite_query($this->db,'CREATE TABLE pages (pid INTEGER PRIMARY KEY, page, title);');
+        sqlite_query($this->db,'CREATE UNIQUE INDEX idx_page ON pages(page);');
+        sqlite_query($this->db,'CREATE TABLE data (eid INTEGER PRIMARY KEY, pid INTEGER, key, value);');
+        sqlite_query($this->db,'CREATE INDEX idx_key ON data(key);');
+    }
+
+
+    /**
+     * Aggregation function for SQLite
+     *
+     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
+     */
+    function _sqlite_group_concat_step(&$context, $string, $separator = ',') {
+         $context['sep']    = $separator;
+         $context['data'][] = $string;
     }
 
     /**
-     * Load defined type aliases
+     * Aggregation function for SQLite
+     *
+     * @link http://devzone.zend.com/article/863-SQLite-Lean-Mean-DB-Machine
      */
-    function _aliases(){
-        static $aliases = null;
-        if(!is_null($aliases)) return $aliases;
-
-        $sqlite = $this->_getDB();
-        if(!$sqlite) return array();
-
-        $aliases = array();
-        $res = $sqlite->query("SELECT * FROM aliases");
-        $rows = $sqlite->res2arr($res);
-        foreach($rows as $row){
-            $aliases[$row['name']] = array(
-                'type'    => $row['type'],
-                'prefix'  => $row['prefix'],
-                'postfix' => $row['postfix'],
-            );
-        }
-        return $aliases;
+    function _sqlite_group_concat_finalize(&$context) {
+         $context['data'] = array_unique($context['data']);
+         return join($context['sep'],$context['data']);
     }
 
 }

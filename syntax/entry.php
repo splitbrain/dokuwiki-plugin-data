@@ -44,12 +44,14 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         return 155;
     }
 
+
     /**
      * Connect pattern to lexer
      */
     function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *dataentry(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_entry');
     }
+
 
     /**
      * Handle the match - parse the data
@@ -59,8 +61,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $lines = explode("\n",$match);
         array_pop($lines);
         $class = array_shift($lines);
-        $class = str_replace('dataentry','',$class);
+        $class = str_replace('datatable','',$class);
         $class = trim($class,'- ');
+
 
         // parse info
         $data = array();
@@ -73,21 +76,23 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             if(empty($line)) continue;
             $line = preg_split('/\s*:\s*/',$line,2);
 
-            $column = $this->dthlp->_column($line[0]);
-            if($column['multi']){
-                if(!is_array($data[$column['key']])) $data[$column['key']] = array(); // init with empty array
+            list($key,$type,$multi,$title) = $this->dthlp->_column($line[0]);
+            if($multi){
+                if(!is_array($data[$key])) $data[$key] = array(); // init with empty array
                 $vals = explode(',',$line[1]);
                 foreach($vals as $val){
-                    $val = trim($this->dthlp->_cleanData($val,$column['type']));
+                    $val = trim($this->dthlp->_cleanData($val,$type));
                     if($val == '') continue;
-                    if(!in_array($val,$data[$column['key']])) $data[$column['key']][] = $val;
+                    if(!in_array($val,$data[$key])) $data[$key][] = $val;
                 }
             }else{
-                $data[$column['key']] = $this->dthlp->_cleanData($line[1],$column['type']);
+                $data[$key] = $this->dthlp->_cleanData($line[1],$type);
             }
-            $columns[$column['key']]  = $column;
+            $meta[$key]['multi'] = $multi;
+            $meta[$key]['type']  = $type;
+            $meta[$key]['title'] = $title;
         }
-        return array('data'=>$data, 'cols'=>$columns, 'classes'=>$class);
+        return array('data'=>$data, 'meta'=>$meta, 'classes'=>$class);
     }
 
     /**
@@ -114,22 +119,22 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     function _showData($data,&$R){
         $ret = '';
 
+
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
 
-            $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
+            $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['meta'][$key]['title']).'<span class="sep">: </span></dt>';
             if(is_array($val)){
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
                     $ret .= '<dd class="' . hsc($key) . '">';
-                    $ret .= $this->dthlp->_formatData($data['cols'][$key], $val[$i],$R);
+                    $ret .= $this->dthlp->_formatData($key, $val[$i], $data['meta'][$key]['type'], $R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
                     $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd class="' . hsc($key) . '">'.
-                        $this->dthlp->_formatData($data['cols'][$key], $val, $R).'</dd>';
+                $ret .= '<dd class="' . hsc($key) . '">'.$this->dthlp->_formatData($key, $val, $data['meta'][$key]['type'], $R).'</dd>';
             }
         }
         $ret .= '</dl></div>';
@@ -140,27 +145,28 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * Save date to the database
      */
     function _saveData($data,$id,$title){
-        $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
+        if(!$this->dthlp->_dbconnect()) return false;
 
         $error = '';
         if(!$title) $title = $id;
-
-        $class = $data['classes'];
+        $id    = sqlite_escape_string($id);
+        $title = sqlite_escape_string($title);
 
         // begin transaction
-        $sqlite->query("BEGIN TRANSACTION");
+        $sql = "BEGIN TRANSACTION";
+        sqlite_query($this->dthlp->db,$sql);
 
         // store page info
-        $sqlite->query("INSERT OR IGNORE INTO pages (page,title,class) VALUES (?,?,?)",
-                       $id,$title,$class);
+        $sql = "INSERT OR IGNORE INTO pages (page,title) VALUES ('$id','$title')";
+        sqlite_query($this->dthlp->db,$sql,SQLITE_NUM);
 
         // Update title if insert failed (record already saved before)
-        $sqlite->query("UPDATE pages SET title = ?, class = ? WHERE page = ?",
-                       $title,$class,$id);
+        $sql = "UPDATE pages SET title = '$title' WHERE page = '$id'";
+        sqlite_query($this->dthlp->db,$sql,SQLITE_NUM);
 
         // fetch page id
-        $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
+        $sql = "SELECT pid FROM pages WHERE page = '$id'";
+        $res = sqlite_query($this->dthlp->db, $sql);
         $pid = (int) sqlite_fetch_single($res);
 
         if(!$pid){
@@ -169,22 +175,28 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         }
 
         // remove old data
-        $sqlite->query("DELETE FROM data WHERE pid = ?",$pid);
+        $sql = "DELETE FROM data WHERE pid = $pid";
+        sqlite_query($this->dthlp->db,$sql);
 
         // insert new data
         foreach ($data['data'] as $key => $val){
+            $k = sqlite_escape_string($key);
             if(is_array($val)) foreach($val as $v){
-                $sqlite->query("INSERT INTO data (pid, key, value) VALUES (?, ?, ?)",
-                               $pid,$key,$v);
+                $v   = sqlite_escape_string($v);
+                $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
+                sqlite_query($this->dthlp->db,$sql);
             }else {
-                $sqlite->query("INSERT INTO data (pid, key, value) VALUES (?, ?, ?)",
-                               $pid,$key,$val);
+                $v   = sqlite_escape_string($val);
+                $sql = "INSERT INTO data (pid, key, value) VALUES ($pid, '$k', '$v')";
+                sqlite_query($this->dthlp->db,$sql);
             }
         }
 
         // finish transaction
-        $sqlite->query("COMMIT TRANSACTION");
+        $sql = "COMMIT TRANSACTION";
+        sqlite_query($this->dthlp->db,$sql);
 
+        sqlite_close($this->dthlp->db);
         return true;
     }
 

@@ -7,15 +7,139 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-require_once(dirname(__FILE__).'/table.php');
+require_once(DOKU_PLUGIN.'syntax.php');
 
-class syntax_plugin_data_related extends syntax_plugin_data_table {
+class syntax_plugin_data_related extends DokuWiki_Syntax_Plugin {
+
+    /**
+     * will hold the data helper plugin
+     */
+    var $dthlp = null;
+
+    /**
+     * Constructor. Load helper plugin
+     */
+    function syntax_plugin_data_related(){
+        $this->dthlp =& plugin_load('helper', 'data');
+        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+    }
+
+    /**
+     * What kind of syntax are we?
+     */
+    function getType(){
+        return 'substition';
+    }
+
+    /**
+     * What about paragraphs?
+     */
+    function getPType(){
+        return 'block';
+    }
+
+    /**
+     * Where to sort in?
+     */
+    function getSort(){
+        return 155;
+    }
+
 
     /**
      * Connect pattern to lexer
      */
     function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *datarelated(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_related');
+    }
+
+
+    /**
+     * Handle the match - parse the data
+     */
+    function handle($match, $state, $pos, &$handler){
+        // get lines and additional class
+        $lines = explode("\n",$match);
+        array_pop($lines);
+        $class = array_shift($lines);
+        $class = str_replace('datatable','',$class);
+        $class = trim($class,'- ');
+
+        $data = array();
+        $data['classes'] = $class;
+        $data['title']   = $this->getLang('related');
+
+        // parse info
+        foreach ( $lines as $line ) {
+            // ignore comments
+            $line = preg_replace('/(?<![&\\\\])#.*$/','',$line);
+            $line = str_replace('\\#','#',$line);
+            $line = trim($line);
+            if(empty($line)) continue;
+            $line = preg_split('/\s*:\s*/',$line,2);
+            $line[0] = strtolower($line[0]);
+
+            $logic = 'OR';
+            // handle line commands (we allow various aliases here)
+            switch($line[0]){
+                case 'title':
+                        $data['title'] = $line[1];
+                        break;
+                case 'select':
+                case 'cols':
+                        $cols = explode(',',$line[1]);
+                        foreach($cols as $col){
+                            $col = trim($col);
+                            if(!$col) continue;
+                            list($key,$type) = $this->dthlp->_column($col);
+                            $data['cols'][$key] = $type;
+                        }
+                    break;
+                case 'limit':
+                case 'max':
+                        $data['limit'] = abs((int) $line[1]);
+                    break;
+                case 'order':
+                case 'sort':
+                        list($sort) = $this->dthlp->_column($line[1]);
+                        if(substr($sort,0,1) == '^'){
+                            $data['sort'] = array(substr($sort,1),'DESC');
+                        }else{
+                            $data['sort'] = array($sort,'ASC');
+                        }
+                    break;
+                case 'where':
+                case 'filter':
+                case 'filterand':
+                case 'and':
+                    $logic = 'AND';
+                case 'filteror':
+                case 'or':
+                        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~)(.*)$/',$line[1],$matches)){
+                            list($key) = $this->dthlp->_column(trim($matches[1]));
+                            $val = trim($matches[3]);
+                            $val = sqlite_escape_string($val); //pre escape
+                            $com = $matches[2];
+                            if($com == '<>'){
+                                $com = '!=';
+                            }elseif($com == '=~' || $com == '~'){
+                                $com = 'LIKE';
+                                $val = str_replace('*','%',$val);
+                            }
+
+                            $data['filter'][] = array('key'     => $key,
+                                                      'value'   => $val,
+                                                      'compare' => $com,
+                                                      'logic'   => $logic
+                                                     );
+                        }
+                    break;
+                default:
+                    msg("data plugin: unknown option '".hsc($line[0])."'",-1);
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -25,15 +149,12 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(is_null($data)) return false;
-
-        $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
+        if(!$this->dthlp->_dbconnect()) return false;
 
         $sql = $this->_buildSQL($data,$ID);
         if(!$sql) return true; // sql build
 
-        $res = $sqlite->query($sql);
+        $res = sqlite_query($this->dthlp->db,$sql);
         if(!sqlite_num_rows($res)) return true; // no rows matched
 
         $renderer->doc .= '<dl class="'.$data['classes'].'">';
@@ -49,6 +170,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         $renderer->doc .= '</dd>';
         $renderer->doc .= '</dl>';
 
+
         return true;
     }
 
@@ -63,8 +185,6 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         $where  = '';
         $order  = '';
 
-        $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
 
         // prepare the columns to match against
         $found = false;
@@ -73,10 +193,10 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
             $values = array();
             $sql = "SELECT A.value
                       FROM data A, pages B
-                     WHERE key = ?
+                     WHERE key = '".sqlite_escape_string($col)."'
                        AND A.pid = B.pid
-                       AND B.page = ?";
-            $res = $sqlite->query($sql,$col,$id);
+                       AND B.page = '".sqlite_escape_string($id)."'";
+            $res = sqlite_query($this->dthlp->db,$sql);
             while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
                 if($row[0]) $values[] = $row[0];
             }
