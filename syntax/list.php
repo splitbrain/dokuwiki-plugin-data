@@ -26,8 +26,6 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
      * Create output
      */
     function render($format, &$R, $data) {
-        global $ID;
-
         if($format != 'xhtml') return false;
         if(is_null($data)) return false;
         $R->info['cache'] = false;
