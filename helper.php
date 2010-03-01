@@ -118,6 +118,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
+                case 'wiki':
+                    global $ID;
+                    $oldid = $ID;
+                    list($ID,$data) = explode('|',$val,2);
+                    $outs[] = p_render('xhtml', p_get_instructions($data), $ignore);
+                    $ID = $oldid;
+                    break;
                 default:
                     $val = $column['prefix'].$val.$column['postfix'];
                     if(substr($column['type'],0,3) == 'img'){
