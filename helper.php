@@ -182,6 +182,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             $column['prefix']  = $aliases[$type]['prefix'];
             $column['postfix'] = $aliases[$type]['postfix'];
             $column['type']    = utf8_strtolower($aliases[$type]['type']);
+            $column['origtype'] = $type;
         }else{
             $column['type'] = $type;
         }

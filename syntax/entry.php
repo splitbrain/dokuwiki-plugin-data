@@ -67,13 +67,15 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $meta = array();
         foreach ( $lines as $line ) {
             // ignore comments
-            $line = preg_replace('/(?<![&\\\\])#.*$/','',$line);
+            preg_match('/^(.*?(?<![&\\\\]))(?:#(.*))?$/',$line, $matches);
+            $line = $matches[1];
             $line = str_replace('\\#','#',$line);
             $line = trim($line);
             if(empty($line)) continue;
             $line = preg_split('/\s*:\s*/',$line,2);
 
             $column = $this->dthlp->_column($line[0]);
+            if (isset($matches[2])) $column['comment'] = $matches[2];
             if($column['multi']){
                 if(!is_array($data[$column['key']])) $data[$column['key']] = array(); // init with empty array
                 $vals = explode(',',$line[1]);
@@ -87,7 +89,8 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             }
             $columns[$column['key']]  = $column;
         }
-        return array('data'=>$data, 'cols'=>$columns, 'classes'=>$class);
+        return array('data'=>$data, 'cols'=>$columns, 'classes'=>$class,
+                     'pos' => $pos, 'len' => strlen($match)); // not mb_strlen
     }
 
     /**
@@ -95,13 +98,16 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      */
     function render($format, &$renderer, $data) {
         global $ID;
-
         switch ($format){
             case 'xhtml':
                 $renderer->doc .= $this->_showData($data,$renderer);
+                $renderer->finishSectionEdit($data['len'] + $data['pos']);
                 return true;
             case 'metadata':
                 $this->_saveData($data,$ID,$renderer->meta['title']);
+                return true;
+            case 'plugin_data_edit':
+                $this->_editData($data, $renderer);
                 return true;
             default:
                 return false;
@@ -114,6 +120,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     function _showData($data,&$R){
         $ret = '';
 
+        $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
@@ -188,4 +195,87 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         return true;
     }
 
+    function _editData($data, &$renderer) {
+        $renderer->form->startFieldset($this->getLang('dataentry'));
+        $renderer->form->_content[count($renderer->form->_content) - 1]['class'] = 'plugin__data';
+        $renderer->form->addElement(form_makeField('text', 'data_edit[classes]', $data['classes'], $this->getLang('class'), 'data__classes'));
+        $renderer->form->addElement('<table>');
+
+        $text = '<tr>';
+        foreach(array('title', 'type', 'multi', 'value', 'comment') as $val) {
+            $text .= '<th>' . $this->getLang($val) . '</th>';
+        }
+        $renderer->form->addElement($text . '</tr>');
+
+        // New line
+        $data['data'][''] = '';
+        $data['cols'][''] = array('type' => '', 'multi' => false);
+        $n = 0;
+        foreach($data['cols'] as $key => $vals) {
+            $renderer->form->addElement('<tr>');
+            $renderer->form->addElement('<td>');
+            $renderer->form->addElement(form_makeField('text', "data_edit[data][$n][title]", $vals['title'], $this->getLang('title')));
+            $renderer->form->addElement('</td>');
+            $renderer->form->addElement('<td>');
+            $renderer->form->addElement(form_makeMenuField("data_edit[data][$n][type]",
+                                                           array_merge(array('', 'page', 'nspage', 'title',
+                                                                             'mail', 'url', 'tag', 'wiki', 'dt'),
+                                                                       array_keys($this->dthlp->_aliases())),
+                                                           isset($vals['origtype']) ? $vals['origtype'] : $vals['type'],
+                                                           $this->getLang('type')));
+            $renderer->form->addElement('</td>');
+            $renderer->form->addElement('<td>');
+            $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
+            $renderer->form->addElement(form_makeCheckboxField("data_edit[data][$n][multi]", '1', $this->getLang('multi'), '', '', $check_data));
+            $renderer->form->addElement('</td>');
+            $renderer->form->addElement('<td>');
+            $renderer->form->addElement(form_makeField('text', "data_edit[data][$n][value]", $vals['multi'] ? implode(', ', $data['data'][$key]) : $data['data'][$key], $this->getLang('value')));
+            $renderer->form->addElement('</td>');
+            $renderer->form->addElement('<td>');
+            $renderer->form->addElement(form_makeField('text', "data_edit[data][$n][comment]", $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1)));
+            $renderer->form->addElement('</td>');
+            $renderer->form->addElement('</tr>');
+            ++$n;
+        }
+
+        $renderer->form->addElement('</table>');
+        $renderer->form->endFieldset();
+    }
+
+    function _normalize($txt) {
+        return str_replace('#', '\#', trim($txt));
+    }
+
+    public static function editToWiki($data) {
+        $nudata = array();
+        $len = 0;
+        foreach ($data['data'] as $field) {
+            if ($field['title'] === '') continue;
+            $s = syntax_plugin_data_entry::_normalize($field['title']);
+            if (trim($field['type']) !== '' ||
+                (substr($s, -1, 1) === 's' && !isset($field['multi']))) {
+                $s .= '_' . syntax_plugin_data_entry::_normalize($field['type']);
+            }
+
+            if (isset($field['multi'])) {
+                $s .= 's';
+            }
+
+            $nudata[] = array($s, syntax_plugin_data_entry::_normalize($field['value']),
+                              isset($field['comment']) ? trim($field['comment']) : '');
+            $len = max($len, mb_strlen($nudata[count($nudata) - 1][0]));
+        }
+
+        $ret = '---- dataentry ' . trim($data['classes']) . ' ----' . DOKU_LF;
+        foreach ($nudata as $field) {
+            $ret .= $field[0] . str_repeat(' ', $len + 1 - mb_strlen($field[0])) . ': ' .
+                    $field[1];
+            if ($field[2] !== '') {
+                $ret .= ' #' . $field[2];
+            }
+            $ret .= DOKU_LF;
+        }
+        $ret .= '----';
+        return $ret;
+    }
 }

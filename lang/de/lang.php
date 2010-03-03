@@ -6,3 +6,24 @@ $lang['prev'] = 'Vorherige Seite';
 
 $lang['tagfilter'] = 'Seiten mit ‚%s‘ anzeigen';
 $lang['related']   = 'Ähnliche Seiten';
+
+$lang['menu']      = 'Data-Aliase';
+
+$lang['page']      = 'Seite';
+$lang['title']     = 'Seitenname';
+$lang['class']     = 'Seitenklasse';
+
+$lang['name']      = 'Typalias';
+$lang['type']      = 'Originaltyp';
+$lang['prefix']    = 'Präfix';
+$lang['postfix']   = 'Suffix';
+$lang['comment']   = 'Kommentar';
+$lang['submit']    = 'Aliase speichern';
+
+$lang['dataentry'] = 'Data-Entry';
+
+$lang['title']     = 'Titel';
+$lang['type']      = 'Typ';
+$lang['multi']     = 'Multi?';
+$lang['value']     = 'Wert';
+

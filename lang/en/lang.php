@@ -19,3 +19,10 @@ $lang['prefix']    = 'Data Prefix';
 $lang['postfix']   = 'Data Postfix';
 $lang['comment']   = 'Comment';
 $lang['submit']    = 'Save Aliases';
+
+$lang['dataentry'] = 'Data entry';
+
+$lang['title']     = 'Title';
+$lang['type']      = 'Type';
+$lang['multi']     = 'Multi?';
+$lang['value']     = 'Value';

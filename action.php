@@ -27,6 +27,9 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      */
     function register(&$controller) {
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'BEFORE', $this, '_handle');
+        $controller->register_hook('HTML_SECEDIT_BUTTON', 'BEFORE', $this, '_editbutton');
+        $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform');
+        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, '_handle_edit_post');
     }
 
     /**
@@ -49,5 +52,60 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $sqlite->query('DELETE FROM data WHERE pid = ?',$pid);
         $sqlite->query('DELETE FROM pages WHERE pid = ?',$pid);
     }
-}
 
+    function _editbutton(&$event, $param) {
+        if ($event->data['target'] !== 'plugin_data') {
+            return;
+        }
+
+        $event->data['name'] = $this->getLang('dataentry');
+    }
+
+    function _editform(&$event, $param) {
+        global $RANGE;
+        if (((!isset($_REQUEST['target']) || $_REQUEST['target'] !== 'plugin_data') &&
+              !isset($_POST['data_edit'])) ||
+            !$event->data['wr'] ||
+            $RANGE === '') {
+            // Not a data edit or not writable or invalid section edit
+            // information
+            return;
+        }
+
+        $event->stopPropagation();
+        $event->preventDefault();
+
+        extract($event->data); // $text, $form
+
+        require_once 'renderer_data_edit.php';
+        $Renderer = new Doku_Renderer_plugin_data_edit();
+        $Renderer->form = $form;
+        $instructions = p_get_instructions($text);
+
+        $Renderer->reset();
+
+        $Renderer->smileys = getSmileys();
+        $Renderer->entities = getEntities();
+        $Renderer->acronyms = getAcronyms();
+        $Renderer->interwiki = getInterwiki();
+        // Loop through the instructions
+        foreach ( $instructions as $instruction ) {
+            // Execute the callback against the Renderer
+            call_user_func_array(array(&$Renderer, $instruction[0]),$instruction[1]);
+        }
+
+        $event->data['media_manager'] = false;
+    }
+
+    function _handle_edit_post($event) {
+        if (!isset($_POST['data_edit'])) {
+            return;
+        }
+        global $TEXT;
+        global $SUF;
+
+        require_once 'syntax/entry.php';
+        $TEXT = syntax_plugin_data_entry::editToWiki($_POST['data_edit']);
+        $SUF = ltrim($SUF);
+    }
+}
