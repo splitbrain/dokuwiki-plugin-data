@@ -198,42 +198,55 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     function _editData($data, &$renderer) {
         $renderer->form->startFieldset($this->getLang('dataentry'));
         $renderer->form->_content[count($renderer->form->_content) - 1]['class'] = 'plugin__data';
-        $renderer->form->addElement(form_makeField('text', 'data_edit[classes]', $data['classes'], $this->getLang('class'), 'data__classes'));
-        $renderer->form->addElement('<table>');
 
-        $text = '<tr>';
-        foreach(array('title', 'type', 'multi', 'value', 'comment') as $val) {
-            $text .= '<th>' . $this->getLang($val) . '</th>';
+        if ($this->getConf('edit_content_only')) {
+            $renderer->form->addHidden('data_edit[classes]', $data['classes']);
+            $renderer->form->addElement('<table>');
+        } else {
+            $renderer->form->addElement(form_makeField('text', 'data_edit[classes]', $data['classes'], $this->getLang('class'), 'data__classes'));
+            $renderer->form->addElement('<table>');
+
+            $text = '<tr>';
+            foreach(array('title', 'type', 'multi', 'value', 'comment') as $val) {
+                $text .= '<th>' . $this->getLang($val) . '</th>';
+            }
+            $renderer->form->addElement($text . '</tr>');
+
+            // New line
+            $data['data'][''] = '';
+            $data['cols'][''] = array('type' => '', 'multi' => false);
         }
-        $renderer->form->addElement($text . '</tr>');
 
-        // New line
-        $data['data'][''] = '';
-        $data['cols'][''] = array('type' => '', 'multi' => false);
         $n = 0;
         foreach($data['cols'] as $key => $vals) {
+            $content = $vals['multi'] ? implode(', ', $data['data'][$key]) : $data['data'][$key];
             $renderer->form->addElement('<tr>');
-            $renderer->form->addElement('<td>');
-            $renderer->form->addElement(form_makeField('text', "data_edit[data][$n][title]", $vals['title'], $this->getLang('title')));
-            $renderer->form->addElement('</td>');
-            $renderer->form->addElement('<td>');
-            $renderer->form->addElement(form_makeMenuField("data_edit[data][$n][type]",
-                                                           array_merge(array('', 'page', 'nspage', 'title',
-                                                                             'mail', 'url', 'tag', 'wiki', 'dt'),
-                                                                       array_keys($this->dthlp->_aliases())),
-                                                           isset($vals['origtype']) ? $vals['origtype'] : $vals['type'],
-                                                           $this->getLang('type')));
-            $renderer->form->addElement('</td>');
-            $renderer->form->addElement('<td>');
-            $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
-            $renderer->form->addElement(form_makeCheckboxField("data_edit[data][$n][multi]", '1', $this->getLang('multi'), '', '', $check_data));
-            $renderer->form->addElement('</td>');
-            $renderer->form->addElement('<td>');
-            $renderer->form->addElement(form_makeField('text', "data_edit[data][$n][value]", $vals['multi'] ? implode(', ', $data['data'][$key]) : $data['data'][$key], $this->getLang('value')));
-            $renderer->form->addElement('</td>');
-            $renderer->form->addElement('<td>');
-            $renderer->form->addElement(form_makeField('text', "data_edit[data][$n][comment]", $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1)));
-            $renderer->form->addElement('</td>');
+            if ($this->getConf('edit_content_only')) {
+                $cells = array($vals['title'] . ':',
+                               form_makeField('text', "data_edit[data][$n][value]", $content, $vals['title']),
+                               $vals['comment']);
+                $vals['type'] = isset($vals['origtype']) ? $vals['origtype'] : $vals['type'];
+                foreach(array('title', 'multi', 'comment', 'type') as $field) {
+                    $renderer->form->addHidden("data_edit[data][$n][$field]", $vals[$field]);
+                }
+            } else {
+                $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
+                $cells = array(form_makeField('text', "data_edit[data][$n][title]", $vals['title'], $this->getLang('title')),
+                               form_makeMenuField("data_edit[data][$n][type]",
+                                                               array_merge(array('', 'page', 'nspage', 'title',
+                                                                                 'mail', 'url', 'tag', 'wiki', 'dt'),
+                                                                           array_keys($this->dthlp->_aliases())),
+                                                               isset($vals['origtype']) ? $vals['origtype'] : $vals['type'],
+                                                               $this->getLang('type')),
+                               form_makeCheckboxField("data_edit[data][$n][multi]", '1', $this->getLang('multi'), '', '', $check_data),
+                               form_makeField('text', "data_edit[data][$n][value]", $content, $this->getLang('value')),
+                               form_makeField('text', "data_edit[data][$n][comment]", $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1)));
+            }
+            foreach($cells as $cell) {
+                $renderer->form->addElement('<td>');
+                $renderer->form->addElement($cell);
+                $renderer->form->addElement('</td>');
+            }
             $renderer->form->addElement('</tr>');
             ++$n;
         }
@@ -256,8 +269,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 (substr($s, -1, 1) === 's' && !isset($field['multi']))) {
                 $s .= '_' . syntax_plugin_data_entry::_normalize($field['type']);
             }
-
-            if (isset($field['multi'])) {
+            if (isset($field['multi']) && $field['multi'] === '1') {
                 $s .= 's';
             }
 
