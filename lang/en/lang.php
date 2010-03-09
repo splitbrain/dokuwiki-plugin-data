@@ -17,7 +17,7 @@ $lang['name']      = 'Type Alias';
 $lang['type']      = 'Original Type';
 $lang['prefix']    = 'Data Prefix';
 $lang['postfix']   = 'Data Postfix';
-$lang['comment']   = 'Comment';
+$lang['enum']      = 'Valid values';
 $lang['submit']    = 'Save Aliases';
 
 $lang['dataentry'] = 'Data entry';

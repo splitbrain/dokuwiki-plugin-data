@@ -32,9 +32,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
     /**
      * Makes sure the given data fits with the given type
      */
-    function _cleanData($value, $type){
+    function _cleanData($value, $type, $enum = ''){
         $value = trim($value);
         if(!$value) return '';
+        if (trim($enum) !== '' &&
+            !preg_match('/(^|,\s*)' . preg_quote_cb($value) . '($|\s*,)/', $enum)) {
+            return '';
+        }
         switch($type){
             case 'dt':
                 if(preg_match('/^(\d\d\d\d)-(\d\d?)-(\d\d?)$/',$value,$m)){
@@ -182,6 +186,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             $column['prefix']  = $aliases[$type]['prefix'];
             $column['postfix'] = $aliases[$type]['postfix'];
             $column['type']    = utf8_strtolower($aliases[$type]['type']);
+            $column['enum']    = $aliases[$type]['enum'];
             $column['origtype'] = $type;
         }else{
             $column['type'] = $type;
@@ -209,6 +214,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 'prefix'  => $row['prefix'],
                 'postfix' => $row['postfix'],
             );
+            if (trim($row['enum']) !== '') {
+                $aliases[$row['name']]['enum'] = trim($row['enum']);
+            }
         }
         return $aliases;
     }

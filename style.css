@@ -76,6 +76,11 @@ dl.datarelated dt {
 #dw__editform fieldset.plugin__data table td {
     padding: 0 0.3em;
 }
+
+#dw__editform fieldset.plugin__data table td select {
+    width: 100%;
+}
+
 #dw__editform fieldset.plugin__data table .data_comment input {
     border: none;
 }

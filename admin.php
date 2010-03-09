@@ -40,7 +40,7 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
             $row['name'] = utf8_strtolower($row['name']);
             $row['name'] = rtrim($row['name'],'s');
             if(!$row['name']) continue;
-            $sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, comment)
+            $sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
                                  VALUES (?,?,?,?,?)",$row);
         }
         $sqlite->query("COMMIT TRANSACTION");
@@ -65,12 +65,12 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
             '<th>'.$this->getLang('type').'</th>'.
             '<th>'.$this->getLang('prefix').'</th>'.
             '<th>'.$this->getLang('postfix').'</th>'.
-            '<th>'.$this->getLang('comment').'</th>'.
+            '<th>'.$this->getLang('enum').'</th>'.
             '</tr>'
         );
 
         // add empty row for adding a new entry
-        $rows[] = array('name'=>'','type'=>'','prefix'=>'','postfix'=>'','comment'=>'');
+        $rows[] = array('name'=>'','type'=>'','prefix'=>'','postfix'=>'','enum'=>'');
 
         $cur = 0;
         foreach($rows as $row){
@@ -82,7 +82,7 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
 
             $form->addElement('<td>');
             $form->addElement(form_makeMenuField('d['.$cur.'][type]',
-                                array('','page','title','mail','url'),$row['type'],''));
+                                array('','page','title','mail','url', 'dt'),$row['type'],''));
             $form->addElement('</td>');
 
             $form->addElement('<td>');
@@ -94,7 +94,7 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
             $form->addElement('</td>');
 
             $form->addElement('<td>');
-            $form->addElement(form_makeTextField('d['.$cur.'][comment]',$row['comment'],''));
+            $form->addElement(form_makeTextField('d['.$cur.'][enum]',$row['enum'],''));
             $form->addElement('</td>');
 
             $form->addElement('</tr>');
