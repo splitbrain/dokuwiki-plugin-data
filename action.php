@@ -63,6 +63,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
     function _editform(&$event, $param) {
         global $RANGE;
+        global $TEXT;
         if (((!isset($_REQUEST['target']) || $_REQUEST['target'] !== 'plugin_data') &&
               !isset($_POST['data_edit'])) ||
             !$event->data['wr'] ||
@@ -74,13 +75,17 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
         $event->stopPropagation();
         $event->preventDefault();
+        unset($event->data['intro_locale']);
+        $event->data['media_manager'] = false;
 
-        extract($event->data); // $text, $form
+        echo $this->locale_xhtml('edit_intro');
+
+        $form = $event->data['form'];
 
         require_once 'renderer_data_edit.php';
         $Renderer = new Doku_Renderer_plugin_data_edit();
         $Renderer->form = $form;
-        $instructions = p_get_instructions($text);
+        $instructions = p_get_instructions($TEXT);
 
         $Renderer->reset();
 
@@ -93,8 +98,6 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
             // Execute the callback against the Renderer
             call_user_func_array(array(&$Renderer, $instruction[0]),$instruction[1]);
         }
-
-        $event->data['media_manager'] = false;
     }
 
     function _handle_edit_post($event) {
