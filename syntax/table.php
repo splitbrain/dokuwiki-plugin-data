@@ -338,7 +338,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
             if($col == '%pageid%'){
                 $order = 'ORDER BY pages.page '.$data['sort'][1];
-            }elseif($col == '%pageid%'){
+            }elseif($col == '%class%'){
                 $order = 'ORDER BY pages.class '.$data['sort'][1];
             }elseif($col == '%title%'){
                 $order = 'ORDER BY pages.title '.$data['sort'][1];
