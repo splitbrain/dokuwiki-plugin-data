@@ -125,6 +125,11 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
             echo 'Unknown type';
             return;
         }
+        if (substr($aliases[$type]['postfix'], -1, 1) === ':') {
+            // Resolve namespace start page ID
+            global $conf;
+            $aliases[$type]['postfix'] .= $conf['start'];
+        }
 
         require_once(DOKU_INC.'inc/fulltext.php');
         $pages = ft_pageLookup(cleanID($_POST['search']), false);
