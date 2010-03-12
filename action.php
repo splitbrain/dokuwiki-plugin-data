@@ -149,8 +149,9 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
                 $heading = $id;
             }
 
-            if (stripos($id, $_POST['search']) === false &&
-                stripos($heading, $_POST['search']) === false) {
+            if ((stripos($id, $_POST['search']) === false &&
+                stripos($heading, $_POST['search']) === false) ||
+                strpos($id, ':') !== false) {
                 continue;
             }
 
