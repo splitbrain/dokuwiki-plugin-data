@@ -221,6 +221,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         foreach($data['cols'] as $key => $vals) {
             $fieldid = 'data_edit[data][' . $n++ . ']';
             $content = $vals['multi'] ? implode(', ', $data['data'][$key]) : $data['data'][$key];
+            $vals['basetype'] = $vals['type'];
             $vals['type'] = isset($vals['origtype']) ? $vals['origtype'] : $vals['type'];
             $renderer->form->addElement('<tr>');
             if ($this->getConf('edit_content_only')) {
@@ -228,9 +229,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     $values = preg_split('/\s*,\s*/', $vals['enum']);
                     if (!$vals['multi']) array_unshift($values, '');
                     $content = form_makeListboxField($fieldid . '[value][]', $values,
-                                                     $data['data'][$key], $vals['title'], '', 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : ''), ($vals['multi'] ? array('multiple' => 'multiple'): array()));
+                                                     $data['data'][$key], $vals['title'], '', '', ($vals['multi'] ? array('multiple' => 'multiple'): array()));
                 } else {
-                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : ''));
+                    $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') .  ' ' .
+                               'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
+                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes);
 
                 }
                 $cells = array($vals['title'] . ':',

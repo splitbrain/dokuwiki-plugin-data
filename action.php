@@ -30,6 +30,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $controller->register_hook('HTML_SECEDIT_BUTTON', 'BEFORE', $this, '_editbutton');
         $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform');
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, '_handle_edit_post');
+        $controller->register_hook('AJAX_CALL_UNKNOWN', 'BEFORE', $this, '_handle_ajax');
     }
 
     /**
@@ -110,5 +111,49 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         require_once 'syntax/entry.php';
         $TEXT = syntax_plugin_data_entry::editToWiki($_POST['data_edit']);
         $SUF = ltrim($SUF);
+    }
+
+    function _handle_ajax($event) {
+        if (strpos($event->data, 'data_page_') !== 0) {
+            return;
+        }
+        $event->preventDefault();
+
+        $type = substr($event->data, 10);
+        $aliases = $this->dthlp->_aliases();
+        if (!isset($aliases[$type])) {
+            echo 'Unknown type';
+            return;
+        }
+
+        require_once(DOKU_INC.'inc/fulltext.php');
+        $pages = ft_pageLookup(cleanID($_POST['search']), false);
+        $result = array();
+        foreach ($pages as $page) {
+            if (stripos($page, $aliases[$type]['prefix']) !== 0 ||
+                strripos($page, $aliases[$type]['postfix']) !== strlen($page) - strlen($aliases[$type]['postfix'])) {
+                continue;
+            }
+
+            $id = substr($page, strlen($aliases[$type]['prefix']), -strlen($aliases[$type]['postfix']));
+
+            if (useHeading('content')) {
+                $heading = p_get_first_heading($page,true);
+            }
+            if (!isset($heading) || $heading === '') {
+                $heading = $id;
+            }
+
+            if (stripos($id, $_POST['search']) === false &&
+                stripos($heading, $_POST['search']) === false) {
+                continue;
+            }
+
+            $result[hsc($id)] = hsc($heading);
+        }
+
+        require_once DOKU_INC . 'inc/JSON.php';
+        $json = new JSON();
+        echo '(' . $json->encode($result) . ')';
     }
 }
