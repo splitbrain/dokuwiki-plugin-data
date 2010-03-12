@@ -132,7 +132,8 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         }
 
         require_once(DOKU_INC.'inc/fulltext.php');
-        $pages = ft_pageLookup(cleanID($_POST['search']), false);
+        $search = cleanID($_POST['search']);
+        $pages = ft_pageLookup($search, false);
         $result = array();
         foreach ($pages as $page) {
             if (stripos($page, $aliases[$type]['prefix']) !== 0 ||
@@ -149,8 +150,9 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
                 $heading = $id;
             }
 
-            if ((stripos($id, $_POST['search']) === false &&
-                stripos($heading, $_POST['search']) === false) ||
+            if ($search !== '' &&
+                (stripos($id, $search) === false &&
+                stripos($heading, $search) === false) ||
                 strpos($id, ':') !== false) {
                 continue;
             }
