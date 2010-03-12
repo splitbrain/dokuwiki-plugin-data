@@ -34,7 +34,7 @@ addInitEvent(function () {
     for (var c_class in classes) {
         var pickers = getElementsByClass(c_class, document, 'label');
         for (var i = 0 ; i < pickers.length ; ++i) {
-            AutoCompletion(pickers[i].lastChild, 'data_page_' + pagepickers[i].className.match(/data_type_(\w+) data_type_pages?/)[1], classes[c_class], prepare_li);
+            AutoCompletion(pickers[i].lastChild, 'data_page_' + pickers[i].className.match(/data_type_(\w+) data_type_pages?/)[1], classes[c_class], prepare_li);
         }
     }
 });
