@@ -23,22 +23,22 @@ addInitEvent(function () {
 addInitEvent(function () {
     if (typeof AutoCompletion === 'undefined') return;
 
-    function prepare_li(li, value) {
-        li.innerHTML = '<a href="#">' + value[1] + ' (' + value[0] + ')</a>';
-        li.id = 'data__' + value[0].replace(/\W/g, '_');
-        li._value = value[0];
-        return li;
-    }
+    var alias_AutoCompletion = AutoCompletion;
+    alias_AutoCompletion.prototype.prepareLi = function (li, value) {
+            var name = value[0];
+            li.innerHTML = '<a href="#">' + value[1] + ' (' + name + ')' + '</a>';
+            li.id = 'data__' + name.replace(/\W/g, '_');
+            li._value = name;
+    };
 
     var classes = {'data_type_page' : [false, /data_type_(\w+) data_type_page/],
                    'data_type_pages': [true, /data_type_(\w+)s data_type_pages/] };
     for (var c_class in classes) {
         var pickers = getElementsByClass(c_class, document, 'label');
         for (var i = 0 ; i < pickers.length ; ++i) {
-            AutoCompletion(pickers[i].lastChild,
+            new alias_AutoCompletion(pickers[i].lastChild,
                            'data_page_' + pickers[i].className.match(classes[c_class][1])[1],
-                           classes[c_class][0],
-                           prepare_li);
+                           classes[c_class][0]);
         }
     }
 });
