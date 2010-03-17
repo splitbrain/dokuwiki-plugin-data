@@ -9,6 +9,18 @@ div.dataplugin_entry dl {
     width: 50%;
 }
 
+/* DO NOT MESS WITH THIS IT IS IE MAGIC */
+* html div.dataplugin_entry dl dd {
+    float: none;
+    display: block;
+}
+
+*:first-child+html div.dataplugin_entry dl dd {
+    float: none;
+    display: block;
+}
+/* END OF IE MAGIC */
+
 div.dataplugin_entry dl dt {
     font-weight: bold;
     clear: left;
