@@ -118,12 +118,20 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * Output the data in a table
      */
     function _showData($data,&$R){
+        global $ID;
         $ret = '';
 
         $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
+            switch ($data['cols'][$key]['type']) {
+            case 'pageid':
+                $data['cols'][$key]['type'] = 'title';
+            case 'wiki':
+                $val = $ID . '|' . $val;
+                break;
+            }
 
             $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
             if(is_array($val)){
