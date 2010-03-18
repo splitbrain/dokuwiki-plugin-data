@@ -50,7 +50,7 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        echo $this->locale_xhtml('intro');
+        echo $this->locale_xhtml('admin_intro');
 
         $sql = "SELECT * FROM aliases ORDER BY name";
         $res = $sqlite->query($sql);
