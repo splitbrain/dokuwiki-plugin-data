@@ -22,7 +22,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _getDB(){
         $db =& plugin_load('helper', 'sqlite');
-        if($db->init('data',dirname(__FILE__).'/db/')){
+        if(!is_null($db) && $db->init('data',dirname(__FILE__).'/db/')){
             return $db;
         }else{
             return false;
