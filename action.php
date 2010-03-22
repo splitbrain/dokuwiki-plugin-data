@@ -79,7 +79,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         unset($event->data['intro_locale']);
         $event->data['media_manager'] = false;
 
-        echo $this->locale_xhtml('edit_intro');
+        echo $this->locale_xhtml('edit_intro' . ($this->getConf('edit_content_only') ? '_contentonly' : ''));
 
         $form = $event->data['form'];
 
