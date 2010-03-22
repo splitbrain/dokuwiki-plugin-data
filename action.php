@@ -63,14 +63,10 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     }
 
     function _editform(&$event, $param) {
-        global $RANGE;
         global $TEXT;
         if (((!isset($_REQUEST['target']) || $_REQUEST['target'] !== 'plugin_data') &&
-              !isset($_POST['data_edit'])) ||
-            !$event->data['wr'] ||
-            $RANGE === '') {
-            // Not a data edit or not writable or invalid section edit
-            // information
+              !isset($_POST['data_edit']))) {
+            // Not a data edit
             return;
         }
 
