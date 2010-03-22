@@ -151,7 +151,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $ret .= '</dl></div>';
         $R->doc .= $ret;
         if (method_exists($R, 'finishSectionEdit')) {
-            $renderer->finishSectionEdit($data['len'] + $data['pos']);
+            $R->finishSectionEdit($data['len'] + $data['pos']);
         }
     }
 
