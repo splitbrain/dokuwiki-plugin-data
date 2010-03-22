@@ -125,6 +125,11 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
             echo 'Unknown type';
             return;
         }
+        if ($aliases[$type]['type'] !== 'page') {
+            echo 'AutoCompletion is only supported for page types';
+            return;
+        }
+
         if (substr($aliases[$type]['postfix'], -1, 1) === ':') {
             // Resolve namespace start page ID
             global $conf;
