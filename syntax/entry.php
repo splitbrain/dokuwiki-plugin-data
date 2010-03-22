@@ -100,8 +100,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         global $ID;
         switch ($format){
             case 'xhtml':
-                $renderer->doc .= $this->_showData($data,$renderer);
-                $renderer->finishSectionEdit($data['len'] + $data['pos']);
+                $this->_showData($data,$renderer);
                 return true;
             case 'metadata':
                 $this->_saveData($data,$ID,$renderer->meta['title']);
@@ -121,7 +120,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         global $ID;
         $ret = '';
 
-        $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
+        if (method_exists($R, 'startSectionEdit')) {
+            $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
+        }
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
@@ -148,7 +149,10 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             }
         }
         $ret .= '</dl></div>';
-        return $ret;
+        $R->doc .= $ret;
+        if (method_exists($R, 'finishSectionEdit')) {
+            $renderer->finishSectionEdit($data['len'] + $data['pos']);
+        }
     }
 
     /**
