@@ -64,8 +64,8 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
     function _editform(&$event, $param) {
         global $TEXT;
-        if (((!isset($_REQUEST['target']) || $_REQUEST['target'] !== 'plugin_data') &&
-              !isset($_POST['data_edit']))) {
+        if ($event->data['target'] !== 'plugin_data' &&
+            !isset($_POST['data_edit'])) {
             // Not a data edit
             return;
         }
@@ -77,20 +77,12 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
         echo $this->locale_xhtml('edit_intro' . ($this->getConf('edit_content_only') ? '_contentonly' : ''));
 
-        $form = $event->data['form'];
-
         require_once 'renderer_data_edit.php';
         $Renderer = new Doku_Renderer_plugin_data_edit();
-        $Renderer->form = $form;
-        $instructions = p_get_instructions($TEXT);
+        $Renderer->form = $event->data['form'];
 
-        $Renderer->reset();
-
-        $Renderer->smileys = getSmileys();
-        $Renderer->entities = getEntities();
-        $Renderer->acronyms = getAcronyms();
-        $Renderer->interwiki = getInterwiki();
         // Loop through the instructions
+        $instructions = p_get_instructions($TEXT);
         foreach ( $instructions as $instruction ) {
             // Execute the callback against the Renderer
             call_user_func_array(array(&$Renderer, $instruction[0]),$instruction[1]);
@@ -102,11 +94,9 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
             return;
         }
         global $TEXT;
-        global $SUF;
 
         require_once 'syntax/entry.php';
         $TEXT = syntax_plugin_data_entry::editToWiki($_POST['data_edit']);
-        $SUF = ltrim($SUF);
     }
 
     function _handle_ajax($event) {
