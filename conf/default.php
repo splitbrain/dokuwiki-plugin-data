@@ -1,3 +1,3 @@
 <?php
 
-$conf['edit_content_only'] = false;
+$conf['edit_content_only'] = 0;
