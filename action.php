@@ -126,12 +126,22 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $pages = ft_pageLookup($search, false);
         $result = array();
         foreach ($pages as $page) {
-            if (stripos($page, $aliases[$type]['prefix']) !== 0 ||
-                strripos($page, $aliases[$type]['postfix']) !== strlen($page) - strlen($aliases[$type]['postfix'])) {
+            if (($aliases[$type]['prefix'] !== '' &&
+                 stripos($page, $aliases[$type]['prefix']) !== 0) ||
+                ($aliases[$type]['postfix'] !== '' &&
+                 strripos($page, $aliases[$type]['postfix']) !== strlen($page) -
+                  strlen($aliases[$type]['postfix']))) {
                 continue;
             }
 
-            $id = substr($page, strlen($aliases[$type]['prefix']), -strlen($aliases[$type]['postfix']));
+            $rtrim = -strlen($aliases[$type]['postfix']);
+            if ($rtrim === 0) {
+                // trimming with -0 gives the empty string, not the untrimmed
+                // string
+                $id = substr($page, strlen($aliases[$type]['prefix']));
+            } else {
+                $id = substr($page, strlen($aliases[$type]['prefix']), $rtrim);
+            }
 
             if (useHeading('content')) {
                 $heading = p_get_first_heading($page,true);
