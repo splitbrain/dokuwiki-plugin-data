@@ -64,8 +64,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
     function _editform(&$event, $param) {
         global $TEXT;
-        if ($event->data['target'] !== 'plugin_data' &&
-            !isset($_POST['data_edit'])) {
+        if ($event->data['target'] !== 'plugin_data') {
             // Not a data edit
             return;
         }
