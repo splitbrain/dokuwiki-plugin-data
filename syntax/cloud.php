@@ -91,11 +91,27 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
             }
         }
 
+        // add GET filter
+        if($_GET['dataflt']){
+            $datafltpairs = split(';',$_GET['dataflt']);
+            foreach($datafltpairs as $col_val) {
+                list($col,$val) = split(':',$col_val,2);
+                $dataflt[$col] = $val;
+                if(!$tables[$col]){
+                    $tables[$col] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = data.pid';
+                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                }
+
+                $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
+            }
+        }
+
         // build query
         $sql = "SELECT data.value, COUNT(data.pid) as cnt
                   FROM data $from
                  WHERE data.key = '".sqlite_escape_string($ckey)."'
-		       $where
+                 $where
               GROUP BY data.value";
         if($data['min'])   $sql .= ' HAVING cnt >= '.$data['min'];
         $sql .= ' ORDER BY cnt DESC';
@@ -116,9 +132,16 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         // output cloud
         $renderer->doc .= '<ul class="dataplugin_cloud '.hsc($data['classes']).'">';
         foreach($tags as $tag => $lvl){
+            $dataflt[$ckey] = $tag;
+            $datafltkeys = array_keys($dataflt);
+            $fltstring = '';
+            foreach($datafltkeys as $fltkey) {
+                $fltstring .= $fltkey .':'. $dataflt[$fltkey] .';' ;
+            }
+            $fltstring = substr($fltstring, 0, -1);
             $renderer->doc .= '<li class="cl'.$lvl.'">';
             $renderer->doc .= '<a href="'.wl($data['page'],array('datasrt'=>$_GET['datasrt'],
-                                                                 'dataflt'=>$ckey.':'.$tag )).
+                                                                 'dataflt'=>$fltstring )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).'" class="wikilink1">'.hsc($tag).'</a>';
             $renderer->doc .= '</li>';
         }
