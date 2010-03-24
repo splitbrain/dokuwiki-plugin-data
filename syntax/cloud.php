@@ -70,11 +70,33 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $ckey = array_keys($data['cols']);
         $ckey = $ckey[0];
 
+        $from   = ' ';
+        $where  = ' ';
+
+        // add filters
+        if(is_array($data['filter']) && count($data['filter'])){
+
+            foreach($data['filter'] as $filter){
+                $col = $filter['key'];
+
+                // filter by hidden column?
+                if(!$tables[$col]){
+                    $tables[$col] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = data.pid';
+                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                }
+
+                $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
+                         " '".$filter['value']."'"; //value is already escaped
+            }
+        }
+
         // build query
-        $sql = "SELECT value, COUNT(pid) as cnt
-                  FROM data
-                 WHERE key = '".sqlite_escape_string($ckey)."'
-              GROUP BY value";
+        $sql = "SELECT data.value, COUNT(data.pid) as cnt
+                  FROM data $from
+                 WHERE data.key = '".sqlite_escape_string($ckey)."'
+		       $where
+              GROUP BY data.value";
         if($data['min'])   $sql .= ' HAVING cnt >= '.$data['min'];
         $sql .= ' ORDER BY cnt DESC';
         if($data['limit']) $sql .= ' LIMIT '.$data['limit'];
