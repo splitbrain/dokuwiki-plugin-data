@@ -90,7 +90,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $columns[$column['key']]  = $column;
         }
         return array('data'=>$data, 'cols'=>$columns, 'classes'=>$class,
-                     'pos' => $pos, 'len' => strlen($match)); // not mb_strlen
+                     'pos' => $pos, 'len' => strlen($match)); // not utf8_strlen
     }
 
     /**
@@ -302,12 +302,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
             $nudata[] = array($s, syntax_plugin_data_entry::_normalize($field['value']),
                               isset($field['comment']) ? trim($field['comment']) : '');
-            $len = max($len, mb_strlen($nudata[count($nudata) - 1][0]));
+            $len = max($len, utf8_strlen($nudata[count($nudata) - 1][0]));
         }
 
         $ret = '---- dataentry ' . trim($data['classes']) . ' ----' . DOKU_LF;
         foreach ($nudata as $field) {
-            $ret .= $field[0] . str_repeat(' ', $len + 1 - mb_strlen($field[0])) . ': ' .
+            $ret .= $field[0] . str_repeat(' ', $len + 1 - utf8_strlen($field[0])) . ': ' .
                     $field[1];
             if ($field[2] !== '') {
                 $ret .= ' #' . $field[2];
