@@ -7,7 +7,7 @@ $lang['prev'] = 'Vorherige Seite';
 $lang['tagfilter'] = 'Seiten mit ‚%s‘ anzeigen';
 $lang['related']   = 'Ähnliche Seiten';
 
-$lang['menu']      = 'Data-Aliase';
+$lang['menu']      = 'Data-Aliasse';
 
 $lang['page']      = 'Seite';
 $lang['title']     = 'Seitenname';
@@ -18,7 +18,7 @@ $lang['type']      = 'Originaltyp';
 $lang['prefix']    = 'Präfix';
 $lang['postfix']   = 'Suffix';
 $lang['comment']   = 'Kommentar';
-$lang['submit']    = 'Aliase speichern';
+$lang['submit']    = 'Aliasse speichern';
 
 $lang['dataentry'] = 'Data-Entry';
 
