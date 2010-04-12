@@ -306,9 +306,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         foreach ($data['cols'] as &$col){
             $key = $col['key'];
             if($key == '%pageid%'){
-                $select[] = 'pages.page';
+                // Prevent stripping of trailing zeros by forcing a CAST
+                $select[] = '" " || pages.page';
             }elseif($key == '%class%'){
-                $select[] = 'pages.class';
+                // Prevent stripping of trailing zeros by forcing a CAST
+                $select[] = '" " || pages.class';
             }elseif($key == '%title%'){
                 $select[] = "pages.page || '|' || pages.title";
             }else{
@@ -326,7 +328,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $select[] = "pages.page || '|' || group_concat(".$tables[$key].".value,'\n')";
                     break;
                 default:
-                    $select[] = 'group_concat('.$tables[$key].".value,'\n')";
+                    // Prevent stripping of trailing zeros by forcing a CAST
+                    $select[] = 'group_concat(" " || '.$tables[$key].".value,'\n')";
                 }
             }
         }
