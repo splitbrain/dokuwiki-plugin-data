@@ -125,34 +125,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'filter':
                 case 'filterand':
                 case 'and':
-                    $logic = 'AND';
+                        $logic = 'AND';
                 case 'filteror':
                 case 'or':
-                        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~|!~)(.*)$/',$line[1],$matches)){
-                            $column = $this->dthlp->_column(trim($matches[1]));
-                            $val = trim($matches[3]);
-                            // allow current user name in filter:
-                            $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
-                            // allow current date in filter:
-                            $val = str_replace('%now%',strftime('%Y-%m-%d'),$val);
-
-                            $val = sqlite_escape_string($val); //pre escape
-                            $com = $matches[2];
-                            if($com == '<>'){
-                                $com = '!=';
-                            }elseif($com == '=~' || $com == '~' || $com == '!~'){
-                                $com = 'LIKE';
-                                $val = str_replace('*','%',$val);
-                                if ($com == '!~'){
-                                    $com = 'NOT '.$com;
-                                }
-                            }
-
-                            $data['filter'][] = array('key'     => $column['key'],
-                                                      'value'   => $val,
-                                                      'compare' => $com,
-                                                      'logic'   => $logic
-                                                     );
+                        if(!$logic) $logic = 'OR';
+                        $flt = $this->dthlp->_parse_filter($line[1]);
+                        if(is_array($flt)){
+                            $flt['logic'] = $logic;
+                            $data['filter'][] = $flt;
                         }
                     break;
                 case 'page':
@@ -196,7 +176,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         if(!$sqlite) return false;
 
         #dbg($data);
-        $sql = $this->_buildSQL($data); // handles GET params, too
+        $sql = $this->_buildSQL($data); // handles request params, too
         #dbg($sql);
 
         // run query
@@ -223,11 +203,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 }
             }
 
+            // keep url params
+            $params = $this->dthlp->_a2ua('dataflt',$_REQUEST['dataflt']);
+            $params['datasrt'] = $ckey;
+            $params['dataofs'] = $_REQUEST['dataofs'];
+
             // clickable header
-            $R->doc .= '<a href="'.wl($ID,array(
-                                            'datasrt' => $ckey,
-                                            'dataofs' => $_GET['dataofs'],
-                                            'dataflt' => $_GET['dataflt'])).
+            $R->doc .= '<a href="'.wl($ID,$params).
                        '" title="'.$this->getLang('sort').'">'.hsc($head).'</a>';
 
             $R->doc .= '</th>';
@@ -253,15 +235,17 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         // if limit was set, add control
         if($data['limit']){
             $R->doc .= '<tr><th colspan="'.count($data['cols']).'">';
-            $offset = (int) $_GET['dataofs'];
+            $offset = (int) $_REQUEST['dataofs'];
             if($offset){
                 $prev = $offset - $data['limit'];
                 if($prev < 0) $prev = 0;
 
-                $R->doc .= '<a href="'.wl($ID,array(
-                                                'datasrt' => $_GET['datasrt'],
-                                                'dataofs' => $prev,
-                                                'dataflt' => $_GET['dataflt'] )).
+                // keep url params
+                $params = $this->dthlp->_a2ua('dataflt',$_REQUEST['dataflt']);
+                $params['datasrt'] = $_REQUEST['datasrt'];
+                $params['dataofs'] = $prev;
+
+                $R->doc .= '<a href="'.wl($ID,$params).
                               '" title="'.$this->getLang('prev').
                               '" class="prev">'.$this->getLang('prev').'</a>';
             }
@@ -270,10 +254,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
             if(sqlite_num_rows($res) > $data['limit']){
                 $next = $offset + $data['limit'];
-                $R->doc .= '<a href="'.wl($ID,array(
-                                                'datasrt' => $_GET['datasrt'],
-                                                'dataofs' => $next,
-                                                'dataflt'=>$_GET['dataflt'] )).
+
+                // keep url params
+                $params = $this->dthlp->_a2ua('dataflt',$_REQUEST['dataflt']);
+                $params['datasrt'] = $_REQUEST['datasrt'];
+                $params['dataofs'] = $next;
+
+                $R->doc .= '<a href="'.wl($ID,$params).
                               '" title="'.$this->getLang('next').
                               '" class="next">'.$this->getLang('next').'</a>';
             }
@@ -296,12 +283,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $where  = '1 = 1';
         $order  = '';
 
-        // take overrides from HTTP GET params into account
-        if($_GET['datasrt']){
-            if($_GET['datasrt']{0} == '^'){
-                $data['sort'] = array(substr($_GET['datasrt'],1),'DESC');
+        // take overrides from HTTP request params into account
+        if($_REQUEST['datasrt']){
+            if($_REQUEST['datasrt']{0} == '^'){
+                $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
             }else{
-                $data['sort'] = array($_GET['datasrt'],'ASC');
+                $data['sort'] = array($_REQUEST['datasrt'],'ASC');
             }
         }
 
@@ -362,7 +349,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $order = 'ORDER BY 1 ASC';
         }
 
-        // add filters
+        // add request filters
+        $data['filter'] = array_merge($data['filter'], $this->dthlp->_get_filters());
+
+        // prepare filters
         if(is_array($data['filter']) && count($data['filter'])){
 
             foreach($data['filter'] as $filter){
@@ -388,21 +378,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }
         }
 
-        // add GET filter
-        if($_GET['dataflt']){
-            $dataflt = split(';',$_GET['dataflt']);
-            foreach($dataflt as $col_val) {
-                list($col,$val) = split(':',$col_val,2);
-                if(!$tables[$col]){
-                    $tables[$col] = 'T'.(++$cnt);
-                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
-                }
-
-                $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
-            }
-        }
-
         // build the query
         $sql = "SELECT DISTINCT ".join(', ',$select)."
                   FROM pages $from
@@ -414,8 +389,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         if($data['limit']){
             $sql .= ' LIMIT '.($data['limit'] + 1);
 
-            if((int) $_GET['dataofs']){
-                $sql .= ' OFFSET '.((int) $_GET['dataofs']);
+            if((int) $_REQUEST['dataofs']){
+                $sql .= ' OFFSET '.((int) $_REQUEST['dataofs']);
             }
         }
 

@@ -34,7 +34,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         if(!$sqlite) return false;
 
         #dbg($data);
-        $sql = $this->_buildSQL($data); // handles GET params, too
+        $sql = $this->_buildSQL($data); // handles request params, too
         #dbg($sql);
 
         // run query

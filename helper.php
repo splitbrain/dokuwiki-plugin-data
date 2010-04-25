@@ -16,7 +16,6 @@ require_once(DOKU_INC.'inc/infoutils.php');
  */
 class helper_plugin_data extends DokuWiki_Plugin {
 
-
     /**
      * load the sqlite helper
      */
@@ -219,6 +218,80 @@ class helper_plugin_data extends DokuWiki_Plugin {
             }
         }
         return $aliases;
+    }
+
+    /**
+     * Parse a filter line into an array
+     *
+     * @return mixed - array on success, false on error
+     */
+    function _parse_filter($filterline){
+        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~|!~)(.*)$/',$filterline,$matches)){
+            $column = $this->_column(trim($matches[1]));
+            $val = trim($matches[3]);
+            // allow current user name in filter:
+            $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
+            // allow current date in filter:
+            $val = str_replace('%now%',strftime('%Y-%m-%d'),$val);
+
+            $val = sqlite_escape_string($val); //pre escape
+            $com = $matches[2];
+            if($com == '<>'){
+                $com = '!=';
+            }elseif($com == '=~' || $com == '~' || $com == '!~'){
+                $com = 'LIKE';
+                $val = str_replace('*','%',$val);
+                if ($com == '!~'){
+                    $com = 'NOT '.$com;
+                }
+            }
+
+            return array('key'     => $column['key'],
+                         'value'   => $val,
+                         'compare' => $com,
+                        );
+        }
+        msg('Failed to parse filter "'.hsc($filterline).'"',-1);
+        return false;
+    }
+
+    /**
+     * Get filters given in the request via GET or POST
+     */
+    function _get_filters(){
+        $flt = array();
+        $filters = array();
+
+        if(!isset($_REQUEST['dataflt'])){
+            $flt = array();
+        }elseif(!is_array($_REQUEST['dataflt'])){
+            $flt = (array) $_REQUEST['dataflt'];
+        }else{
+            $flt = $_REQUEST['dataflt'];
+        }
+
+        foreach($flt as $key => $line){
+            // we also take the column and filtertype in the key:
+            if(!is_numeric($key)) $line = $key.$line;
+            $f = $this->_parse_filter($line);
+            if(is_array($f)){
+                $f['logic'] = 'AND';
+                $filters[] = $f;
+            }
+        }
+
+        return $filters;
+    }
+
+    /**
+     * prepare an array to be passed through buildURLparams()
+     */
+    function _a2ua($name,$array){
+        $urlarray = array();
+        foreach((array) $array as $key => $val){
+            $urlarray[rawurlencode($name).'['.rawurlencode($key).']'] = $val;
+        }
+        return $urlarray;
     }
 
 }
