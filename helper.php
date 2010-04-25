@@ -132,7 +132,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 default:
                     $val = $column['prefix'].$val.$column['postfix'];
                     if(substr($column['type'],0,3) == 'img'){
-                        $sz = (int) substr($type,3);
+                        $sz = (int) substr($column['type'],3);
                         if(!$sz) $sz = 40;
                         $title = $column['key'].': '.basename(str_replace(':','/',$val));
                         $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($title).'" title="'.hsc($title).'" width="'.$sz.'" /></a>';
