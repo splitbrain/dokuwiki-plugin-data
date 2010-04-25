@@ -390,16 +390,18 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // add GET filter
         if($_GET['dataflt']){
-            list($col,$val) = split(':',$_GET['dataflt'],2);
-            if(!$tables[$col]){
-                $tables[$col] = 'T'.(++$cnt);
-                $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+            $dataflt = split(';',$_GET['dataflt']);
+            foreach($dataflt as $col_val) {
+                list($col,$val) = split(':',$col_val,2);
+                if(!$tables[$col]){
+                    $tables[$col] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                }
+
+                $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
             }
-
-            $where .= ' AND '.$tables[$col].".value = '".sqlite_escape_string($val)."'";
         }
-
 
         // build the query
         $sql = "SELECT DISTINCT ".join(', ',$select)."
