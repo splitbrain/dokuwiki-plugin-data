@@ -134,7 +134,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                             // allow current user name in filter:
                             $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
                             // allow current date in filter:
-                            $val = str_replace('%now%',strftime('%Y-%m-%d'));
+                            $val = str_replace('%now%',strftime('%Y-%m-%d'),$val);
 
                             $val = sqlite_escape_string($val); //pre escape
                             $com = $matches[2];
@@ -197,7 +197,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         #dbg($data);
         $sql = $this->_buildSQL($data); // handles GET params, too
-        #dbglog($sql);
+        #dbg($sql);
 
         // run query
         $clist = array_keys($data['cols']);
