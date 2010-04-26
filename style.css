@@ -89,7 +89,8 @@ dl.datarelated dt {
     padding: 0 0.3em;
 }
 
-#dw__editform fieldset.plugin__data table td select {
+#dw__editform fieldset.plugin__data table td select,
+#dw__editform fieldset.plugin__data table td input {
     width: 100%;
 }
 
