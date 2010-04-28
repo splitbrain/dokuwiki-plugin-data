@@ -61,6 +61,8 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $name .= $part.' ';
                 }while($part);
                 return trim($email.' '.$name);
+            case 'page': case 'nspage':
+                return cleanID($value);
             default:
                 return $value;
         }
@@ -228,24 +230,30 @@ class helper_plugin_data extends DokuWiki_Plugin {
     function _parse_filter($filterline){
         if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~|!~)(.*)$/',$filterline,$matches)){
             $column = $this->_column(trim($matches[1]));
+
+            $com = $matches[2];
+            if ($com == '<>') {
+                $com = '!=';
+            }
+
             $val = trim($matches[3]);
             // allow current user name in filter:
             $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
             // allow current date in filter:
             $val = str_replace('%now%',strftime('%Y-%m-%d'),$val);
 
-            $val = sqlite_escape_string($val); //pre escape
-            $com = $matches[2];
-            if($com == '<>'){
-                $com = '!=';
-            }elseif($com == '=~' || $com == '~' || $com == '!~'){
+            if(strpos($com, '~') !== false) {
                 $val = str_replace('*','%',$val);
                 if ($com == '!~'){
                     $com = 'NOT LIKE';
                 } else {
                     $com = 'LIKE';
                 }
+            } else {
+                // Clean if there are no asterisks I could kill
+                $val = $this->_cleanData($val, $column['type'], $column['enum']);
             }
+            $val = sqlite_escape_string($val); //pre escape
 
             return array('key'     => $column['key'],
                          'value'   => $val,
