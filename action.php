@@ -147,9 +147,8 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
             if (useHeading('content')) {
                 $heading = p_get_first_heading($page,true);
-            }
-            if (!isset($heading) || $heading === '') {
-                $heading = $id;
+            } else {
+                $heading = '';
             }
 
             if ($search !== '' &&
@@ -159,6 +158,11 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
                 continue;
             }
 
+            $id = utf8_ucwords(str_replace('_', ' ', $id));
+
+            if ($heading === '') {
+                $heading = $id;
+            }
             $result[hsc($id)] = hsc($heading);
         }
 
