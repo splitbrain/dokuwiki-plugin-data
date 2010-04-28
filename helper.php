@@ -239,10 +239,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
             if($com == '<>'){
                 $com = '!=';
             }elseif($com == '=~' || $com == '~' || $com == '!~'){
-                $com = 'LIKE';
                 $val = str_replace('*','%',$val);
                 if ($com == '!~'){
-                    $com = 'NOT '.$com;
+                    $com = 'NOT LIKE';
+                } else {
+                    $com = 'LIKE';
                 }
             }
 
