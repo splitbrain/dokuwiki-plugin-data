@@ -81,10 +81,13 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
                 if($col == '%pageid%'){
                     $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                    $from .= ' LEFT JOIN pages ON pages.pid = data.pid';
                 }elseif($col == '%class%'){
                     $where .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
+                    $from .= ' LEFT JOIN pages ON pages.pid = data.pid';
                 }elseif($col == '%title%'){
                     $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
+                    $from .= ' LEFT JOIN pages ON pages.pid = data.pid';
                 }else{
                     // filter by hidden column?
                     if(!$tables[$col]){
