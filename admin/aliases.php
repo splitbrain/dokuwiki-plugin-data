@@ -10,7 +10,7 @@
 if (!defined('DOKU_INC')) die();
 require_once(DOKU_PLUGIN.'admin.php');
 
-class admin_plugin_data extends DokuWiki_Admin_Plugin {
+class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
 
     /**
      * will hold the data helper plugin
@@ -20,12 +20,16 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
     /**
      * Constructor. Load helper plugin
      */
-    function admin_plugin_data(){
+    function admin_plugin_data_aliases(){
         $this->dthlp =& plugin_load('helper', 'data');
     }
 
     function getMenuSort() { return 501; }
     function forAdminOnly() { return true; }
+
+    function getMenuText($language) {
+        return $this->getLang('menu_alias');
+    }
 
     function handle() {
         if(!is_array($_REQUEST['d']) || !checkSecurityToken()) return;
@@ -57,7 +61,7 @@ class admin_plugin_data extends DokuWiki_Admin_Plugin {
         $rows = $sqlite->res2arr($res);
 
         $form = new Doku_Form(array('method'=>'post'));
-        $form->addHidden('page','data');
+        $form->addHidden('page','data_aliases');
         $form->addElement(
             '<table class="inline">'.
             '<tr>'.

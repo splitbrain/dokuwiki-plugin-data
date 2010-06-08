@@ -1,0 +1,6 @@
+====== Database Clean up ======
+
+When pages with attached data entries are deleted, their stored meta data is deleted as well. However thisis only true when the page was deleted through normal wiki editing. If the page was deleted by other means, eg. by removing it on the file system, its meta data remains in the database.
+
+This tool deletes all stored data for pages that no longer exist.
+

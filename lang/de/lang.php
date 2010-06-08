@@ -1,4 +1,5 @@
 <?php
+$lang['menu_alias'] = 'Data Plugin: Feld Aliase';
 
 $lang['sort'] = 'Nach dieser Spalte sortieren';
 $lang['next'] = 'Nächste Seite';
@@ -6,8 +7,6 @@ $lang['prev'] = 'Vorherige Seite';
 
 $lang['tagfilter'] = 'Seiten mit ‚%s‘ anzeigen';
 $lang['related']   = 'Ähnliche Seiten';
-
-$lang['menu']      = 'Data-Aliasse';
 
 $lang['page']      = 'Seite';
 $lang['title']     = 'Seitenname';
