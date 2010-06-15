@@ -26,3 +26,4 @@ $lang['type']      = 'Typ';
 $lang['multi']     = 'Multi?';
 $lang['value']     = 'Wert';
 
+$lang['none']      = 'Nichts gefunden';

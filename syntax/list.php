@@ -42,20 +42,24 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         $res = $sqlite->query($sql);
 
         // build list
-        $R->doc .= '<ul class="dataplugin_list '.$data['classes'].'">';
-
         $cnt = 0;
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
-            $R->doc .= '<li><div class="li">';
+            $text .= '<li><div class="li">';
             foreach($row as $num => $cval){
-                $R->doc .= $this->dthlp->_formatData($data['cols'][$clist[$num]],$cval,$R)."\n";
+                $text .= $this->dthlp->_formatData($data['cols'][$clist[$num]],$cval,$R)."\n";
             }
-            $R->doc .= '</div></li>';
+            $text .= '</div></li>';
             $cnt++;
             if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
         }
+        if ($cnt === 0) {
+            $R->doc .= '<p class="dataplugin_list '.$data['classes'].'">';
+            $R->cdata($this->getLang('none'));
+            $R->p_close();
+            return;
+        }
 
-        $R->doc .= '</ul>';
+        $R->doc .= '<ul class="dataplugin_list '.$data['classes'].'">' . $text . '</ul>';
     }
 
 }

@@ -232,6 +232,16 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
         }
 
+        if ($cnt === 0) {
+            $R->tablerow_open();
+            $R->tablecell_open(count($clist), 'center');
+            $R->cdata($this->getLang('none'));
+            $R->tablecell_close();
+            $R->tablerow_close();
+            $R->table_close();
+            return true;
+        }
+
         // if limit was set, add control
         if($data['limit']){
             $R->doc .= '<tr><th colspan="'.count($data['cols']).'">';

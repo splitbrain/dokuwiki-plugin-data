@@ -30,3 +30,5 @@ $lang['title']     = 'Title';
 $lang['type']      = 'Type';
 $lang['multi']     = 'Multi?';
 $lang['value']     = 'Value';
+
+$lang['none']      = 'Nothing found';
