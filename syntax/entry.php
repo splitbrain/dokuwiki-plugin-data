@@ -263,7 +263,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                                                               array_keys($this->dthlp->_aliases())),
                                                   $vals['type'],
                                                   $this->getLang('type')),
-                               form_makeCheckboxField($fieldid . '[multi]', '1', $this->getLang('multi'), '', '', $check_data),
+                               form_makeCheckboxField($fieldid . '[multi]', array('1', ''), $this->getLang('multi'), '', '', $check_data),
                                form_makeField('text', $fieldid . '[value]', $content, $this->getLang('value')),
                                form_makeField('text', $fieldid . '[comment]', $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1)));
             }
@@ -290,10 +290,10 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             if ($field['title'] === '') continue;
             $s = syntax_plugin_data_entry::_normalize($field['title']);
             if (trim($field['type']) !== '' ||
-                (substr($s, -1, 1) === 's' && !isset($field['multi']))) {
+                (substr($s, -1, 1) === 's' && $field['multi'] === '')) {
                 $s .= '_' . syntax_plugin_data_entry::_normalize($field['type']);
             }
-            if (isset($field['multi']) && $field['multi'] === '1') {
+            if ($field['multi'] === '1') {
                 $s .= 's';
             }
             if (is_array($field['value'])) {
