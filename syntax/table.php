@@ -238,7 +238,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $R->cdata($this->getLang('none'));
             $R->tablecell_close();
             $R->tablerow_close();
-            $R->table_close();
+            $R->doc .= '</table>';
             return true;
         }
 
