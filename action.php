@@ -125,9 +125,9 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
         require_once(DOKU_INC.'inc/fulltext.php');
         $search = cleanID($_POST['search']);
-        $pages = ft_pageLookup($search, false);
+        $pages = ft_pageLookup($search, false, false);
         $result = array();
-        foreach ($pages as $page) {
+        foreach ($pages as $page => $title) {
             if (($aliases[$type]['prefix'] !== '' &&
                  stripos($page, $aliases[$type]['prefix']) !== 0) ||
                 ($aliases[$type]['postfix'] !== '' &&
@@ -145,25 +145,19 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
                 $id = substr($page, strlen($aliases[$type]['prefix']), $rtrim);
             }
 
-            if (useHeading('content')) {
-                $heading = p_get_first_heading($page,true);
-            } else {
-                $heading = '';
-            }
-
             if ($search !== '' &&
                 (stripos($id, $search) === false &&
-                stripos($heading, $search) === false) ||
+                stripos($title, $search) === false) ||
                 strpos($id, ':') !== false) {
                 continue;
             }
 
             $id = utf8_ucwords(str_replace('_', ' ', $id));
 
-            if ($heading === '') {
-                $heading = $id;
+            if ($title === '') {
+                $title = $id;
             }
-            $result[hsc($id)] = hsc($heading);
+            $result[hsc($id)] = hsc($title);
         }
 
         require_once DOKU_INC . 'inc/JSON.php';
