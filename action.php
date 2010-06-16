@@ -123,44 +123,42 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
             $aliases[$type]['postfix'] .= $conf['start'];
         }
 
-        require_once(DOKU_INC.'inc/fulltext.php');
-        $search = cleanID($_POST['search']);
+        $search = $_POST['search'];
         $pages = ft_pageLookup($search, false, false);
+
+        $regexp = '/^';
+        if ($aliases[$type]['prefix'] !== '') {
+            $regexp .= preg_quote($aliases[$type]['prefix'], '/');
+        }
+        $regexp .= '([^:]+)';
+        if ($aliases[$type]['postfix'] !== '') {
+            $regexp .= preg_quote($aliases[$type]['postfix'], '/');
+        }
+        $regexp .= '$/';
+
         $result = array();
         foreach ($pages as $page => $title) {
-            if (($aliases[$type]['prefix'] !== '' &&
-                 stripos($page, $aliases[$type]['prefix']) !== 0) ||
-                ($aliases[$type]['postfix'] !== '' &&
-                 strripos($page, $aliases[$type]['postfix']) !== strlen($page) -
-                  strlen($aliases[$type]['postfix']))) {
+            $id = array();
+            if (!preg_match($regexp, $page, $id)) {
+                // Does not satisfy the postfix and prefix criteria
                 continue;
             }
 
-            $rtrim = -strlen($aliases[$type]['postfix']);
-            if ($rtrim === 0) {
-                // trimming with -0 gives the empty string, not the untrimmed
-                // string
-                $id = substr($page, strlen($aliases[$type]['prefix']));
-            } else {
-                $id = substr($page, strlen($aliases[$type]['prefix']), $rtrim);
-            }
+            $id = $id[1];
 
             if ($search !== '' &&
-                (stripos($id, $search) === false &&
-                stripos($title, $search) === false) ||
-                strpos($id, ':') !== false) {
+                stripos($id, cleanID($search)) === false &&
+                stripos($title, $search) === false) {
+                // Search string is not in id part or title
                 continue;
             }
 
-            $id = utf8_ucwords(str_replace('_', ' ', $id));
-
             if ($title === '') {
-                $title = $id;
+                $title = utf8_ucwords(str_replace('_', ' ', $id));
             }
             $result[hsc($id)] = hsc($title);
         }
 
-        require_once DOKU_INC . 'inc/JSON.php';
         $json = new JSON();
         echo '(' . $json->encode($result) . ')';
     }
