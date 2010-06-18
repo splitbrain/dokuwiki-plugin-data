@@ -43,6 +43,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
 
         // build list
         $cnt = 0;
+        $text = '';
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
             $text .= '<li><div class="li">';
             foreach($row as $num => $cval){

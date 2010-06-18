@@ -64,8 +64,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $class = preg_replace('/^----+ *data[a-z]+/','',$class);
         $class = trim($class,'- ');
 
-        $data = array();
-        $data['classes'] = $class;
+        $data = array('classes' => $class,
+                      'limit'   => 0,
+                      'headers' => array());
 
         // parse info
         foreach ( $lines as $line ) {
@@ -194,7 +195,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $R->doc .= '<th>';
 
             // add sort arrow
-            if($ckey == $data['sort'][0]){
+            if(isset($data['sort']) && $ckey == $data['sort'][0]){
                 if($data['sort'][1] == 'ASC'){
                     $R->doc .= '<span>&darr;</span> ';
                     $ckey = '^'.$ckey;
@@ -294,7 +295,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $order  = '';
 
         // take overrides from HTTP request params into account
-        if($_REQUEST['datasrt']){
+        if(isset($_REQUEST['datasrt'])){
             if($_REQUEST['datasrt']{0} == '^'){
                 $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
             }else{
@@ -314,7 +315,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }elseif($key == '%title%'){
                 $select[] = "pages.page || '|' || pages.title";
             }else{
-                if(!$tables[$key]){
+                if(!isset($tables[$key])){
                     $tables[$key] = 'T'.(++$cnt);
                     $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
                     $from  .= ' AND '.$tables[$key].".key = '".sqlite_escape_string($key)."'";
@@ -338,7 +339,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         unset($col);
 
         // prepare sorting
-        if($data['sort'][0]){
+        if(isset($data['sort'])){
             $col = $data['sort'][0];
 
             if($col == '%pageid%'){
