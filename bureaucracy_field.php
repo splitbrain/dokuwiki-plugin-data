@@ -17,8 +17,13 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                     continue;
                 }
                 $datatype = $dthlp->_column($arg);
-                $datatype['basetype'] = $datatype['type'];
-                $datatype['type'] = isset($datatype['origtype']) ? $datatype['origtype'] : $datatype['type'];
+                if (is_array($datatype['type'])) {
+                    $datatype['basetype'] = $datatype['type']['type'];
+                    $datatype['enum'] = $datatype['type']['enum'];
+                    $datatype['type'] = $datatype['origtype'];
+                } else {
+                    $datatype['basetype'] = $datatype['type'];
+                }
             }
             $this->standardArgs($n_args);
 

@@ -319,7 +319,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
                     $from  .= ' AND '.$tables[$key].".key = '".sqlite_escape_string($key)."'";
                 }
-                switch ($col['type']) {
+                $type = $col['type'];
+                if (is_array($type)) $type = $type['type'];
+                switch ($type) {
                 case 'pageid':
                     $select[] = "pages.page || '|' || group_concat(".$tables[$key].".value,'\n')";
                     $col['type'] = 'title';

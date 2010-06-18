@@ -31,12 +31,15 @@ class helper_plugin_data extends DokuWiki_Plugin {
     /**
      * Makes sure the given data fits with the given type
      */
-    function _cleanData($value, $type, $enum = ''){
+    function _cleanData($value, $type){
         $value = trim($value);
         if(!$value) return '';
-        if (trim($enum) !== '' &&
-            !preg_match('/(^|,\s*)' . preg_quote_cb($value) . '($|\s*,)/', $enum)) {
-            return '';
+        if (is_array($type)) {
+            if (isset($type['enum']) &&
+                !preg_match('/(^|,\s*)' . preg_quote_cb($value) . '($|\s*,)/', $type['enum'])) {
+                return '';
+            }
+            $type = $type['type'];
         }
         switch($type){
             case 'dt':
@@ -68,6 +71,14 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }
     }
 
+    function _addPrePostFixes($type, $val, $pre='', $post='') {
+        if (is_array($type)) {
+            if (isset($type['prefix'])) $pre = $type['prefix'];
+            if (isset($type['postfix'])) $pre = $type['postfix'];
+        }
+        return $pre.$val.$post;
+    }
+
     /**
      * Return XHTML formated data, depending on column type
      */
@@ -78,22 +89,17 @@ class helper_plugin_data extends DokuWiki_Plugin {
         foreach($vals as $val){
             $val = trim($val);
             if($val=='') continue;
-            switch($column['type']){
+            $type = $column['type'];
+            if (is_array($type)) $type = $type['type'];
+            switch($type){
                 case 'page':
-                    if($column['prefix']){
-                        $val = $column['prefix'].$val;
-                    }else{
-                        $val = ':'.$val;
-                    }
-                    $val .= $column['postfix'];
-
-                    $outs[] = $R->internallink(":$val",NULL,NULL,true);
+                    $val = $this->_addPrePostFixes($column['type'], $val, ':');
+                    $outs[] = $R->internallink($val,NULL,NULL,true);
                     break;
                 case 'title':
                     list($id,$title) = explode('|',$val,2);
-                    $id = $column['prefix'].$id.$column['postfix'];
-
-                    $outs[] = $R->internallink(":$id",$title,NULL,true);
+                    $id = $this->_addPrePostFixes($column['type'], $id, ':');
+                    $outs[] = $R->internallink($id,$title,NULL,true);
                     break;
                 case 'nspage':
                     // no prefix/postfix here
@@ -103,7 +109,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     break;
                 case 'mail':
                     list($id,$title) = explode(' ',$val,2);
-                    $val = $column['prefix'].$val.$column['postfix'];
+                    $id = $this->_addPrePostFixes($column['type'], $id);
                     $id = obfuscate(hsc($id));
                     if(!$title){
                         $title = $id;
@@ -114,7 +120,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = '<a href="mailto:'.$id.'" class="mail" title="'.$id.'">'.$title.'</a>';
                     break;
                 case 'url':
-                    $val = $column['prefix'].$val.$column['postfix'];
+                    $val = $this->_addPrePostFixes($column['type'], $val);
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
                     break;
                 case 'tag':
@@ -131,9 +137,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $ID = $oldid;
                     break;
                 default:
-                    $val = $column['prefix'].$val.$column['postfix'];
-                    if(substr($column['type'],0,3) == 'img'){
-                        $sz = (int) substr($column['type'],3);
+                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    if(substr($type,0,3) == 'img'){
+                        $sz = (int) substr($type,3);
                         if(!$sz) $sz = 40;
                         $title = $column['key'].': '.basename(str_replace(':','/',$val));
                         $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($title).'" title="'.hsc($title).'" width="'.$sz.'" /></a>';
@@ -151,48 +157,30 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * @returns array with key, type, ismulti, title, opt
      */
     function _column($col){
-        $column = array();
-
-        // are mutliple values expected?
-        if(strtolower(substr($col,-1)) == 's'){
-            $col = substr($col,0,-1);
-            $column['multi'] = true;
-        }else{
-            $column['multi'] = false;
-        }
-
-        // get key and type
-        list($key,$type) = explode('_',$col,2);
-        $column['title'] = $key;
-        $key  = utf8_strtolower($key);
-        $type = utf8_strtolower($type);
-        $column['key']   = $key;
+        preg_match('/^([^_]+)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
+        $column = array('multi' => ($matches[3] === 's'),
+                        'key'   => utf8_strtolower($matches[1]),
+                        'title' => $matches[1],
+                        'type'  => utf8_strtolower($matches[2]));
 
         // fix title for special columns
-        if($column['title'] == '%title%'){
-            $column['title'] = $this->getLang('page');
-            if(!$type) $type = 'title';
-        }
-        if($column['title'] == '%pageid%'){
-            $column['title'] = $this->getLang('title');
-            if(!$type) $type = 'page';
-        }
-        if($column['title'] == '%class%'){
-            $column['title'] = $this->getLang('class');
+        static $specials = array('%title%'  => array('page', 'title'),
+                                 '%pageid%' => array('title', 'page'),
+                                 '%class%'  => array('class'));
+        if (isset($specials[$column['title']])) {
+            $s = $specials[$column['title']];
+            $column['title'] = $this->getLang($s[0]);
+            if($column['type'] === '' && isset($s[1])) {
+                $column['type'] = $s[1];
+            }
         }
 
         // check if the type is some alias
         $aliases = $this->_aliases();
-        if($aliases[$type]){
-            $column['prefix']  = $aliases[$type]['prefix'];
-            $column['postfix'] = $aliases[$type]['postfix'];
-            $column['type']    = utf8_strtolower($aliases[$type]['type']);
-            $column['enum']    = $aliases[$type]['enum'];
-            $column['origtype'] = $type;
-        }else{
-            $column['type'] = $type;
+        if(isset($aliases[$column['type']])){
+            $column['origtype'] = $column['type'];
+            $column['type']     = $aliases[$column['type']];
         }
-
         return $column;
     }
 
@@ -210,14 +198,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $res = $sqlite->query("SELECT * FROM aliases");
         $rows = $sqlite->res2arr($res);
         foreach($rows as $row){
-            $aliases[$row['name']] = array(
-                'type'    => $row['type'],
-                'prefix'  => $row['prefix'],
-                'postfix' => $row['postfix'],
-            );
-            if (trim($row['enum']) !== '') {
-                $aliases[$row['name']]['enum'] = trim($row['enum']);
-            }
+            $name = $row['name'];
+            unset($row['name']);
+            $aliases[$name] = array_filter(array_map('trim', $row));
+            if (!isset($aliases[$name]['type'])) $aliases[$name]['type'] = '';
         }
         return $aliases;
     }
@@ -251,7 +235,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 }
             } else {
                 // Clean if there are no asterisks I could kill
-                $val = $this->_cleanData($val, $column['type'], $column['enum']);
+                $val = $this->_cleanData($val, $column['type']);
             }
             $val = sqlite_escape_string($val); //pre escape
 

@@ -80,12 +80,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 if(!is_array($data[$column['key']])) $data[$column['key']] = array(); // init with empty array
                 $vals = explode(',',$line[1]);
                 foreach($vals as $val){
-                    $val = trim($this->dthlp->_cleanData($val,$column['type'], $column['enum']));
+                    $val = trim($this->dthlp->_cleanData($val,$column['type']));
                     if($val == '') continue;
                     if(!in_array($val,$data[$column['key']])) $data[$column['key']][] = $val;
                 }
             }else{
-                $data[$column['key']] = $this->dthlp->_cleanData($line[1],$column['type'], $column['enum']);
+                $data[$column['key']] = $this->dthlp->_cleanData($line[1],$column['type']);
             }
             $columns[$column['key']]  = $column;
         }
@@ -126,9 +126,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
-            switch ($data['cols'][$key]['type']) {
+            $type = $data['cols'][$key]['type'];
+            if (is_array($type)) $type = $type['type'];
+            switch ($type) {
             case 'pageid':
-                $data['cols'][$key]['type'] = 'title';
+                $type = 'title';
             case 'wiki':
                 $val = $ID . '|' . $val;
                 break;
@@ -233,8 +235,15 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         foreach($data['cols'] as $key => $vals) {
             $fieldid = 'data_edit[data][' . $n++ . ']';
             $content = $vals['multi'] ? implode(', ', $data['data'][$key]) : $data['data'][$key];
-            $vals['basetype'] = $vals['type'];
-            $vals['type'] = isset($vals['origtype']) ? $vals['origtype'] : $vals['type'];
+            if (is_array($vals['type'])) {
+                $vals['basetype'] = $vals['type']['type'];
+                if (isset($vals['type']['enum'])) {
+                    $vals['enum'] = $vals['type']['enum'];
+                }
+                $vals['type'] = $vals['origtype'];
+            } else {
+                $vals['basetype'] = $vals['type'];
+            }
             $renderer->form->addElement('<tr>');
             if ($this->getConf('edit_content_only')) {
                 if (isset($vals['enum'])) {
