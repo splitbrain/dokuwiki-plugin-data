@@ -163,12 +163,15 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         return $data;
     }
 
+    protected $before_item = '<tr>';
+    protected $after_item  = '</tr>';
+    protected $before_val  = '<td>';
+    protected $after_val   = '</td>';
+
     /**
      * Create output
      */
     function render($format, &$R, $data) {
-        global $ID;
-
         if($format != 'xhtml') return false;
         if(is_null($data)) return false;
         $R->info['cache'] = false;
@@ -184,23 +187,49 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $clist = array_keys($data['cols']);
         $res = $sqlite->query($sql);
 
-        // build table
-        $R->doc .= '<table class="inline dataplugin_table '.$data['classes'].'">';
+        $R->doc .= $this->preList($clist, $data);
+        $cnt = 0;
+        while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
+            // build data rows
+            $R->doc .= $this->before_item;
+            foreach($row as $num => $cval){
+                $R->doc .= $this->before_val;
+                $R->doc .= $this->dthlp->_formatData(
+                                $data['cols'][$clist[$num]],
+                                $cval,$R);
+                $R->doc .= $this->after_val;
+            }
+            $R->doc .= $this->after_item;
+            $cnt++;
+            if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
+        }
+        if ($cnt === 0) {
+            $this->nullList($data, $clist, $R);
+            return true;
+        }
+        $R->doc .= $this->postList($data);
 
+        return true;
+    }
+
+    function preList($clist, $data) {
+        global $ID;
+        // build table
+        $text = '<table class="inline dataplugin_table '.$data['classes'].'">';
         // build column headers
-        $R->doc .= '<tr>';
+        $text .= '<tr>';
         foreach($data['headers'] as $num => $head){
             $ckey = $clist[$num];
 
-            $R->doc .= '<th>';
+            $text .= '<th>';
 
             // add sort arrow
             if(isset($data['sort']) && $ckey == $data['sort'][0]){
                 if($data['sort'][1] == 'ASC'){
-                    $R->doc .= '<span>&darr;</span> ';
+                    $text .= '<span>&darr;</span> ';
                     $ckey = '^'.$ckey;
                 }else{
-                    $R->doc .= '<span>&uarr;</span> ';
+                    $text .= '<span>&uarr;</span> ';
                 }
             }
 
@@ -210,42 +239,30 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $params['dataofs'] = $_REQUEST['dataofs'];
 
             // clickable header
-            $R->doc .= '<a href="'.wl($ID,$params).
+            $text .= '<a href="'.wl($ID,$params).
                        '" title="'.$this->getLang('sort').'">'.hsc($head).'</a>';
 
-            $R->doc .= '</th>';
+            $text .= '</th>';
         }
-        $R->doc .= '</tr>';
+        $text .= '</tr>';
+        return $text;
+    }
 
-        // build data rows
-        $cnt = 0;
-        while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
-            $R->doc .= '<tr>';
-            foreach($row as $num => $cval){
-                $R->doc .= '<td>';
-                $R->doc .= $this->dthlp->_formatData(
-                                $data['cols'][$clist[$num]],
-                                $cval,$R);
-                $R->doc .= '</td>';
-            }
-            $R->doc .= '</tr>';
-            $cnt++;
-            if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
-        }
+    function nullList($data, $clist, &$R) {
+        $R->tablerow_open();
+        $R->tablecell_open(count($clist), 'center');
+        $R->cdata($this->getLang('none'));
+        $R->tablecell_close();
+        $R->tablerow_close();
+        $R->doc .= '</table>';
+    }
 
-        if ($cnt === 0) {
-            $R->tablerow_open();
-            $R->tablecell_open(count($clist), 'center');
-            $R->cdata($this->getLang('none'));
-            $R->tablecell_close();
-            $R->tablerow_close();
-            $R->doc .= '</table>';
-            return true;
-        }
-
+    function postList( $data) {
+        global $ID;
+        $text = '';
         // if limit was set, add control
         if($data['limit']){
-            $R->doc .= '<tr><th colspan="'.count($data['cols']).'">';
+            $text .= '<tr><th colspan="'.count($data['cols']).'">';
             $offset = (int) $_REQUEST['dataofs'];
             if($offset){
                 $prev = $offset - $data['limit'];
@@ -256,12 +273,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $params['datasrt'] = $_REQUEST['datasrt'];
                 $params['dataofs'] = $prev;
 
-                $R->doc .= '<a href="'.wl($ID,$params).
+                $text .= '<a href="'.wl($ID,$params).
                               '" title="'.$this->getLang('prev').
                               '" class="prev">'.$this->getLang('prev').'</a>';
             }
 
-            $R->doc .= '&nbsp;';
+            $text .= '&nbsp;';
 
             if(sqlite_num_rows($res) > $data['limit']){
                 $next = $offset + $data['limit'];
@@ -271,16 +288,15 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $params['datasrt'] = $_REQUEST['datasrt'];
                 $params['dataofs'] = $next;
 
-                $R->doc .= '<a href="'.wl($ID,$params).
+                $text .= '<a href="'.wl($ID,$params).
                               '" title="'.$this->getLang('next').
                               '" class="next">'.$this->getLang('next').'</a>';
             }
-            $R->doc .= '</th></tr>';
+            $text .= '</th></tr>';
         }
 
-        $R->doc .= '</table>';
-
-        return true;
+        $text .= '</table>';
+        return $text;
     }
 
     /**

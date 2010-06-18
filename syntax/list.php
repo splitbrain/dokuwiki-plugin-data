@@ -21,46 +21,26 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         $this->Lexer->addSpecialPattern('----+ *datalist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_list');
     }
 
+    protected $before_item = '<li><div class="li">';
+    protected $after_item  = '</div></li>';
+    protected $before_val  = '';
+    protected $after_val   = ' ';
 
     /**
      * Create output
      */
-    function render($format, &$R, $data) {
-        if($format != 'xhtml') return false;
-        if(is_null($data)) return false;
-        $R->info['cache'] = false;
+    function preList($clist, $data) {
+        return '<ul class="dataplugin_list '.$data['classes'].'">';
+    }
 
-        $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
+    function nullList($data, $clist, &$R) {
+        $R->doc .= '<p class="dataplugin_list '.$data['classes'].'">';
+        $R->cdata($this->getLang('none'));
+        $R->p_close();
+    }
 
-        #dbg($data);
-        $sql = $this->_buildSQL($data); // handles request params, too
-        #dbg($sql);
-
-        // run query
-        $clist = array_keys($data['cols']);
-        $res = $sqlite->query($sql);
-
-        // build list
-        $cnt = 0;
-        $text = '';
-        while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
-            $text .= '<li><div class="li">';
-            foreach($row as $num => $cval){
-                $text .= $this->dthlp->_formatData($data['cols'][$clist[$num]],$cval,$R)."\n";
-            }
-            $text .= '</div></li>';
-            $cnt++;
-            if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
-        }
-        if ($cnt === 0) {
-            $R->doc .= '<p class="dataplugin_list '.$data['classes'].'">';
-            $R->cdata($this->getLang('none'));
-            $R->p_close();
-            return;
-        }
-
-        $R->doc .= '<ul class="dataplugin_list '.$data['classes'].'">' . $text . '</ul>';
+    function postList($data) {
+        return '</ul>';
     }
 
 }
