@@ -77,7 +77,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $column = $this->dthlp->_column($line[0]);
             if (isset($matches[2])) $column['comment'] = $matches[2];
             if($column['multi']){
-                if(!is_array($data[$column['key']])) $data[$column['key']] = array(); // init with empty array
+                if(!isset($data[$column['key']])) {
+                    // init with empty array
+                    // Note that multiple occurrences of the field are
+                    // practically merged
+                    $data[$column['key']] = array();
+                }
                 $vals = explode(',',$line[1]);
                 foreach($vals as $val){
                     $val = trim($this->dthlp->_cleanData($val,$column['type']));
