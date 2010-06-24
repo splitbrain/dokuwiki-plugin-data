@@ -187,9 +187,21 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $clist = array_keys($data['cols']);
         $res = $sqlite->query($sql);
 
-        $R->doc .= $this->preList($clist, $data);
         $cnt = 0;
+        $rows = array();
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
+            $rows[] = $row;
+            $cnt++;
+            if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
+        }
+
+        if ($cnt === 0) {
+            $this->nullList($data, $clist, $R);
+            return true;
+        }
+
+        $R->doc .= $this->preList($clist, $data);
+        foreach ($rows as $row) {
             // build data rows
             $R->doc .= $this->before_item;
             foreach($row as $num => $cval){
@@ -200,12 +212,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->doc .= $this->after_val;
             }
             $R->doc .= $this->after_item;
-            $cnt++;
-            if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
-        }
-        if ($cnt === 0) {
-            $this->nullList($data, $clist, $R);
-            return true;
         }
         $R->doc .= $this->postList($data);
 
@@ -249,6 +255,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     }
 
     function nullList($data, $clist, &$R) {
+        $R->doc .= $this->preList($clist, $data);
         $R->tablerow_open();
         $R->tablecell_open(count($clist), 'center');
         $R->cdata($this->getLang('none'));
