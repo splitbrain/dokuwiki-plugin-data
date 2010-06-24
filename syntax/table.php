@@ -386,6 +386,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         // add request filters
+        if (!isset($data['filter'])) $data['filter'] = array();
         $data['filter'] = array_merge($data['filter'], $this->dthlp->_get_filters());
 
         // prepare filters
