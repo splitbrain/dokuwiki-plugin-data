@@ -74,7 +74,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     function _addPrePostFixes($type, $val, $pre='', $post='') {
         if (is_array($type)) {
             if (isset($type['prefix'])) $pre = $type['prefix'];
-            if (isset($type['postfix'])) $pre = $type['postfix'];
+            if (isset($type['postfix'])) $post = $type['postfix'];
         }
         return $pre.$val.$post;
     }
