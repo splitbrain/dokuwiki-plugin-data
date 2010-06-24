@@ -157,7 +157,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * @returns array with key, type, ismulti, title, opt
      */
     function _column($col){
-        preg_match('/^([^_]+)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
+        preg_match('/^([^_]*)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
         $column = array('multi' => ($matches[3] === 's'),
                         'key'   => utf8_strtolower($matches[1]),
                         'title' => $matches[1],
