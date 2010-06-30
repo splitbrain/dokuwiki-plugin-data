@@ -44,6 +44,13 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
             $row['name'] = utf8_strtolower($row['name']);
             $row['name'] = rtrim($row['name'],'s');
             if(!$row['name']) continue;
+
+            // Clean enum
+            $arr = preg_split('/\s*,\s*/', $row['enum']);
+            $arr = array_unique($arr);
+            asort($arr);
+            $row['enum'] = implode(', ', $arr);
+
             $sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
                                  VALUES (?,?,?,?,?)",$row);
         }
