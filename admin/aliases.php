@@ -38,7 +38,10 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
         if(!$sqlite) return false;
 
         $sqlite->query("BEGIN TRANSACTION");
-        $sqlite->query("DELETE FROM aliases");
+        if (!$sqlite->query("DELETE FROM aliases")) {
+            $sqlite->query('ROLLBACK TRANSACTION');
+            return;
+        }
         foreach($_REQUEST['d'] as $row){
             $row = array_map('trim',$row);
             $row['name'] = utf8_strtolower($row['name']);
@@ -51,8 +54,11 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
             asort($arr);
             $row['enum'] = implode(', ', $arr);
 
-            $sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
-                                 VALUES (?,?,?,?,?)",$row);
+            if (!$sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
+                                 VALUES (?,?,?,?,?)",$row)) {
+                $sqlite->query('ROLLBACK TRANSACTION');
+                return;
+            }
         }
         $sqlite->query("COMMIT TRANSACTION");
     }
