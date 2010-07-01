@@ -133,6 +133,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     global $ID;
                     $oldid = $ID;
                     list($ID,$data) = explode('|',$val,2);
+                    $data = $this->_addPrePostFixes($column['type'], $data);
                     $outs[] = p_render('xhtml', p_get_instructions($data), $ignore);
                     $ID = $oldid;
                     break;
