@@ -134,7 +134,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $oldid = $ID;
                     list($ID,$data) = explode('|',$val,2);
                     $data = $this->_addPrePostFixes($column['type'], $data);
-                    $outs[] = p_render('xhtml', p_get_instructions($data), $ignore);
+                    // Trim document_{start,end}, p_{open,close}
+                    $ins = array_slice(p_get_instructions($data), 2, -2);
+                    $outs[] = p_render('xhtml', $ins, $byref_ignore);
                     $ID = $oldid;
                     break;
                 default:
