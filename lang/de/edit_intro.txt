@@ -1,0 +1,1 @@
+Bearbeiten Sie den [[doku>de:plugin:data|Data-Eintrag]] und klicken danach auf ''Speichern''. Bitte verändern Sie die Daten nur, wenn Sie sie **verbessern** können. Sie können nicht nur den Inhalt, sondern auch die Struktur des Eintrags verändern. Felder werden entfernt, in dem der Titel gelöscht wird.

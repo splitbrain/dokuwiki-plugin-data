@@ -1,5 +1,9 @@
 <?php
-$lang['menu_alias'] = 'Data Plugin: Feld Aliase';
+$lang['menu_alias'] = 'Data Plugin: Feld-Aliasse';
+$lang['menu_clean'] = 'Data Plugin: Datenbank aufräumen';
+
+$lang['pages_del']    = '%d Einträge entfernt.';
+$lang['submit_clean'] = 'Datenbank aufräumen!';
 
 $lang['sort'] = 'Nach dieser Spalte sortieren';
 $lang['next'] = 'Nächste Seite';
@@ -16,7 +20,7 @@ $lang['name']      = 'Typalias';
 $lang['type']      = 'Originaltyp';
 $lang['prefix']    = 'Präfix';
 $lang['postfix']   = 'Suffix';
-$lang['comment']   = 'Kommentar';
+$lang['enum']      = 'Gültige Werte';
 $lang['submit']    = 'Aliasse speichern';
 
 $lang['dataentry'] = 'Data-Entry';

@@ -2,6 +2,6 @@
 
 This interface allows you to define new field type aliases based on the existing ones.
 
-The aliased types can be used like any other type of the plugin, but all data will be prefixed or postifxed with the values you provided for the alias here. This is usually used for linking certain field types to special namespaces.
+The aliased types can be used like any other type of the plugin, but all data will be prefixed or postfixed with the values you provided for the alias here. This is usually used for linking certain field types to special namespaces.
 
 Refer to the [[doku>plugin:data|plugin description]] for more info about aliases.

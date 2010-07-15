@@ -1,0 +1,5 @@
+====== Datenbank aufräumen ======
+
+Wenn Seiten mit Data-Einträgen gelöscht werden, entfernt DokuWiki auch die zugehörigen Metadaten. Dies passiert jedoch nur, wenn die Seiten über normales Bearbeiten des Wikis gelöscht werden. Wenn Seiten anders, bspw. direkt im Dateisystem, gelöscht werden, bleiben die Metadaten erhalten.
+
+Dieses Werkzeug löscht alle Metadaten für Seiten, die nicht mehr existieren.
