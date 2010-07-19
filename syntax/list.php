@@ -30,17 +30,17 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
      * Create output
      */
     function preList($clist, $data) {
-        return '<ul class="dataplugin_list '.$data['classes'].'">';
+        return '<div class="dataaggregation"><ul class="dataplugin_list '.$data['classes'].'">';
     }
 
     function nullList($data, $clist, &$R) {
-        $R->doc .= '<p class="dataplugin_list '.$data['classes'].'">';
+        $R->doc .= '<div class="dataaggregation"><p class="dataplugin_list '.$data['classes'].'">';
         $R->cdata($this->getLang('none'));
-        $R->p_close();
+        $R->doc .= '</p></div>';
     }
 
     function postList($data) {
-        return '</ul>';
+        return '</ul></div>';
     }
 
 }

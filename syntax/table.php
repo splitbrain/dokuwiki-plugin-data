@@ -221,7 +221,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     function preList($clist, $data) {
         global $ID;
         // build table
-        $text = '<table class="inline dataplugin_table '.$data['classes'].'">';
+        $text = '<div class="table dataaggregation">'
+              . '<table class="inline dataplugin_table '.$data['classes'].'">';
         // build column headers
         $text .= '<tr>';
         foreach($data['headers'] as $num => $head){
@@ -261,7 +262,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $R->cdata($this->getLang('none'));
         $R->tablecell_close();
         $R->tablerow_close();
-        $R->doc .= '</table>';
+        $R->doc .= '</table></div>';
     }
 
     function postList( $data) {
@@ -302,7 +303,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $text .= '</th></tr>';
         }
 
-        $text .= '</table>';
+        $text .= '</table></div>';
         return $text;
     }
 
