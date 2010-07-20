@@ -30,16 +30,35 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             if (isset($datatype['enum'])) {
                 $values = preg_split('/\s*,\s*/', $datatype['enum']);
                 if (!$datatype['multi'] && $this->opt['optional']) array_unshift($values, '');
-                $content = form_makeListboxField('@@NAME@@', $values,
-                                                 '@@VALUE@@', '@@LABEL@@', '', '', ($datatype['multi'] ? array('multiple' => 'multiple'): array()));
+                $this->opt['args'] = $values;
+                $this->additional = ($datatype['multi'] ? array('multiple' => 'multiple'): array());
             } else {
                 $classes = 'data_type_' . $datatype['type'] . ($datatype['multi'] ? 's' : '') .  ' ' .
                            'data_type_' . $datatype['basetype'] . ($datatype['multi'] ? 's' : '');
                 $content = form_makeTextField('@@NAME@@', '@@VALUE@@', '@@LABEL@@', '', '@@CLASS@@ ' . $classes);
 
+                $this->tpl = $content;
             }
-            $this->tpl = $content;
         }
 
+        function render($params, $form) {
+            if (isset($this->tpl)) {
+                parent::render($params, $form);
+            } else {
+                $this->_handlePreload();
+                if(!$form->_infieldset){
+                    $form->startFieldset('');
+                }
+                if ($this->error) {
+                    $params['class'] = 'bureaucracy_error';
+                }
+                $params = array_merge($this->opt, $params);
+                $form->addElement(call_user_func_array('form_makeListboxField',
+                                                       $this->_parse_tpl(array('@@NAME@@',
+                                                        $params['args'], '@@VALUE|' . $params['args'][0] . '@@',
+                                                        '@@LABEL@@', '', '@@CLASS@@', $this->additional),
+                                                        $params)));
+            }
+        }
     }
 }
