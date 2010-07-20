@@ -152,7 +152,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         // calculate tresholds
         $tresholds = array();
         for($i=0; $i<=$levels; $i++){
-            $tresholds[$i] = pow($max - $min + 1, $i/$levels) + $mini - 1;
+            $tresholds[$i] = pow($max - $min + 1, $i/$levels) + $min - 1;
         }
 
         // assign weights
