@@ -19,6 +19,10 @@ div.dataplugin_entry dl {
     float: none;
     display: block;
 }
+
+*:first-child+html div.dataplugin_entry dt {
+    padding-right: 0.5em;
+}
 /* END OF IE MAGIC */
 
 div.dataplugin_entry dl dt {
