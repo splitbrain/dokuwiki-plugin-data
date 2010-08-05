@@ -213,7 +213,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }
             $R->doc .= $this->after_item;
         }
-        $R->doc .= $this->postList($data);
+        $R->doc .= $this->postList($data, $res);
 
         return true;
     }
@@ -265,7 +265,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $R->doc .= '</table></div>';
     }
 
-    function postList( $data) {
+    function postList($data, $res) {
         global $ID;
         $text = '';
         // if limit was set, add control
