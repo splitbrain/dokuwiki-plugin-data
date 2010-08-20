@@ -219,12 +219,18 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * @return mixed - array on success, false on error
      */
     function _parse_filter($filterline){
-        if(preg_match('/^(.*?)(=|<|>|<=|>=|<>|!=|=~|~|!~)(.*)$/',$filterline,$matches)){
+        if(preg_match('/^(.*?)([=<>!~]{1,2})(.*)$/',$filterline,$matches)){
             $column = $this->_column(trim($matches[1]));
 
             $com = $matches[2];
-            if ($com == '<>') {
-                $com = '!=';
+            $aliasses = array('<>' => '!=', '=!' => '!=', '~!' => '!~',
+                              '==' => '=',  '~=' => '~',  '=~' => '~');
+
+            if (isset($aliasses[$com])) {
+                $com = $aliasses[$com];
+            } elseif (preg_match('/(!?[=~])|([<>]=?)/', $com)) {
+                msg('Failed to parse comparison "'.hsc($com).'"',-1);
+                return false;
             }
 
             $val = trim($matches[3]);
