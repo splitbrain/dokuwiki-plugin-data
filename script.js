@@ -34,6 +34,8 @@ addInitEvent(function () {
     for (var c_class in classes) {
         var pickers = getElementsByClass(c_class, document, 'label');
         for (var i = 0 ; i < pickers.length ; ++i) {
+            // IE fix: http://www.quirksmode.org/bugreports/archives/2006/01/Explorer_z_index_bug.html
+            pickers[i].style.zIndex = 41;
             addAutoCompletion(pickers[i].lastChild,
                            'data_page_' + pickers[i].className.match(classes[c_class][1])[1],
                            classes[c_class][0],

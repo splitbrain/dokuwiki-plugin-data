@@ -80,6 +80,12 @@ dl.datarelated dt {
     display: none;
 }
 
+#dw__editform fieldset.plugin__data table tr td label {
+    /* This is the anchor for the position: absolute autocompletion */
+    display: block;
+    position: relative;
+}
+
 #dw__editform fieldset.plugin__data {
     text-align: left;
     width: 99%;
