@@ -213,7 +213,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }
             $R->doc .= $this->after_item;
         }
-        $R->doc .= $this->postList($data, $res);
+        $R->doc .= $this->postList($data, sqlite_num_rows($res));
 
         return true;
     }
@@ -265,7 +265,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $R->doc .= '</table></div>';
     }
 
-    function postList($data, $res) {
+    function postList($data, $rowcnt) {
         global $ID;
         $text = '';
         // if limit was set, add control
@@ -288,7 +288,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
             $text .= '&nbsp;';
 
-            if(sqlite_num_rows($res) > $data['limit']){
+            if($rowcnt > $data['limit']){
                 $next = $offset + $data['limit'];
 
                 // keep url params
