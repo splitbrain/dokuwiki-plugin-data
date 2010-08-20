@@ -228,7 +228,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
             if (isset($aliasses[$com])) {
                 $com = $aliasses[$com];
-            } elseif (preg_match('/(!?[=~])|([<>]=?)/', $com)) {
+            } elseif (!preg_match('/(!?[=~])|([<>]=?)/', $com)) {
                 msg('Failed to parse comparison "'.hsc($com).'"',-1);
                 return false;
             }
