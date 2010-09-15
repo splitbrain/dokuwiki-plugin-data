@@ -72,22 +72,20 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
         $from   = ' ';
         $where  = ' ';
+        $pagesjoin = '';
 
+        $fields = array('pageid' => 'page', 'class' => 'class',
+                       'title' => 'title');
         // prepare filters (no request filters - we set them ourselves)
         if(is_array($data['filter']) && count($data['filter'])){
 
             foreach($data['filter'] as $filter){
                 $col = $filter['key'];
 
-                if($col == '%pageid%'){
-                    $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
-                    $from .= ' LEFT JOIN pages ON pages.pid = data.pid';
-                }elseif($col == '%class%'){
-                    $where .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
-                    $from .= ' LEFT JOIN pages ON pages.pid = data.pid';
-                }elseif($col == '%title%'){
-                    $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
-                    $from .= ' LEFT JOIN pages ON pages.pid = data.pid';
+                if (preg_match('/^%(\w+)%$/', $col, $m) && isset($fields[$m[1]])) {
+                    $where .= " ".$filter['logic']." pages." . $fields[$m[1]] .
+                              " " . $filter['compare']." '".$filter['value']."'";
+                    $pagesjoin = ' LEFT JOIN pages ON pages.pid = data.pid';
                 }else{
                     // filter by hidden column?
                     if(!$tables[$col]){
@@ -104,7 +102,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
         // build query
         $sql = "SELECT data.value, COUNT(data.pid) as cnt
-                  FROM data $from
+                  FROM data $from $pagesjoin
                  WHERE data.key = '".sqlite_escape_string($ckey)."'
                  $where
               GROUP BY data.value";
