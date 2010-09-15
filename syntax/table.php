@@ -160,6 +160,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $data['headers'][] = $item['title'];
         }
 
+        $data['sql'] = $this->_buildSQL($data);
         return $data;
     }
 
@@ -179,13 +180,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        #dbg($data);
-        $sql = $this->_buildSQL($data); // handles request params, too
-        #dbg($sql);
+        $this->updateSQLwithQuery($data); // handles request params
 
         // run query
         $clist = array_keys($data['cols']);
-        $res = $sqlite->query($sql);
+        $res = $sqlite->query($data['sql']);
 
         $cnt = 0;
         $rows = array();
@@ -318,15 +317,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $where  = '1 = 1';
         $order  = '';
 
-        // take overrides from HTTP request params into account
-        if(isset($_REQUEST['datasrt'])){
-            if($_REQUEST['datasrt']{0} == '^'){
-                $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
-            }else{
-                $data['sort'] = array($_REQUEST['datasrt'],'ASC');
-            }
-        }
-
         // prepare the columns to show
         foreach ($data['cols'] as &$col){
             $key = $col['key'];
@@ -426,14 +416,27 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         // offset and limit
         if($data['limit']){
             $sql .= ' LIMIT '.($data['limit'] + 1);
-
-            if((int) $_REQUEST['dataofs']){
-                $sql .= ' OFFSET '.((int) $_REQUEST['dataofs']);
-            }
+            // offset is added from REQUEST params in updateSQLwithQuery
         }
 
         return $sql;
     }
 
+    function updateSQLwithQuery(&$data) {
+        // take overrides from HTTP request params into account
+        if(isset($_REQUEST['datasrt'])){
+            if($_REQUEST['datasrt']{0} == '^'){
+                $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
+            }else{
+                $data['sort'] = array($_REQUEST['datasrt'],'ASC');
+            }
+            // Rebuild SQL FIXME do this smarter & faster
+            $data['sql'] = $this->_buildSQL($data);
+        }
+
+        if($data['limit'] && (int) $_REQUEST['dataofs']){
+            $data['sql'] .= ' OFFSET '.((int) $_REQUEST['dataofs']);
+        }
+    }
 }
 

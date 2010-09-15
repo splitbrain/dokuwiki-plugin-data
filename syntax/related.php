@@ -30,10 +30,9 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        $sql = $this->_buildSQL($data,$ID);
-        if(!$sql) return true; // sql build
+        if(!$data['sql']) return true; // sql build
 
-        $res = $sqlite->query($sql);
+        $res = $sqlite->query($data['sql']);
         if(!sqlite_num_rows($res)) return true; // no rows matched
 
         $renderer->doc .= '<dl class="'.$data['classes'].'">';
@@ -157,6 +156,4 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
 
         return $sql;
     }
-
 }
-

@@ -52,21 +52,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $this->Lexer->addSpecialPattern('----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_cloud');
     }
 
-    /**
-     * Create output or save the data
-     */
-    function render($format, &$renderer, $data) {
-        global $ID;
-
-        if($format != 'xhtml') return false;
-        $renderer->info['cache'] = false;
-        if(is_null($data)) return;
-
-        $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
-
-        if(!$data['page']) $data['page'] = $ID;
-
+    function _buildSQL(&$data){
         $ckey = array_keys($data['cols']);
         $ckey = $ckey[0];
 
@@ -106,13 +92,34 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
                  WHERE data.key = '".sqlite_escape_string($ckey)."'
                  $where
               GROUP BY data.value";
-        if($data['min'])   $sql .= ' HAVING cnt >= '.$data['min'];
+        if(isset($data['min']))   $sql .= ' HAVING cnt >= '.$data['min'];
         $sql .= ' ORDER BY cnt DESC';
         if($data['limit']) $sql .= ' LIMIT '.$data['limit'];
 
+        return $sql;
+    }
+
+    /**
+     * Create output or save the data
+     */
+    function render($format, &$renderer, $data) {
+        global $ID;
+
+        if($format != 'xhtml') return false;
+        $renderer->info['cache'] = false;
+        if(is_null($data)) return;
+
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
+
+        $ckey = array_keys($data['cols']);
+        $ckey = $ckey[0];
+
+        if(!isset($data['page'])) $data['page'] = $ID;
+
         // build cloud data
         $tags = array();
-        $res = $sqlite->query($sql);
+        $res = $sqlite->query($data['sql']);
         $min = 0;
         $max = 0;
         while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
