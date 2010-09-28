@@ -237,7 +237,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             // allow current user name in filter:
             $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
             // allow current date in filter:
-            $val = str_replace('%now%', dformat('%Y-%m-%d'),$val);
+            $val = str_replace('%now%', dformat(null, '%Y-%m-%d'),$val);
 
             if(strpos($com, '~') !== false) {
                 $val = str_replace('*','%',$val);
