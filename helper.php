@@ -55,7 +55,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 if(!preg_match('!^[a-z]+://!i',$value)) $value='http://'.$value;
                 return $value;
             case 'mail':
-                $mail = '';
+                $email = '';
                 $name = '';
                 $part = '';
                 $parts = preg_split('/\s+/',$value);
@@ -98,18 +98,18 @@ class helper_plugin_data extends DokuWiki_Plugin {
             switch($type){
                 case 'page':
                     $val = $this->_addPrePostFixes($column['type'], $val, ':');
-                    $outs[] = $R->internallink($val,NULL,NULL,true);
+                    $outs[] = $R->internallink($val,null,null,true);
                     break;
                 case 'title':
                     list($id,$title) = explode('|',$val,2);
                     $id = $this->_addPrePostFixes($column['type'], $id, ':');
-                    $outs[] = $R->internallink($id,$title,NULL,true);
+                    $outs[] = $R->internallink($id,$title,null,true);
                     break;
                 case 'nspage':
                     // no prefix/postfix here
                     $val = ':'.$column['key'].":$val";
 
-                    $outs[] = $R->internallink($val,NULL,NULL,true);
+                    $outs[] = $R->internallink($val,null,null,true);
                     break;
                 case 'mail':
                     list($id,$title) = explode(' ',$val,2);
@@ -237,7 +237,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             // allow current user name in filter:
             $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
             // allow current date in filter:
-            $val = str_replace('%now%',strftime('%Y-%m-%d'),$val);
+            $val = str_replace('%now%', dformat('%Y-%m-%d'),$val);
 
             if(strpos($com, '~') !== false) {
                 $val = str_replace('*','%',$val);

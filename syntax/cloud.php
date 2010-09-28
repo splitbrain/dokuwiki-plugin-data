@@ -59,6 +59,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $from   = ' ';
         $where  = ' ';
         $pagesjoin = '';
+        $tables = array();
 
         $fields = array('pageid' => 'page', 'class' => 'class',
                        'title' => 'title');
