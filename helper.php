@@ -20,17 +20,21 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * load the sqlite helper
      */
     function _getDB(){
-        $db =& plugin_load('helper', 'sqlite');
-        if (is_null($db)) {
-            msg('The data plugin needs the sqlite plugin', -1);
-            return false;
+        static $db = null;
+        if ($db === null) {
+            $db =& plugin_load('helper', 'sqlite');
+            if ($db === null) {
+                msg('The data plugin needs the sqlite plugin', -1);
+                return false;
+            }
+            if(!$db->init('data',dirname(__FILE__).'/db/')){
+                return false;
+            }
+            $db->fetchmode = DOKU_SQLITE_ASSOC;
+            $db->create_function($db->db,'DATARESOLVE',array($this,'_resolveData'),2);
+
         }
-        if($db->init('data',dirname(__FILE__).'/db/')){
-            sqlite_create_function($db->db,'DATARESOLVE',array($this,'_resolveData'),2);
-            return $db;
-        }else{
-            return false;
-        }
+        return $db;
     }
 
     /**
@@ -293,7 +297,8 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 // Clean if there are no asterisks I could kill
                 $val = $this->_cleanData($val, $column['type']);
             }
-            $val = sqlite_escape_string($val); //pre escape
+            $sqlite = $this->_getDB();
+            $val = $sqlite->escape_string($val); //pre escape
 
             return array('key'     => $column['key'],
                          'value'   => $val,
