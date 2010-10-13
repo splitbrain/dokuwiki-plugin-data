@@ -187,7 +187,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
         // fetch page id
         $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
-        $pid = (int) sqlite_fetch_single($res);
+        $pid = (int) $sqlite->res2single($res);
 
         if(!$pid){
             msg("data plugin: failed saving data",-1);

@@ -186,24 +186,23 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $clist = array_keys($data['cols']);
         $res = $sqlite->query($data['sql']);
 
-        $cnt = 0;
-        $rows = array();
-        while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
-            $rows[] = $row;
-            $cnt++;
-            if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
-        }
+        $rows = $sqlite->res2arr($res);
+        $cnt = count($rows);
 
         if ($cnt === 0) {
             $this->nullList($data, $clist, $R);
             return true;
         }
 
+        if ($data['limit'] && $cnt > $data['limit']) {
+            $rows = array_slice($rows, 0, $data['limit']);
+        }
+
         $R->doc .= $this->preList($clist, $data);
         foreach ($rows as $row) {
             // build data rows
             $R->doc .= $this->before_item;
-            foreach($row as $num => $cval){
+            foreach(array_values($row) as $num => $cval){
                 $R->doc .= $this->before_val;
                 $R->doc .= $this->dthlp->_formatData(
                                 $data['cols'][$clist[$num]],
@@ -212,7 +211,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }
             $R->doc .= $this->after_item;
         }
-        $R->doc .= $this->postList($data, sqlite_num_rows($res));
+        $R->doc .= $this->postList($data, $cnt);
 
         return true;
     }
@@ -317,6 +316,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $where  = '1 = 1';
         $order  = '';
 
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
+
         // prepare the columns to show
         foreach ($data['cols'] as &$col){
             $key = $col['key'];
@@ -332,7 +334,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 if(!isset($tables[$key])){
                     $tables[$key] = 'T'.(++$cnt);
                     $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
-                    $from  .= ' AND '.$tables[$key].".key = '".sqlite_escape_string($key)."'";
+                    $from  .= ' AND '.$tables[$key].".key = ".$sqlite->quote_string($key);
                 }
                 $type = $col['type'];
                 if (is_array($type)) $type = $type['type'];
@@ -367,7 +369,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 if(!$tables[$col]){
                     $tables[$col] = 'T'.(++$cnt);
                     $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                    $from  .= ' AND '.$tables[$col].".key = " . $sqlite->quote_string($col);
                 }
 
                 $order = 'ORDER BY '.$tables[$col].'.value '.$data['sort'][1];
@@ -397,7 +399,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     if(!$tables[$col]){
                         $tables[$col] = 'T'.(++$cnt);
                         $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                        $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                        $from  .= ' AND '.$tables[$col].".key = " . $sqlite->quote_string($col);
                     }
 
                     $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].

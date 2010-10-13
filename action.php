@@ -49,7 +49,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
         // get page id
         $res = $sqlite->query('SELECT pid FROM pages WHERE page = ?',$id);
-        $pid = (int) sqlite_fetch_single($res);
+        $pid = (int) $sqlite->res2single($res);
         if(!$pid) return; // we have no data for this page
 
         $sqlite->query('DELETE FROM data WHERE pid = ?',$pid);
