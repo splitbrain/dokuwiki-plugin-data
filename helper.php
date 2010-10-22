@@ -101,6 +101,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = $R->internallink($val,null,null,true);
                     break;
                 case 'title':
+                case 'pageid':
                     list($id,$title) = explode('|',$val,2);
                     $id = $this->_addPrePostFixes($column['type'], $id, ':');
                     $outs[] = $R->internallink($id,$title,null,true);

@@ -339,7 +339,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 switch ($type) {
                 case 'pageid':
                     $select[] = "pages.page || '|' || group_concat(".$tables[$key].".value,'\n')";
-                    $col['type'] = 'title';
                     break;
                 case 'wiki':
                     $select[] = "pages.page || '|' || group_concat(".$tables[$key].".value,'\n')";
