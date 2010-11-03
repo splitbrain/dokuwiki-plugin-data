@@ -273,7 +273,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $cells = array(form_makeField('text', $fieldid . '[title]', $vals['title'], $this->getLang('title')),
                                form_makeMenuField($fieldid . '[type]',
                                                   array_merge(array('', 'page', 'nspage', 'title',
-                                                                    'mail', 'url', 'tag', 'wiki', 'dt'),
+                                                                    'img', 'mail', 'url', 'tag', 'wiki', 'dt'),
                                                               array_keys($this->dthlp->_aliases())),
                                                   $vals['type'],
                                                   $this->getLang('type')),
