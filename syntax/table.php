@@ -328,6 +328,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $select[] = '" " || pages.class';
             }elseif($key == '%title%'){
                 $select[] = "pages.page || '|' || pages.title";
+            }elseif($key == '%rpm%'){
+                if(!isset($tables[$key])){
+                    $tables[$key] = 'T'.(++$cnt);
+                    $from  .= ' LEFT JOIN rpmdb AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
+                }
+                $select[] = "group_concat(".$tables[$key].".value,'\n')";
+
             }else{
                 if(!isset($tables[$key])){
                     $tables[$key] = 'T'.(++$cnt);
