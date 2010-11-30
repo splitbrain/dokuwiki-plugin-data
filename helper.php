@@ -136,7 +136,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                         $target = $this->_addPrePostFixes($column['type'],'');
                     }
 
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)),array('dataflt'=>$column['key'].':'.$val )).
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)),array('dataflt'=>$column['key'].'='.$val )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
@@ -282,7 +282,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }else{
             $flt = $_REQUEST['dataflt'];
         }
-
         foreach($flt as $key => $line){
             // we also take the column and filtertype in the key:
             if(!is_numeric($key)) $line = $key.$line;
@@ -292,7 +291,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 $filters[] = $f;
             }
         }
-
         return $filters;
     }
 
