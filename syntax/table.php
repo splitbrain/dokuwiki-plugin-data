@@ -423,7 +423,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     function updateSQLwithQuery(&$data) {
         // take overrides from HTTP request params into account
-        if(isset($_REQUEST['datasrt'])){
+        if(isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt'])){
             if($_REQUEST['datasrt']{0} == '^'){
                 $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
             }else{
