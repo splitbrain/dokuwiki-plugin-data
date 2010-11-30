@@ -129,8 +129,14 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
                     break;
                 case 'tag':
-                    #FIXME handle pre/postfix
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($column['key'])),array('dataflt'=>$column['key'].':'.$val )).
+                    // per default use keyname as target page, but prefix on aliases
+                    if(!is_array($column['type'])){
+                        $target = $column['key'].':';
+                    }else{
+                        $target = $this->_addPrePostFixes($column['type'],'');
+                    }
+
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)),array('dataflt'=>$column['key'].':'.$val )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
