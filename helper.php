@@ -174,7 +174,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
         // fix title for special columns
         static $specials = array('%title%'  => array('page', 'title'),
                                  '%pageid%' => array('title', 'page'),
-                                 '%class%'  => array('class'));
+								 '%class%'  => array('class'),
+								 '%rpm%'    => array('rpm'),
+							 );
         if (isset($specials[$column['title']])) {
             $s = $specials[$column['title']];
             $column['title'] = $this->getLang($s[0]);
