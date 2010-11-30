@@ -54,7 +54,10 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
     /**
      * Builds the SQL query from the given data
      */
-    function _buildSQL(&$data,$id){
+    function _buildSQL(&$data,$id = null){
+        global $ID;
+        if(is_null($id)) $id = $ID;
+
         $cnt    = 1;
         $tables = array();
         $cond   = array();
