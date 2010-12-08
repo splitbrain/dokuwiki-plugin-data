@@ -300,7 +300,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     function _a2ua($name,$array){
         $urlarray = array();
         foreach((array) $array as $key => $val){
-            $urlarray[rawurlencode($name).'['.rawurlencode($key).']'] = $val;
+            $urlarray[$name.'['.$key.']'] = $val;
         }
         return $urlarray;
     }
