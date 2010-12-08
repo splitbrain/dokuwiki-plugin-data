@@ -66,6 +66,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         $data = array('classes' => $class,
                       'limit'   => 0,
+                      'dynfilters' => false,
                       'headers' => array());
 
         // parse info
@@ -139,6 +140,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'page':
                 case 'target':
                         $data['page'] = cleanID($line[1]);
+                    break;
+                case 'dynfilters':
+                        $data['dynfilters'] = (bool) $line[1];
                     break;
                 default:
                     msg("data plugin: unknown option '".hsc($line[0])."'",-1);
@@ -219,6 +223,19 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     function preList($clist, $data) {
         global $ID;
+
+        // Save current request params to not loose them
+        $cur_params = array();
+        if(isset($_REQUEST['dataflt'])){
+            $cur_params = $this->dthlp->_a2ua('dataflt', $_REQUEST['dataflt']);
+        }
+        if (isset($_REQUEST['datasrt'])) {
+            $cur_params['datasrt'] = $_REQUEST['datasrt'];
+        }
+        if (isset($_REQUEST['dataofs'])) {
+            $cur_params['dataofs'] = $_REQUEST['dataofs'];
+        }
+
         // build table
         $text = '<div class="table dataaggregation">'
               . '<table class="inline dataplugin_table '.$data['classes'].'">';
@@ -239,18 +256,37 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 }
             }
 
-            // keep url params
-            $params = $this->dthlp->_a2ua('dataflt',$_REQUEST['dataflt']);
-            $params['datasrt'] = $ckey;
-            $params['dataofs'] = $_REQUEST['dataofs'];
-
-            // clickable header
-            $text .= '<a href="'.wl($ID,$params).
+            // Clickable header for dynamic sorting
+            $text .= '<a href="'.wl($ID,array('datasrt' => $ckey)+$cur_params).
                        '" title="'.$this->getLang('sort').'">'.hsc($head).'</a>';
-
             $text .= '</th>';
         }
         $text .= '</tr>';
+
+        // Dynamic filters
+        if ($data['dynfilters']) {
+            $text .= '<tr>';
+            foreach($data['headers'] as $num => $head){
+                $text .= '<th>';
+                $form = new Doku_Form(array('method' => 'GET'));
+                $form->_hidden = array();
+                $key = 'dataflt[' . $clist[$num] . '*~' . ']';
+                $val = isset($cur_params[$key]) ? $cur_params[$key] : '';
+
+                // Add current request params
+                foreach($cur_params as $c_key => $c_val) {
+                    if ($c_val !== '' && $c_key !== $key) {
+                        $form->addHidden($c_key, $c_val);
+                    }
+                }
+
+                $form->addElement(form_makeField('', $key, $val, ''));
+                $text .= $form->getForm();
+                $text .= '</th>';
+            }
+            $text .= '</tr>';
+        }
+
         return $text;
     }
 
