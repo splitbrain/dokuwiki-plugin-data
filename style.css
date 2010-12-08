@@ -119,3 +119,7 @@ div.dokuwiki div.editbutton_plugin_data form input.button {
     background-image: none;
     border-top: none;
 }
+
+table.dataplugin_table th input {
+    width: 98%;
+}
