@@ -424,10 +424,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     function updateSQLwithQuery(&$data) {
         // take overrides from HTTP request params into account
         if(isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt'])){
-            if($_REQUEST['datasrt']{0} == '^'){
-                $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
-            }else{
-                $data['sort'] = array($_REQUEST['datasrt'],'ASC');
+            if (isset($_REQUEST['datasrt'])) {
+                if($_REQUEST['datasrt']{0} == '^'){
+                    $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
+                }else{
+                    $data['sort'] = array($_REQUEST['datasrt'],'ASC');
+                }
             }
             // Rebuild SQL FIXME do this smarter & faster
             $data['sql'] = $this->_buildSQL($data);
