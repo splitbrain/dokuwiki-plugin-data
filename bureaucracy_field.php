@@ -5,11 +5,11 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
     class syntax_plugin_bureaucracy_field_dataplugin extends syntax_plugin_bureaucracy_field {
 
-        function __construct($syntax_plugin, $args) {
+        function __construct($args) {
             $dthlp =& plugin_load('helper', 'data');
             if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
 
-            $this->init($syntax_plugin, $args);
+            $this->init($args);
             $n_args = array();
             foreach ($args as $arg) {
                 if ($arg[0] !== '_') {
