@@ -45,6 +45,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             if (isset($this->tpl)) {
                 parent::render($params, $form);
             } else {
+                // Is an enum type, otherwise $this->tpl would be set in __construct
                 $this->_handlePreload();
                 if(!$form->_infieldset){
                     $form->startFieldset('');
@@ -53,12 +54,26 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                     $params['class'] = 'bureaucracy_error';
                 }
                 $params = array_merge($this->opt, $params);
+                $params['value'] = preg_split('/\s*,\s*/', $params['value'], -1, PREG_SPLIT_NO_EMPTY);
+                if (count($params['value']) === 0) {
+                    $params['value'] = $params['args'][0];
+                }
+
                 $form->addElement(call_user_func_array('form_makeListboxField',
-                                                       $this->_parse_tpl(array('@@NAME@@',
-                                                        $params['args'], '@@VALUE|' . $params['args'][0] . '@@',
+                                                       $this->_parse_tpl(array('@@NAME@@[]',
+                                                        $params['args'], $params['value'],
                                                         '@@LABEL@@', '', '@@CLASS@@', $this->additional),
                                                         $params)));
             }
         }
+
+        function handle_post($value) {
+            if (is_array($value)) {
+                $value = join(', ', $value);
+            }
+
+            return parent::handle_post($value);
+        }
+
     }
 }
