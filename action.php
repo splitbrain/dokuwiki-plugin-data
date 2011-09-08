@@ -41,7 +41,6 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      */
     function _handle(&$event, $param){
         $data = $event->data;
-        if(strpos($data[0][1],'dataentry') !== false) return; // plugin seems still to be there
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return;
