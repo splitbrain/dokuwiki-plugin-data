@@ -100,6 +100,8 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
 
             if($col == '%pageid%'){
                 $order = ', pages.page '.$data['sort'][1];
+            }elseif($col == '%entryid%'){
+                $order = ', pages.entry '.$data['sort'][1];
             }elseif($col == '%title%'){
                 $order = ', pages.title '.$data['sort'][1];
             }else{
@@ -125,6 +127,8 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
 
                 if($col == '%pageid%'){
                     $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                }elseif($col == '%entryid%'){
+                    $where .= " ".$filter['logic']." pages.entry ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%title%'){
                     $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
                 }else{

@@ -62,7 +62,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $tables = array();
 
         $fields = array('pageid' => 'page', 'class' => 'class',
-                       'title' => 'title');
+                       'title' => 'title', 'entryid'=>'entry');
         // prepare filters (no request filters - we set them ourselves)
         if(is_array($data['filter']) && count($data['filter'])){
 

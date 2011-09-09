@@ -180,6 +180,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
         // fix title for special columns
         static $specials = array('%title%'  => array('page', 'title'),
                                  '%pageid%' => array('title', 'page'),
+                                 '%entryid%'=> array('entry', 'title'),
                                  '%class%'  => array('class'));
         if (isset($specials[$column['title']])) {
             $s = $specials[$column['title']];

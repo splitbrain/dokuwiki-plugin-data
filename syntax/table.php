@@ -359,6 +359,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             if($key == '%pageid%'){
                 // Prevent stripping of trailing zeros by forcing a CAST
                 $select[] = '" " || pages.page';
+            }elseif($key == '%entryid%'){
+                // Prevent stripping of trailing zeros by forcing a CAST
+                $select[] = "pages.page || '#' || pages.entry";
             }elseif($key == '%class%'){
                 // Prevent stripping of trailing zeros by forcing a CAST
                 $select[] = '" " || pages.class';
@@ -393,6 +396,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
             if($col == '%pageid%'){
                 $order = 'ORDER BY pages.page '.$data['sort'][1];
+            }elseif($col == '%entryid%'){
+                $order = 'ORDER BY pages.entry '.$data['sort'][1];
             }elseif($col == '%class%'){
                 $order = 'ORDER BY pages.class '.$data['sort'][1];
             }elseif($col == '%title%'){
@@ -423,6 +428,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
                 if($col == '%pageid%'){
                     $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                }elseif($col == '%entryid%'){
+                    $where .= " ".$filter['logic']." pages.entry ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%class%'){
                     $where .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%title%'){
@@ -445,7 +452,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $sql = "SELECT DISTINCT ".join(', ',$select)."
                   FROM pages $from
                  WHERE $where
-              GROUP BY pages.page
+              GROUP BY pages.page, pages.entry
                 $order";
 
         // offset and limit

@@ -27,6 +27,7 @@ $lang['submit']    = 'Save Aliases';
 $lang['dataentry'] = 'Data entry';
 
 $lang['title']     = 'Title';
+$lang['entry']     = 'Entry';
 $lang['type']      = 'Type';
 $lang['multi']     = 'Multi?';
 $lang['value']     = 'Value';
