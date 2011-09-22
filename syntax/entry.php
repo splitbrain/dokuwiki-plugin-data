@@ -277,7 +277,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
                 $cells = array(form_makeField('text', $fieldid . '[title]', $vals['title'], $this->getLang('title')),
                                form_makeMenuField($fieldid . '[type]',
-                                                  array_merge(array('', 'page', 'nspage', 'title',
+                                                  array_merge(array('', 'page', 'nspage', 'title', 'entry',
                                                                     'img', 'mail', 'url', 'tag', 'wiki', 'dt'),
                                                               array_keys($this->dthlp->_aliases())),
                                                   $vals['type'],
