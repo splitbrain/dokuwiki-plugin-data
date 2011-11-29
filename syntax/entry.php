@@ -259,7 +259,13 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 } else {
                     $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') .  ' ' .
                                'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
-                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes);
+
+                    $attr = array();
+                    if($vals['basetype'] == 'date' && !$vals['multi']){
+                        $attr['class'] = 'datepicker';
+                    }
+
+                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes,$attr);
 
                 }
                 $cells = array($vals['title'] . ':',
