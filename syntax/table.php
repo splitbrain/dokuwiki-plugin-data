@@ -14,6 +14,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      */
     var $dthlp = null;
 
+    var $sums = array();
+
     /**
      * Constructor. Load helper plugin
      */
@@ -67,6 +69,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $data = array('classes' => $class,
                       'limit'   => 0,
                       'dynfilters' => false,
+                      'summarize'  => false,
                       'headers' => array());
 
         // parse info
@@ -144,6 +147,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'dynfilters':
                         $data['dynfilters'] = (bool) $line[1];
                     break;
+                case 'summarize':
+                        $data['summarize'] = (bool) $line[1];
+                    break;
                 default:
                     msg("data plugin: unknown option '".hsc($line[0])."'",-1);
             }
@@ -213,6 +219,19 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                                 $data['cols'][$clist[$num]],
                                 $cval,$R);
                 $R->doc .= $this->after_val;
+
+                // clean currency symbols
+                $nval = str_replace('$€₤','',$cval);
+                $nval = str_replace('/ [A-Z]{0,3}$/','',$nval);
+                $nval = str_replace(',','.',$nval);
+                $nval = trim($nval);
+
+                // summarize
+                if($data['summarize'] && is_numeric($nval)){
+                    if(!isset($this->sums[$num])) $this->sums[$num] = 0;
+                    $this->sums[$num] += $nval;
+                }
+
             }
             $R->doc .= $this->after_item;
         }
@@ -303,6 +322,22 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     function postList($data, $rowcnt) {
         global $ID;
         $text = '';
+        // if summarize was set, add sums
+        if($data['summarize']){
+            $text .= '<tr>';
+            $len = count($data['cols']);
+            for($i=0; $i<$len; $i++){
+                $text .= '<td>';
+                if(!empty($this->sums[$i])){
+                    $text .= '∑ '.$this->sums[$i];
+                }else{
+                    $text .= '&nbsp;';
+                }
+                $text .= '</td>';
+            }
+            $text .= '<tr>';
+        }
+
         // if limit was set, add control
         if($data['limit']){
             $text .= '<tr><th colspan="'.count($data['cols']).'">';
