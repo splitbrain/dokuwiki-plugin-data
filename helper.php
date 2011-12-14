@@ -70,6 +70,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 return trim($email.' '.$name);
             case 'page': case 'nspage':
                 return cleanID($value);
+            case 'entry':
+                if(strpos($value,'#')===false) {
+                    return cleanID($value);
+                } else {
+                    list($id,$entry) = explode('#',$value,2);
+                    return cleanID($id).'#'.cleanID($entry).'|'.$entry;
+                }
             default:
                 return $value;
         }
@@ -99,6 +106,17 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 case 'page':
                     $val = $this->_addPrePostFixes($column['type'], $val, ':');
                     $outs[] = $R->internallink($val,null,null,true);
+                    break;
+                case 'entry':
+                    if(strpos($val, '#')!==false) {
+                        list($id,$rest) = explode('#',$val,2);
+                        list($entry,$title) = explode('|',$rest,2);
+                        $id = $this->_addPrePostFixes($column['type'], $id, ':').'#'.$entry;
+                        $outs[] = $R->internallink($id,$title,null,true);
+                    } else {
+                        $id = $this->_addPrePostFixes($column['type'], $val, ':');
+                        $outs[] = $R->internallink($id,null,null,true);
+                    }
                     break;
                 case 'title':
                 case 'pageid':
@@ -180,6 +198,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
         // fix title for special columns
         static $specials = array('%title%'  => array('page', 'title'),
                                  '%pageid%' => array('title', 'page'),
+                                 '%entryid%'=> array('entry', 'title'),
                                  '%class%'  => array('class'));
         if (isset($specials[$column['title']])) {
             $s = $specials[$column['title']];

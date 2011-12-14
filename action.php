@@ -41,19 +41,14 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      */
     function _handle(&$event, $param){
         $data = $event->data;
-        if(strpos($data[0][1],'dataentry') !== false) return; // plugin seems still to be there
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return;
         $id = ltrim($data[1].':'.$data[2],':');
 
-        // get page id
-        $res = $sqlite->query('SELECT pid FROM pages WHERE page = ?',$id);
-        $pid = (int) sqlite_fetch_single($res);
-        if(!$pid) return; // we have no data for this page
-
-        $sqlite->query('DELETE FROM data WHERE pid = ?',$pid);
-        $sqlite->query('DELETE FROM pages WHERE pid = ?',$pid);
+        // remove information related to the page
+        $sqlite->query('DELETE FROM  data WHERE pid IN (SELECT pid FROM pages WHERE page = ?)',$id);
+        $sqlite->query('DELETE FROM pages WHERE pid IN (SELECT pid FROM pages WHERE page = ?)',$id);
     }
 
     function _editbutton(&$event, $param) {

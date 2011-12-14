@@ -48,7 +48,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * Connect pattern to lexer
      */
     function connectTo($mode) {
-        $this->Lexer->addSpecialPattern('----+ *dataentry(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_entry');
+        $this->Lexer->addSpecialPattern('----+ *dataentry(?: ?\[[^]]*\])?(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_entry');
     }
 
     /**
@@ -58,9 +58,10 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         // get lines
         $lines = explode("\n",$match);
         array_pop($lines);
-        $class = array_shift($lines);
-        $class = str_replace('dataentry','',$class);
-        $class = trim($class,'- ');
+        $header = array_shift($lines);
+        preg_match('/----+ *dataentry ?(\[([^]]*)\])?( [ a-zA-Z0-9_]*)?-+/',$header,$m);
+        $entry = $m[2];
+        $class = trim($m[3]);
 
         // parse info
         $data = array();
@@ -94,7 +95,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             }
             $columns[$column['key']]  = $column;
         }
-        return array('data'=>$data, 'cols'=>$columns, 'classes'=>$class,
+        return array('data'=>$data, 'cols'=>$columns, 'classes'=>$class, 'entry'=>$entry,
                      'pos' => $pos, 'len' => strlen($match)); // not utf8_strlen
     }
 
@@ -173,20 +174,22 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         if(!$title) $title = $id;
 
         $class = $data['classes'];
+        $entry = $data['entry'];
+
 
         // begin transaction
         $sqlite->query("BEGIN TRANSACTION");
 
         // store page info
-        $sqlite->query("INSERT OR IGNORE INTO pages (page,title,class) VALUES (?,?,?)",
-                       $id,$title,$class);
+        $sqlite->query("INSERT OR IGNORE INTO pages (page,entry,title,class) VALUES (?,?,?,?)",
+                       $id,$entry,$title,$class);
 
         // Update title if insert failed (record already saved before)
-        $sqlite->query("UPDATE pages SET title = ?, class = ? WHERE page = ?",
-                       $title,$class,$id);
+        $sqlite->query("UPDATE pages SET title = ?, class = ? WHERE page = ? AND entry = ?",
+                       $title,$class,$id,$entry);
 
         // fetch page id
-        $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
+        $res = $sqlite->query("SELECT pid FROM pages WHERE page = ? AND entry = ?",$id,$entry);
         $pid = (int) sqlite_fetch_single($res);
 
         if(!$pid){
@@ -220,8 +223,10 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
         if ($this->getConf('edit_content_only')) {
             $renderer->form->addHidden('data_edit[classes]', $data['classes']);
+            $renderer->form->addHidden('data_edit[entry]', $data['entry']);
             $renderer->form->addElement('<table>');
         } else {
+            $renderer->form->addElement(form_makeField('text', 'data_edit[entry]', $data['entry'], $this->getLang('entry'), 'data__entry'));
             $renderer->form->addElement(form_makeField('text', 'data_edit[classes]', $data['classes'], $this->getLang('class'), 'data__classes'));
             $renderer->form->addElement('<table>');
 
@@ -278,7 +283,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
                 $cells = array(form_makeField('text', $fieldid . '[title]', $vals['title'], $this->getLang('title')),
                                form_makeMenuField($fieldid . '[type]',
-                                                  array_merge(array('', 'page', 'nspage', 'title',
+                                                  array_merge(array('', 'page', 'nspage', 'title', 'entry',
                                                                     'img', 'mail', 'url', 'tag', 'wiki', 'dt'),
                                                               array_keys($this->dthlp->_aliases())),
                                                   $vals['type'],
@@ -325,7 +330,8 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $len = max($len, utf8_strlen($nudata[count($nudata) - 1][0]));
         }
 
-        $ret = '---- dataentry ' . trim($data['classes']) . ' ----' . DOKU_LF;
+        $entry = (trim($data['entry'])=='') ? '' : ('['.trim($data['entry']).'] ');
+        $ret = '---- dataentry ' . $entry . trim($data['classes']) . ' ----' . DOKU_LF;
         foreach ($nudata as $field) {
             $ret .= $field[0] . str_repeat(' ', $len + 1 - utf8_strlen($field[0])) . ': ' .
                     $field[1];
