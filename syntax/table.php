@@ -109,6 +109,19 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                             $data['headers'][] = $col;
                         }
                     break;
+                case 'align':
+                        $cols = explode(',',$line[1]);
+                        foreach($cols as $col){
+                            $col = trim(strtolower($col));
+                            if($col[0] == 'c'){
+                                $col = 'center';
+                            }elseif($col[0] == 'r'){
+                                $col = 'right';
+                            }else{
+                                $col = 'left';
+                            }
+                            $data['align'][] = $col;
+                        }
                 case 'min':
                         $data['min']   = abs((int) $line[1]);
                     break;
@@ -176,7 +189,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     protected $before_item = '<tr>';
     protected $after_item  = '</tr>';
-    protected $before_val  = '<td>';
+    protected $before_val  = '<td %s>';
     protected $after_val   = '</td>';
 
     /**
@@ -214,7 +227,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             // build data rows
             $R->doc .= $this->before_item;
             foreach($row as $num => $cval){
-                $R->doc .= $this->before_val;
+                $R->doc .= sprintf($this->before_val,'class="'.$data['align'][$num].'align"');
                 $R->doc .= $this->dthlp->_formatData(
                                 $data['cols'][$clist[$num]],
                                 $cval,$R);
@@ -327,7 +340,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $text .= '<tr>';
             $len = count($data['cols']);
             for($i=0; $i<$len; $i++){
-                $text .= '<td>';
+                $text .= '<td class="'.$data['align'][$i].'align">';
                 if(!empty($this->sums[$i])){
                     $text .= '∑ '.$this->sums[$i];
                 }else{
