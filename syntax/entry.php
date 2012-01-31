@@ -182,8 +182,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                        $id,$title,$class);
 
         // Update title if insert failed (record already saved before)
-        $sqlite->query("UPDATE pages SET title = ?, class = ? WHERE page = ?",
-                       $title,$class,$id);
+        $revision = filemtime(wikiFN($id));
+        $sqlite->query("UPDATE pages SET title = ?, class = ?, lastmod = ? WHERE page = ?",
+                       $title,$class,$revision,$id);
 
         // fetch page id
         $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
