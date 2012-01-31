@@ -410,6 +410,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }elseif($key == '%class%'){
                 // Prevent stripping of trailing zeros by forcing a CAST
                 $select[] = '" " || pages.class';
+            }elseif($key == '%lastmod%'){
+                $select[] = 'pages.lastmod';
             }elseif($key == '%title%'){
                 $select[] = "pages.page || '|' || pages.title";
             }else{
@@ -445,6 +447,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $order = 'ORDER BY pages.class '.$data['sort'][1];
             }elseif($col == '%title%'){
                 $order = 'ORDER BY pages.title '.$data['sort'][1];
+            }elseif($col == '%lastmod%'){
+                $order = 'ORDER BY pages.lastmod '.$data['sort'][1];
             }else{
                 // sort by hidden column?
                 if(!$tables[$col]){
@@ -475,6 +479,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $where .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%title%'){
                     $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
+                }elseif($col == '%lastmod%'){
+                    # parse value to int?
+                    $filter['value'] = (int) strtotime($filter['value']);
+                    $where .= " ".$filter['logic']." pages.lastmod ".$filter['compare']." ".$filter['value'];
                 }else{
                     // filter by hidden column?
                     if(!$tables[$col]){

@@ -140,6 +140,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
+                case 'timestamp':
+                    $outs[] = dformat($val);
+                    break;
                 case 'wiki':
                     global $ID;
                     $oldid = $ID;
@@ -178,9 +181,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
                         'type'  => utf8_strtolower($matches[2]));
 
         // fix title for special columns
-        static $specials = array('%title%'  => array('page', 'title'),
-                                 '%pageid%' => array('title', 'page'),
-                                 '%class%'  => array('class'));
+        static $specials = array('%title%'   => array('page', 'title'),
+                                 '%pageid%'  => array('title', 'page'),
+                                 '%class%'   => array('class'),
+                                 '%lastmod%' => array('lastmod','timestamp'));
         if (isset($specials[$column['title']])) {
             $s = $specials[$column['title']];
             $column['title'] = $this->getLang($s[0]);

@@ -16,6 +16,7 @@ $lang['related']   = 'Related pages:';
 $lang['page']      = 'Page';
 $lang['title']     = 'Page Name';
 $lang['class']     = 'Page Class';
+$lang['lastmod']   = 'Last Modified';
 
 $lang['name']      = 'Type Alias';
 $lang['type']      = 'Original Type';
