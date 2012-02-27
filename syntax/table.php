@@ -302,7 +302,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $text .= '<th>';
                 $form = new Doku_Form(array('method' => 'GET'));
                 $form->_hidden = array();
-                $key = 'dataflt[' . $clist[$num] . '*~' . ']';
+                $key = 'dataflt[' . $clist[$num] . '_*~' . ']';
                 $val = isset($cur_params[$key]) ? $cur_params[$key] : '';
 
                 // Add current request params
