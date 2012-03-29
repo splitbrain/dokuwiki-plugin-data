@@ -255,6 +255,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     function preList($clist, $data) {
         global $ID;
+        global $conf;
 
         // Save current request params to not loose them
         $cur_params = array();
@@ -302,6 +303,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $text .= '<th>';
                 $form = new Doku_Form(array('method' => 'GET'));
                 $form->_hidden = array();
+                if(!$conf['userewrite']) $form->addHidden('id',$ID);
+
                 $key = 'dataflt[' . $clist[$num] . '_*~' . ']';
                 $val = isset($cur_params[$key]) ? $cur_params[$key] : '';
 
