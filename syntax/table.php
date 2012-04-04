@@ -298,14 +298,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // Dynamic filters
         if ($data['dynfilters']) {
-            $text .= '<tr>';
+            $text .= '<tr class="dataflt">';
             foreach($data['headers'] as $num => $head){
                 $text .= '<th>';
                 $form = new Doku_Form(array('method' => 'GET'));
                 $form->_hidden = array();
                 if(!$conf['userewrite']) $form->addHidden('id',$ID);
 
-                $key = 'dataflt[' . $clist[$num] . '_*~' . ']';
+                $key = 'dataflt[' . $data['cols'][$clist[$num]]['colname'] . '*~' . ']';
                 $val = isset($cur_params[$key]) ? $cur_params[$key] : '';
 
                 // Add current request params
@@ -315,7 +315,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     }
                 }
 
-                $form->addElement(form_makeField('', $key, $val, ''));
+                $form->addElement(form_makeField('text', $key, $val, ''));
                 $text .= $form->getForm();
                 $text .= '</th>';
             }
@@ -494,8 +494,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
                     }
 
-                    $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
-                              " '".$filter['value']."'"; //value is already escaped
+                    // apply data resolving?
+                    if($filter['colname']){
+                        $where .= ' '.$filter['logic'].' DATARESOLVE('.$tables[$col].'.value,\''.sqlite_escape_string($filter['colname']).'\') '.$filter['compare'].
+                                  " '".$filter['value']."'"; //value is already escaped
+                    } else {
+                        $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
+                                  " '".$filter['value']."'"; //value is already escaped
+                    }
                 }
             }
         }

@@ -26,6 +26,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             return false;
         }
         if($db->init('data',dirname(__FILE__).'/db/')){
+            sqlite_create_function($db->db,'DATARESOLVE',array($this,'_resolveData'),2);
             return $db;
         }else{
             return false;
@@ -75,12 +76,36 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }
     }
 
+    /**
+     * Add pre and postfixs to the given value
+     *
+     * $type may be an column array with pre and postfixes
+     */
     function _addPrePostFixes($type, $val, $pre='', $post='') {
         if (is_array($type)) {
             if (isset($type['prefix'])) $pre = $type['prefix'];
             if (isset($type['postfix'])) $post = $type['postfix'];
         }
         return $pre.$val.$post;
+    }
+
+    /**
+     * Resolve a value according to its column settings
+     *
+     * This function is registered as a SQL function named DATARESOLVE
+     */
+    function _resolveData($value, $colname){
+        // resolve pre and postfixes
+        $column = $this->_column($colname);
+        $value = $this->_addPrePostFixes($column['type'], $value);
+
+        // for pages, resolve title
+        $type = $column['type'];
+        if(is_array($type)) $type = $type['type'];
+        if($type == 'title' || ($type == 'page' && useHeading('content'))){
+            $value = p_get_first_heading($value);
+        }
+        return $value;
     }
 
     /**
@@ -175,10 +200,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _column($col){
         preg_match('/^([^_]*)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
-        $column = array('multi' => ($matches[3] === 's'),
-                        'key'   => utf8_strtolower($matches[1]),
-                        'title' => $matches[1],
-                        'type'  => utf8_strtolower($matches[2]));
+        $column = array(
+            'colname' => $col,
+            'multi'   => ($matches[3] === 's'),
+            'key'     => utf8_strtolower($matches[1]),
+            'title'   => $matches[1],
+            'type'    => utf8_strtolower($matches[2])
+        );
 
         // fix title for special columns
         static $specials = array('%title%'   => array('page', 'title'),
@@ -270,6 +298,8 @@ class helper_plugin_data extends DokuWiki_Plugin {
             return array('key'     => $column['key'],
                          'value'   => $val,
                          'compare' => $com,
+                         'colname' => $column['colname'],
+                         'type'    => $column['type']
                         );
         }
         msg('Failed to parse filter "'.hsc($filterline).'"',-1);
