@@ -4,4 +4,4 @@ Diese Oberfläche erlaubt Ihnen, neue Feldtyp-Aliasse einzurichten, die auf best
 
 Die Aliastypen können wie alle anderen Typen verwendet werden. Prä- und Postfixe werden direkt auf die im Feld angegebenen Werte angewendet; das ist zum Beispiel hilfreich beim Verlinken auf bestimmte Namensräume.
 
-Die vollständige Dokumentation ist auf der [[doku>de:plugin:data|Plugin-Beschreibungsseite]] verfügbar.
+Die vollständige Dokumentation ist auf der [[doku>plugin:data|Plugin-Beschreibungsseite]] verfügbar.
