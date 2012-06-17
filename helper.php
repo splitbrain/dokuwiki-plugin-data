@@ -31,7 +31,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 return false;
             }
             $db->fetchmode = DOKU_SQLITE_ASSOC;
-            $db->create_function($db->db,'DATARESOLVE',array($this,'_resolveData'),2);
+            $db->create_function('DATARESOLVE',array($this,'_resolveData'),2);
         }
         return $db;
     }
