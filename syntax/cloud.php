@@ -103,6 +103,11 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         return $sql;
     }
 
+    protected $before_item = '<ul class="dataplugin_cloud %s">';
+    protected $after_item  = '</ul>';
+    protected $before_val  = '<li class="cl%s">';
+    protected $after_val   = '</li>';
+
     /**
      * Create output or save the data
      */
@@ -135,15 +140,15 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $this->_cloud_weight($tags,$min,$max,5);
 
         // output cloud
-        $renderer->doc .= '<ul class="dataplugin_cloud '.hsc($data['classes']).'">';
+        $renderer->doc .= sprintf($this->before_item,hsc($data['classes']));
         foreach($tags as $tag => $lvl){
-            $renderer->doc .= '<li class="cl'.$lvl.'">';
+            $renderer->doc .= sprintf($this->before_val,$lvl);
             $renderer->doc .= '<a href="'.wl($data['page'],array('datasrt'=>$_REQUEST['datasrt'],
                                                                  'dataflt[]'=>"$ckey=$tag" )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).'" class="wikilink1">'.hsc($tag).'</a>';
-            $renderer->doc .= '</li>';
+            $renderer->doc .= $this->after_val;
         }
-        $renderer->doc .= '</ul>';
+        $renderer->doc .= $this->after_item;
         return true;
     }
 
