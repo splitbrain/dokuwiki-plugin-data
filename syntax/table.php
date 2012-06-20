@@ -269,8 +269,21 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         // build table
-        $text = '<div class="table dataaggregation">'
-              . '<table class="inline dataplugin_table '.$data['classes'].'">';
+        $text = '<div class="table dataaggregation">';
+        if(isset($_REQUEST['dataflt'])){
+            $flt_params = (array) $_REQUEST['dataflt'];
+            
+            foreach($flt_params as $key=>$flt) {
+                $sflt.=$flt.' ';
+            }
+            $text .= '<div class="filter">';
+            $text .=    '<h4>'.sprintf($this->getLang('tablefilteredby'),hsc($sflt)).'</h4>';//'Gefilterd op '
+            $text .=    '<div class="resetfilter">'.
+                            '<a href="'.wl($ID).'">'.$this->getLang('tableresetfilter').'</a>'.
+                        '</div>';//Geef alles weer(Verwijder filter)  Verwijder filter/sortering
+            $text .= '</div>';
+        }
+        $text .= '<table class="inline dataplugin_table '.$data['classes'].'">';
         // build column headers
         $text .= '<tr>';
         foreach($data['headers'] as $num => $head){

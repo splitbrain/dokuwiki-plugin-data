@@ -33,3 +33,6 @@ $lang['multi']     = 'Multi?';
 $lang['value']     = 'Value';
 
 $lang['none']      = 'Nothing found';
+
+$lang['tablefilteredby'] = 'Filtered by %s';
+$lang['tableresetfilter'] = 'Show all (remove filter/sort)';
