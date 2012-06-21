@@ -41,7 +41,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _cleanData($value, $type){
         $value = trim($value);
-        if(!$value) return '';
+        if(!$value AND $value!=='0') return '';
         if (is_array($type)) {
             if (isset($type['enum']) &&
                 !preg_match('/(^|,\s*)' . preg_quote_cb($value) . '($|\s*,)/', $type['enum'])) {
