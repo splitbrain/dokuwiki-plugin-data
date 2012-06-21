@@ -133,27 +133,34 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             if($val == '' || !count($val)) continue;
             $type = $data['cols'][$key]['type'];
             if (is_array($type)) $type = $type['type'];
-            switch ($type) {
-            case 'pageid':
-                $type = 'title';
-            case 'wiki':
-                $val = $ID . '|' . $val;
-                break;
-            }
+
 
             $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
+            $ret .= '<dd class="' . hsc($key) . '">';
             if(is_array($val)){
+                switch ($type) {
+                case 'pageid':
+                    $type = 'title';
+                case 'wiki':
+                    $val[$i] = $ID . '|' . $val[$i];
+                    break;
+                }
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
-                    $ret .= '<dd class="' . hsc($key) . '">';
                     $ret .= $this->dthlp->_formatData($data['cols'][$key], $val[$i],$R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
-                    $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd class="' . hsc($key) . '">'.
-                        $this->dthlp->_formatData($data['cols'][$key], $val, $R).'</dd>';
+                switch ($type) {
+                case 'pageid':
+                    $type = 'title';
+                case 'wiki':
+                    $val = $ID . '|' . $val;
+                    break;
+                }
+                $ret .= $this->dthlp->_formatData($data['cols'][$key], $val, $R);
             }
+            $ret .= '</dd>';
         }
         $ret .= '</dl></div>';
         $R->doc .= $ret;
