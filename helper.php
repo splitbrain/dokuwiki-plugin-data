@@ -154,7 +154,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     break;
                 case 'url':
                     $val = $this->_addPrePostFixes($column['type'], $val);
-                    $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
+                    $outs[] = $this->external_link($val,false,'urlextern');
                     break;
                 case 'tag':
                     // per default use keyname as target page, but prefix on aliases
