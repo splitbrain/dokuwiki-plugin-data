@@ -511,7 +511,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
                     // apply data resolving?
                     if($filter['colname'] && (substr($filter['compare'],-4) == 'LIKE')){
-                        $where .= ' '.$filter['logic'].' DATARESOLVE('.$tables[$col].'.value,\''.sqlite_escape_string($filter['colname']).'\') '.$filter['compare'].
+                        $where .= ' '.$filter['logic'].' DATARESOLVE('.$tables[$col].'.value,\''.$sqlite->escape_string($filter['colname']).'\') '.$filter['compare'].
                                   " '".$filter['value']."'"; //value is already escaped
                     } else {
                         $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
