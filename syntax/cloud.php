@@ -150,12 +150,12 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
                 //remove all filters for last clicked tag $ckey
                 foreach($cur_params as $key => $flt){
-                    if(strpos($flt,"$ckey=")!==false){
+                    if(strpos($flt,$data['cols'][$ckey]['colname']."=")!==false){
                         unset($cur_params[$key]);
                     }
                 }
             }
-            $cur_params[]="$ckey=$tag";
+            $cur_params[]=$data['cols'][$ckey]['colname']."=$tag";
             $cur_params = $this->dthlp->_a2ua('dataflt', $cur_params) ;
             $cur_params['datasrt'] =$_REQUEST['datasrt'];
             if (isset($_REQUEST['dataofs'])) {
