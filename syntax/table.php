@@ -160,6 +160,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'dynfilters':
                         $data['dynfilters'] = (bool) $line[1];
                     break;
+                case 'rownumbers':
+                    $data['rownumbers'] = (bool) $line[1];
+                    break;
                 case 'summarize':
                         $data['summarize'] = (bool) $line[1];
                     break;
@@ -225,11 +228,19 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         $R->doc .= $this->preList($clist, $data);
-        foreach ($rows as $row) {
+        foreach ($rows as $rownum => $row) {
             // build data rows
             $R->doc .= $this->before_item;
+            if($data['rownumbers']){
+                $R->doc .= sprintf($this->before_val,'class="'.$data['align'][0].'align"');
+                $R->doc .= $rownum+1;
+                $R->doc .= $this->after_val;
+            }
+            
             foreach(array_values($row) as $num => $cval){
-                $R->doc .= sprintf($this->before_val,'class="'.$data['align'][$num].'align"');
+                $num_rn = ($data['rownumbers'] ? $num+1 : $num);
+
+                $R->doc .= sprintf($this->before_val,'class="'.$data['align'][$num_rn].'align"');
                 $R->doc .= $this->dthlp->_formatData(
                                 $data['cols'][$clist[$num]],
                                 $cval,$R);
@@ -284,6 +295,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $text .= '<table class="inline dataplugin_table '.$data['classes'].'">';
         // build column headers
         $text .= '<tr>';
+
+        if($data['rownumbers']) $text .= '<th>#</th>';
+
         foreach($data['headers'] as $num => $head){
             $ckey = $clist[$num];
 
@@ -309,6 +323,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         // Dynamic filters
         if ($data['dynfilters']) {
             $text .= '<tr class="dataflt">';
+
+            if($data['rownumbers']) $text .= '<th></th>';
+
             foreach($data['headers'] as $num => $head){
                 $text .= '<th>';
                 $form = new Doku_Form(array('method' => 'GET'));
@@ -352,6 +369,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         if($data['summarize']){
             $text .= '<tr>';
             $len = count($data['cols']);
+
+            if($data['rownumbers']) $text .= '<td></td>';
+
             for($i=0; $i<$len; $i++){
                 $text .= '<td class="'.$data['align'][$i].'align">';
                 if(!empty($this->sums[$i])){
@@ -366,7 +386,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // if limit was set, add control
         if($data['limit']){
-            $text .= '<tr><th colspan="'.count($data['cols']).'">';
+            $text .= '<tr><th colspan="'.(count($data['cols'])+($data['rownumbers'] ? 1 : 0)).'">';
             $offset = (int) $_REQUEST['dataofs'];
             if($offset){
                 $prev = $offset - $data['limit'];
