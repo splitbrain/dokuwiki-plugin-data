@@ -184,6 +184,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         $data['sql'] = $this->_buildSQL($data);
+
+        // Save current request params for comparison in updateSQL
+        $data['cur_param']=$this->dthlp->_get_current_param(false);
         return $data;
     }
 
@@ -257,30 +260,25 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         global $conf;
 
         // Save current request params to not loose them
-        $cur_params = array();
-        if(isset($_REQUEST['dataflt'])){
-            $cur_params = $this->dthlp->_a2ua('dataflt', $_REQUEST['dataflt']);
-        }
-        if (isset($_REQUEST['datasrt'])) {
-            $cur_params['datasrt'] = $_REQUEST['datasrt'];
-        }
-        if (isset($_REQUEST['dataofs'])) {
-            $cur_params['dataofs'] = $_REQUEST['dataofs'];
-        }
+        $cur_params = $this->dthlp->_get_current_param();
 
         // build table
         $text = '<div class="table dataaggregation">';
         if(isset($_REQUEST['dataflt'])){
-            $flt_params = (array) $_REQUEST['dataflt'];
-            
-            foreach($flt_params as $key=>$flt) {
-                $sflt.=$flt.' ';
+            $filters=array();
+            foreach($_REQUEST['dataflt'] as $key=>$filter) {
+                if(is_numeric($key)){
+                    $filters[]=$filter;
+                }else{
+                    $filters[]='*'.substr($key, 0, -1).'='.$filter;
+                }
             }
+
             $text .= '<div class="filter">';
-            $text .=    '<h4>'.sprintf($this->getLang('tablefilteredby'),hsc($sflt)).'</h4>';//'Gefilterd op '
+            $text .=    '<h4>'.sprintf($this->getLang('tablefilteredby'),hsc(implode(' & ', $filters))).'</h4>';
             $text .=    '<div class="resetfilter">'.
                             '<a href="'.wl($ID).'">'.$this->getLang('tableresetfilter').'</a>'.
-                        '</div>';//Geef alles weer(Verwijder filter)  Verwijder filter/sortering
+                        '</div>';
             $text .= '</div>';
         }
         $text .= '<table class="inline dataplugin_table '.$data['classes'].'">';
@@ -483,12 +481,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // add request filters
         if (!isset($data['filter'])) $data['filter'] = array();
-        $data['filter'] = array_merge($data['filter'], $this->dthlp->_get_filters());
+        $filters = array_merge($data['filter'], $this->dthlp->_get_filters());
 
         // prepare filters
-        if(is_array($data['filter']) && count($data['filter'])){
+        if(is_array($filters) && count($filters)){
 
-            foreach($data['filter'] as $filter){
+            foreach($filters as $filter){
                 $col = $filter['key'];
 
                 if($col == '%pageid%'){
@@ -539,7 +537,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     function updateSQLwithQuery(&$data) {
         // take overrides from HTTP request params into account
-        if(isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt'])){
+        $cur_params=$this->dthlp->_get_current_param(false);
+
+        if(count(array_diff(array_merge($cur_params, $data['cur_param']), array_intersect($cur_params, $data['cur_param'])))>0){
             if (isset($_REQUEST['datasrt'])) {
                 if($_REQUEST['datasrt']{0} == '^'){
                     $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');

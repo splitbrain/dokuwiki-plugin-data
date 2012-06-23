@@ -347,4 +347,29 @@ class helper_plugin_data extends DokuWiki_Plugin {
         return $urlarray;
     }
 
+    /**
+     * get current URL parameters
+     */
+    function _get_current_param($returnURLparams=true){
+        $cur_params = array();
+        if(isset($_REQUEST['dataflt'])){
+            $cur_params = $this->_a2ua('dataflt', $_REQUEST['dataflt']);
+        }
+        if (isset($_REQUEST['datasrt'])) {
+            $cur_params['datasrt'] = $_REQUEST['datasrt'];
+        }
+        if (isset($_REQUEST['dataofs'])) {
+            $cur_params['dataofs'] = $_REQUEST['dataofs'];
+        }
+
+        //combine key and value
+        if(!$returnURLparams){
+            $flat_param=array();
+            foreach($cur_params as $key => $val){
+                $flat_param[]=$key.$val;
+            }
+            $cur_params=$flat_param;
+        }
+        return $cur_params;
+    }
 }
