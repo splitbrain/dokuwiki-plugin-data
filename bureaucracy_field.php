@@ -5,11 +5,11 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
     class syntax_plugin_bureaucracy_field_dataplugin extends syntax_plugin_bureaucracy_field {
 
-        function __construct($syntax_plugin, $args) {
+        function __construct($args) {
             $dthlp =& plugin_load('helper', 'data');
             if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
 
-            $this->init($syntax_plugin, $args);
+            $this->init($args);
             $n_args = array();
             foreach ($args as $arg) {
                 if ($arg[0] !== '_') {
@@ -45,6 +45,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             if (isset($this->tpl)) {
                 parent::render($params, $form);
             } else {
+                // Is an enum type, otherwise $this->tpl would be set in __construct
                 $this->_handlePreload();
                 if(!$form->_infieldset){
                     $form->startFieldset('');
@@ -53,12 +54,26 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                     $params['class'] = 'bureaucracy_error';
                 }
                 $params = array_merge($this->opt, $params);
+                $params['value'] = preg_split('/\s*,\s*/', $params['value'], -1, PREG_SPLIT_NO_EMPTY);
+                if (count($params['value']) === 0) {
+                    $params['value'] = $params['args'][0];
+                }
+
                 $form->addElement(call_user_func_array('form_makeListboxField',
-                                                       $this->_parse_tpl(array('@@NAME@@',
-                                                        $params['args'], '@@VALUE|' . $params['args'][0] . '@@',
+                                                       $this->_parse_tpl(array('@@NAME@@[]',
+                                                        $params['args'], $params['value'],
                                                         '@@LABEL@@', '', '@@CLASS@@', $this->additional),
                                                         $params)));
             }
         }
+
+        function handle_post($value) {
+            if (is_array($value)) {
+                $value = join(', ', $value);
+            }
+
+            return parent::handle_post($value);
+        }
+
     }
 }

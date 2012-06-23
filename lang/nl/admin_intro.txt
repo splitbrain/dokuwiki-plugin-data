@@ -1,0 +1,7 @@
+====== Aliases instellen voor DB veldtypes======
+
+Deze interface geeft je de mogelijkheid om nieuwe aliases te maken voor veldtypes gebaseerd op bestaande types.
+
+De aliases kunnen worden gebruikt zoals elke andere soort veldtype, maar alle data zal worden prefixed of postfixed met de waardes die hier voor de alias zijn gegeven. Het wordt meestal gebruikt voor linken van bepaalde veldtypes met speciale namespaces.
+
+Ga naar de [[doku>plugin:data|pluginbeschrijving]] voor meer informatie over aliases.

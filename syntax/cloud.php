@@ -80,7 +80,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
                     // filter by hidden column?
                     if(!$tables[$col]){
                         $tables[$col] = 'T'.(++$cnt);
-                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = data.pid';
                         $from  .= ' AND '.$tables[$col].".key = ".$sqlite->quote_string($col);
                     }
 
@@ -103,6 +103,11 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         return $sql;
     }
 
+    protected $before_item = '<ul class="dataplugin_cloud %s">';
+    protected $after_item  = '</ul>';
+    protected $before_val  = '<li class="cl%s">';
+    protected $after_val   = '</li>';
+
     /**
      * Create output or save the data
      */
@@ -123,25 +128,46 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
         // build cloud data
         $res = $sqlite->query($data['sql']);
-        $tags = $sqlite->res2arr($res);
+        $rows = $sqlite->res2arr($res);
         $min = 0;
         $max = 0;
-        foreach ($tags as $row) {
-            if(!$max) $max  = $row;
-            $min  = $row;
+        $tags = array();
+        foreach ($rows as $row) {
+            if(!$max) $max  = $row['cnt'];
+            $min  = $row['cnt'];
+            $tags[$row['value']] = $row['cnt'];
         }
         $this->_cloud_weight($tags,$min,$max,5);
 
         // output cloud
-        $renderer->doc .= '<ul class="dataplugin_cloud '.hsc($data['classes']).'">';
+        $renderer->doc .= sprintf($this->before_item,hsc($data['classes']));
         foreach($tags as $tag => $lvl){
-            $renderer->doc .= '<li class="cl'.$lvl.'">';
-            $renderer->doc .= '<a href="'.wl($data['page'],array('datasrt'=>$_REQUEST['datasrt'],
-                                                                 'dataflt[]'=>"$ckey=$tag" )).
-                              '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).'" class="wikilink1">'.hsc($tag).'</a>';
-            $renderer->doc .= '</li>';
+            $renderer->doc .= sprintf($this->before_val,$lvl);
+ 
+            $cur_params = array();
+            if (isset($_REQUEST['dataflt'])) {
+                $cur_params = (array)$_REQUEST['dataflt'];
+
+                //remove all filters for last clicked tag $ckey
+                foreach($cur_params as $key => $flt){
+                    if(strpos($flt,$data['cols'][$ckey]['colname']."=")!==false){
+                        unset($cur_params[$key]);
+                    }
+                }
+            }
+            $cur_params[]=$data['cols'][$ckey]['colname']."=$tag";
+            $cur_params = $this->dthlp->_a2ua('dataflt', $cur_params) ;
+            $cur_params['datasrt'] =$_REQUEST['datasrt'];
+            if (isset($_REQUEST['dataofs'])) {
+            	$cur_params['dataofs'] = $_REQUEST['dataofs'];
+            }
+
+            $renderer->doc .= '<a href="'.wl($data['page'],$cur_params).
+                              '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).
+                              '" class="wikilink1">'.hsc($tag).'</a>';
+            $renderer->doc .= $this->after_val;
         }
-        $renderer->doc .= '</ul>';
+        $renderer->doc .= $this->after_item;
         return true;
     }
 
