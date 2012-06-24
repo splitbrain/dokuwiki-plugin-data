@@ -129,6 +129,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
         }
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
+        $class_names = array();
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
             $type = $data['cols'][$key]['type'];
@@ -141,17 +142,18 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 break;
             }
 
-            $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
+            $class_name = hsc(sectionID($key, $class_names));
+            $ret .= '<dt class="' . $class_name . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
             if(is_array($val)){
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
-                    $ret .= '<dd class="' . hsc($key) . '">';
+                    $ret .= '<dd class="' . $class_name . '">';
                     $ret .= $this->dthlp->_formatData($data['cols'][$key], $val[$i],$R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
                     $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd class="' . hsc($key) . '">'.
+                $ret .= '<dd class="' . $class_name . '">'.
                         $this->dthlp->_formatData($data['cols'][$key], $val, $R).'</dd>';
             }
         }
