@@ -17,6 +17,11 @@ require_once(DOKU_INC.'inc/infoutils.php');
 class helper_plugin_data extends DokuWiki_Plugin {
 
     /**
+     * Access to the sqlite helper class
+     */
+    public $db = null;
+
+    /**
      * load the sqlite helper
      */
     function _getDB(){
@@ -26,7 +31,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
             return false;
         }
         if($db->init('data',dirname(__FILE__).'/db/')){
-            sqlite_create_function($db->db,'DATARESOLVE',array($this,'_resolveData'),2);
+            if(isset($db->extension) && $db->extension == DOKU_EXT_PDO){
+                $db->db->sqliteCreateFunction('DATARESOLVE',array($this,'_resolveData'),2);
+            }else{
+                sqlite_create_function($db->db,'DATARESOLVE',array($this,'_resolveData'),2);
+            }
+            $this->db = $db;
             return $db;
         }else{
             return false;
@@ -161,7 +171,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                         $target = $this->_addPrePostFixes($column['type'],'');
                     }
 
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)),array('dataflt'=>$column['key'].'='.$val )).
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)),array('dataflt'=>$column['key'].'_='.$val )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
@@ -293,7 +303,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 // Clean if there are no asterisks I could kill
                 $val = $this->_cleanData($val, $column['type']);
             }
-            $val = sqlite_escape_string($val); //pre escape
+            $val = $this->db->escape_string($val); //pre escape
 
             return array('key'     => $column['key'],
                          'value'   => $val,

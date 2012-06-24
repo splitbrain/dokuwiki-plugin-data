@@ -211,7 +211,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         $cnt = 0;
         $rows = array();
-        while ($row = sqlite_fetch_array($res, SQLITE_NUM)) {
+        while ($row = $sqlite->res_fetch_array($res, SQLITE_NUM)) {
             $rows[] = $row;
             $cnt++;
             if($data['limit'] && ($cnt == $data['limit'])) break; // keep an eye on the limit
@@ -248,7 +248,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }
             $R->doc .= $this->after_item;
         }
-        $R->doc .= $this->postList($data, sqlite_num_rows($res));
+        $R->doc .= $this->postList($data, $sqlite->res2count($res));
 
         return true;
     }
@@ -421,7 +421,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 if(!isset($tables[$key])){
                     $tables[$key] = 'T'.(++$cnt);
                     $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
-                    $from  .= ' AND '.$tables[$key].".key = '".sqlite_escape_string($key)."'";
+                    $from  .= ' AND '.$tables[$key].".key = '".$this->dthlp->db->escape_string($key)."'";
                 }
                 $type = $col['type'];
                 if (is_array($type)) $type = $type['type'];
@@ -457,7 +457,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 if(!$tables[$col]){
                     $tables[$col] = 'T'.(++$cnt);
                     $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                    $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                    $from  .= ' AND '.$tables[$col].".key = '".$this->dthlp->db->escape_string($col)."'";
                 }
 
                 $order = 'ORDER BY '.$tables[$col].'.value '.$data['sort'][1];
@@ -491,12 +491,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     if(!$tables[$col]){
                         $tables[$col] = 'T'.(++$cnt);
                         $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                        $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
+                        $from  .= ' AND '.$tables[$col].".key = '".$this->dthlp->db->escape_string($col)."'";
                     }
 
                     // apply data resolving?
                     if($filter['colname'] && (substr($filter['compare'],-4) == 'LIKE')){
-                        $where .= ' '.$filter['logic'].' DATARESOLVE('.$tables[$col].'.value,\''.sqlite_escape_string($filter['colname']).'\') '.$filter['compare'].
+                        $where .= ' '.$filter['logic'].' DATARESOLVE('.$tables[$col].'.value,\''.$this->dthlp->db->escape_string($filter['colname']).'\') '.$filter['compare'].
                                   " '".$filter['value']."'"; //value is already escaped
                     } else {
                         $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
