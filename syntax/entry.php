@@ -133,27 +133,34 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             if($val == '' || !count($val)) continue;
             $type = $data['cols'][$key]['type'];
             if (is_array($type)) $type = $type['type'];
-            switch ($type) {
-            case 'pageid':
-                $type = 'title';
-            case 'wiki':
-                $val = $ID . '|' . $val;
-                break;
-            }
+
 
             $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
+            $ret .= '<dd class="' . hsc($key) . '">';
             if(is_array($val)){
+                switch ($type) {
+                case 'pageid':
+                    $type = 'title';
+                case 'wiki':
+                    $val[$i] = $ID . '|' . $val[$i];
+                    break;
+                }
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
-                    $ret .= '<dd class="' . hsc($key) . '">';
                     $ret .= $this->dthlp->_formatData($data['cols'][$key], $val[$i],$R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
-                    $ret .= '</dd>';
                 }
             }else{
-                $ret .= '<dd class="' . hsc($key) . '">'.
-                        $this->dthlp->_formatData($data['cols'][$key], $val, $R).'</dd>';
+                switch ($type) {
+                case 'pageid':
+                    $type = 'title';
+                case 'wiki':
+                    $val = $ID . '|' . $val;
+                    break;
+                }
+                $ret .= $this->dthlp->_formatData($data['cols'][$key], $val, $R);
             }
+            $ret .= '</dd>';
         }
         $ret .= '</dl></div>';
         $R->doc .= $ret;
@@ -182,8 +189,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                        $id,$title,$class);
 
         // Update title if insert failed (record already saved before)
-        $sqlite->query("UPDATE pages SET title = ?, class = ? WHERE page = ?",
-                       $title,$class,$id);
+        $revision = filemtime(wikiFN($id));
+        $sqlite->query("UPDATE pages SET title = ?, class = ?, lastmod = ? WHERE page = ?",
+                       $title,$class,$revision,$id);
 
         // fetch page id
         $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
@@ -259,7 +267,13 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 } else {
                     $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') .  ' ' .
                                'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
-                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes);
+
+                    $attr = array();
+                    if($vals['basetype'] == 'date' && !$vals['multi']){
+                        $attr['class'] = 'datepicker';
+                    }
+
+                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes,$attr);
 
                 }
                 $cells = array($vals['title'] . ':',
@@ -273,7 +287,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $cells = array(form_makeField('text', $fieldid . '[title]', $vals['title'], $this->getLang('title')),
                                form_makeMenuField($fieldid . '[type]',
                                                   array_merge(array('', 'page', 'nspage', 'title',
-                                                                    'mail', 'url', 'tag', 'wiki', 'dt'),
+                                                                    'img', 'mail', 'url', 'tag', 'wiki', 'dt'),
                                                               array_keys($this->dthlp->_aliases())),
                                                   $vals['type'],
                                                   $this->getLang('type')),

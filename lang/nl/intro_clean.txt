@@ -1,0 +1,6 @@
+====== Database Opschonen ======
+
+Als een pagina met een datablok wordt verwijderd, wordt de bijhorende metadata ook verwijderd. Dit is echter alleen waar als de pagina wordt verwijderd via een normale wikibewerking. Als de pagina op een andere manier is verwijderd, bijvoorbeeld via het bestandsysteem, blijft de metadata in de database staan.
+
+Deze tool verwijdert alle bewaarde data van pagina's die niet langer bestaan.
+

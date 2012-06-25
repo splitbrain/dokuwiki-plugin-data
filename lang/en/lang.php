@@ -16,6 +16,7 @@ $lang['related']   = 'Related pages:';
 $lang['page']      = 'Page';
 $lang['title']     = 'Page Name';
 $lang['class']     = 'Page Class';
+$lang['lastmod']   = 'Last Modified';
 
 $lang['name']      = 'Type Alias';
 $lang['type']      = 'Original Type';
@@ -32,3 +33,6 @@ $lang['multi']     = 'Multi?';
 $lang['value']     = 'Value';
 
 $lang['none']      = 'Nothing found';
+
+$lang['tablefilteredby'] = 'Filtered by %s';
+$lang['tableresetfilter'] = 'Show all (remove filter/sort)';

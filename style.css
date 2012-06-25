@@ -43,7 +43,6 @@ div.dataplugin_entry.hidden {
     display: none;
 }
 
-
 /* default styles for the tag cloud */
 ul.dataplugin_cloud {
     overflow: auto;
@@ -119,4 +118,8 @@ div.dokuwiki div.editbutton_plugin_data form input.button {
     padding: 0 0.3em;
     background-image: none;
     border-top: none;
+}
+
+table.dataplugin_table th input {
+    width: 98%;
 }

@@ -31,6 +31,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 return false;
             }
             $db->fetchmode = DOKU_SQLITE_ASSOC;
+            $db->create_function('DATARESOLVE',array($this,'_resolveData'),2);
         }
         return $db;
     }
@@ -40,7 +41,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _cleanData($value, $type){
         $value = trim($value);
-        if(!$value) return '';
+        if(!$value AND $value!=='0') return '';
         if (is_array($type)) {
             if (isset($type['enum']) &&
                 !preg_match('/(^|,\s*)' . preg_quote_cb($value) . '($|\s*,)/', $type['enum'])) {
@@ -78,12 +79,36 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }
     }
 
+    /**
+     * Add pre and postfixs to the given value
+     *
+     * $type may be an column array with pre and postfixes
+     */
     function _addPrePostFixes($type, $val, $pre='', $post='') {
         if (is_array($type)) {
             if (isset($type['prefix'])) $pre = $type['prefix'];
             if (isset($type['postfix'])) $post = $type['postfix'];
         }
         return $pre.$val.$post;
+    }
+
+    /**
+     * Resolve a value according to its column settings
+     *
+     * This function is registered as a SQL function named DATARESOLVE
+     */
+    function _resolveData($value, $colname){
+        // resolve pre and postfixes
+        $column = $this->_column($colname);
+        $value = $this->_addPrePostFixes($column['type'], $value);
+
+        // for pages, resolve title
+        $type = $column['type'];
+        if(is_array($type)) $type = $type['type'];
+        if($type == 'title' || ($type == 'page' && useHeading('content'))){
+            $value = p_get_first_heading($value);
+        }
+        return $value;
     }
 
     /**
@@ -104,6 +129,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = $R->internallink($val,null,null,true);
                     break;
                 case 'title':
+                case 'pageid':
                     list($id,$title) = explode('|',$val,2);
                     $id = $this->_addPrePostFixes($column['type'], $id, ':');
                     $outs[] = $R->internallink($id,$title,null,true);
@@ -128,13 +154,22 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     break;
                 case 'url':
                     $val = $this->_addPrePostFixes($column['type'], $val);
-                    $outs[] = '<a href="'.hsc($val).'" class="urlextern" title="'.hsc($val).'">'.hsc($val).'</a>';
+                    $outs[] = $this->external_link($val,false,'urlextern');
                     break;
                 case 'tag':
-                    #FIXME handle pre/postfix
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($column['key'])),array('dataflt'=>$column['key'].':'.$val )).
+                    // per default use keyname as target page, but prefix on aliases
+                    if(!is_array($column['type'])){
+                        $target = $column['key'].':';
+                    }else{
+                        $target = $this->_addPrePostFixes($column['type'],'');
+                    }
+
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)),array('dataflt'=>$column['key'].'='.$val )).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
+                    break;
+                case 'timestamp':
+                    $outs[] = dformat($val);
                     break;
                 case 'wiki':
                     global $ID;
@@ -168,15 +203,19 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _column($col){
         preg_match('/^([^_]*)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
-        $column = array('multi' => ($matches[3] === 's'),
-                        'key'   => utf8_strtolower($matches[1]),
-                        'title' => $matches[1],
-                        'type'  => utf8_strtolower($matches[2]));
+        $column = array(
+            'colname' => $col,
+            'multi'   => ($matches[3] === 's'),
+            'key'     => utf8_strtolower($matches[1]),
+            'title'   => $matches[1],
+            'type'    => utf8_strtolower($matches[2])
+        );
 
         // fix title for special columns
-        static $specials = array('%title%'  => array('page', 'title'),
-                                 '%pageid%' => array('title', 'page'),
-                                 '%class%'  => array('class'));
+        static $specials = array('%title%'   => array('page', 'title'),
+                                 '%pageid%'  => array('title', 'page'),
+                                 '%class%'   => array('class'),
+                                 '%lastmod%' => array('lastmod','timestamp'));
         if (isset($specials[$column['title']])) {
             $s = $specials[$column['title']];
             $column['title'] = $this->getLang($s[0]);
@@ -222,7 +261,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * @return mixed - array on success, false on error
      */
     function _parse_filter($filterline){
-        if(preg_match('/^(.*?)([=<>!~]{1,2})(.*)$/',$filterline,$matches)){
+        if(preg_match('/^(.*?)([\*=<>!~]{1,2})(.*)$/',$filterline,$matches)){
             $column = $this->_column(trim($matches[1]));
 
             $com = $matches[2];
@@ -231,7 +270,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
             if (isset($aliasses[$com])) {
                 $com = $aliasses[$com];
-            } elseif (!preg_match('/(!?[=~])|([<>]=?)/', $com)) {
+            } elseif (!preg_match('/(!?[=~])|([<>]=?)|(\*~)/', $com)) {
                 msg('Failed to parse comparison "'.hsc($com).'"',-1);
                 return false;
             }
@@ -243,6 +282,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
             $val = str_replace('%now%', dformat(null, '%Y-%m-%d'),$val);
 
             if(strpos($com, '~') !== false) {
+                if ($com === '*~') {
+                    $val = '*' . $val . '*';
+                    $com = '~';
+                }
                 $val = str_replace('*','%',$val);
                 if ($com == '!~'){
                     $com = 'NOT LIKE';
@@ -259,6 +302,8 @@ class helper_plugin_data extends DokuWiki_Plugin {
             return array('key'     => $column['key'],
                          'value'   => $val,
                          'compare' => $com,
+                         'colname' => $column['colname'],
+                         'type'    => $column['type']
                         );
         }
         msg('Failed to parse filter "'.hsc($filterline).'"',-1);
@@ -279,7 +324,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }else{
             $flt = $_REQUEST['dataflt'];
         }
-
         foreach($flt as $key => $line){
             // we also take the column and filtertype in the key:
             if(!is_numeric($key)) $line = $key.$line;
@@ -289,7 +333,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 $filters[] = $f;
             }
         }
-
         return $filters;
     }
 
@@ -299,9 +342,34 @@ class helper_plugin_data extends DokuWiki_Plugin {
     function _a2ua($name,$array){
         $urlarray = array();
         foreach((array) $array as $key => $val){
-            $urlarray[rawurlencode($name).'['.rawurlencode($key).']'] = $val;
+            $urlarray[$name.'['.$key.']'] = $val;
         }
         return $urlarray;
     }
 
+    /**
+     * get current URL parameters
+     */
+    function _get_current_param($returnURLparams=true){
+        $cur_params = array();
+        if(isset($_REQUEST['dataflt'])){
+            $cur_params = $this->_a2ua('dataflt', $_REQUEST['dataflt']);
+        }
+        if (isset($_REQUEST['datasrt'])) {
+            $cur_params['datasrt'] = $_REQUEST['datasrt'];
+        }
+        if (isset($_REQUEST['dataofs'])) {
+            $cur_params['dataofs'] = $_REQUEST['dataofs'];
+        }
+
+        //combine key and value
+        if(!$returnURLparams){
+            $flat_param=array();
+            foreach($cur_params as $key => $val){
+                $flat_param[]=$key.$val;
+            }
+            $cur_params=$flat_param;
+        }
+        return $cur_params;
+    }
 }
