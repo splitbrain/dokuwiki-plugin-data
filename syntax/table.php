@@ -431,8 +431,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $tables = array();
         $select = array();
         $from   = '';
-        $where  = '1 = 1';
         $order  = '';
+
+        $from2   = '';
+        $where2  = '1 = 1';
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
@@ -453,7 +455,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             }else{
                 if(!isset($tables[$key])){
                     $tables[$key] = 'T'.(++$cnt);
-                    $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = pages.pid';
+                    $from  .= ' LEFT JOIN data AS '.$tables[$key].' ON '.$tables[$key].'.pid = W1.pid';
                     $from  .= ' AND '.$tables[$key].".key = ".$sqlite->quote_string($key);
                 }
                 $type = $col['type'];
@@ -489,7 +491,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 // sort by hidden column?
                 if(!$tables[$col]){
                     $tables[$col] = 'T'.(++$cnt);
-                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = W1.pid';
                     $from  .= ' AND '.$tables[$col].".key = " . $sqlite->quote_string($col);
                 }
 
@@ -504,35 +506,34 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $filters = array_merge($data['filter'], $this->dthlp->_get_filters());
 
         // prepare filters
+        $cnt = 0;
         if(is_array($filters) && count($filters)){
 
             foreach($filters as $filter){
                 $col = $filter['key'];
 
                 if($col == '%pageid%'){
-                    $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                    $where2 .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%class%'){
-                    $where .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
+                    $where2 .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%title%'){
-                    $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
+                    $where2 .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
                 }elseif($col == '%lastmod%'){
                     # parse value to int?
                     $filter['value'] = (int) strtotime($filter['value']);
-                    $where .= " ".$filter['logic']." pages.lastmod ".$filter['compare']." ".$filter['value'];
+                    $where2 .= " ".$filter['logic']." pages.lastmod ".$filter['compare']." ".$filter['value'];
                 }else{
                     // filter by hidden column?
-                    if(!$tables[$col]){
-                        $tables[$col] = 'T'.(++$cnt);
-                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
-                        $from  .= ' AND '.$tables[$col].".key = " . $sqlite->quote_string($col);
-                    }
+                    $table= 'T'.(++$cnt);
+                    $from2  .= ' LEFT JOIN data AS '.$table.' ON '.$table.'.pid = pages.pid';
+                    $from2  .= ' AND '.$table.".key = " . $sqlite->quote_string($col);
 
                     // apply data resolving?
                     if($filter['colname'] && (substr($filter['compare'],-4) == 'LIKE')){
-                        $where .= ' '.$filter['logic'].' DATARESOLVE('.$tables[$col].'.value,\''.$sqlite->escape_string($filter['colname']).'\') '.$filter['compare'].
+                        $where2 .= ' '.$filter['logic'].' DATARESOLVE('.$table.'.value,\''.$sqlite->escape_string($filter['colname']).'\') '.$filter['compare'].
                                   " '".$filter['value']."'"; //value is already escaped
                     } else {
-                        $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
+                        $where2 .= ' '.$filter['logic'].' '.$table.'.value '.$filter['compare'].
                                   " '".$filter['value']."'"; //value is already escaped
                     }
                 }
@@ -540,10 +541,15 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         // build the query
-        $sql = "SELECT DISTINCT ".join(', ',$select)."
-                  FROM pages $from
-                 WHERE $where
-              GROUP BY pages.page
+        $sql = "SELECT ".join(', ',$select)."
+                FROM (
+                    SELECT DISTINCT pages.pid 
+                    FROM pages $from2
+                    WHERE $where2
+                ) AS W1 
+                $from
+                LEFT JOIN pages ON W1.pid=pages.pid
+                GROUP BY W1.pid
                 $order";
 
         // offset and limit
