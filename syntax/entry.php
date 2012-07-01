@@ -129,14 +129,16 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
         }
         $ret .= '<div class="inline dataplugin_entry '.$data['classes'].'"><dl>';
+        $class_names = array();
         foreach($data['data'] as $key => $val){
             if($val == '' || !count($val)) continue;
             $type = $data['cols'][$key]['type'];
             if (is_array($type)) $type = $type['type'];
 
 
-            $ret .= '<dt class="' . hsc($key) . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
-            $ret .= '<dd class="' . hsc($key) . '">';
+            $class_name = hsc(sectionID($key, $class_names));
+            $ret .= '<dt class="' . $class_name . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
+            $ret .= '<dd class="' . $class_name . '">';
             if(is_array($val)){
                 switch ($type) {
                 case 'pageid':
