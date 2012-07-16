@@ -276,17 +276,23 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         // build table
         $text = '<div class="table dataaggregation">';
         if(isset($_REQUEST['dataflt'])){
-            $filters=array();
-            foreach($_REQUEST['dataflt'] as $key=>$filter) {
-                if(is_numeric($key)){
-                    $filters[]=$filter;
+            $filters=$this->dthlp->_get_filters();
+            $fltrs = array();
+            foreach($filters as $filter){
+                if(strpos($filter['compare'],'LIKE')!==false){
+                    if(strpos($filter['compare'],'NOT')!==false){
+                        $comparator_value = '!~'.str_replace('%','*',$filter['value']);
+                    }else{
+                        $comparator_value = '*~'.str_replace('%','',$filter['value']);
+                    }
+                    $fltrs[]=$filter['key'].$comparator_value;
                 }else{
-                    $filters[]='*'.substr($key, 0, -1).'='.$filter;
+                    $fltrs[]=$filter['key'].$filter['compare'].$filter['value'];
                 }
             }
 
             $text .= '<div class="filter">';
-            $text .=    '<h4>'.sprintf($this->getLang('tablefilteredby'),hsc(implode(' & ', $filters))).'</h4>';
+            $text .=    '<h4>'.sprintf($this->getLang('tablefilteredby'),hsc(implode(' & ', $fltrs))).'</h4>';
             $text .=    '<div class="resetfilter">'.
                             '<a href="'.wl($ID).'">'.$this->getLang('tableresetfilter').'</a>'.
                         '</div>';
