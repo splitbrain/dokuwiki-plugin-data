@@ -70,6 +70,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                       'limit'   => 0,
                       'dynfilters' => false,
                       'summarize'  => false,
+                      'rownumbers' => (bool)$this->getConf('rownumbers'),
                       'headers' => array());
 
         // parse info
