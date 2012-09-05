@@ -10,7 +10,7 @@ if(!defined('DOKU_INC')) die();
 class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     /**
-     * will hold the data helper plugin
+     * @var helper_plugin_data will hold the data helper plugin
      */
     var $dthlp = null;
 
@@ -183,7 +183,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $data['headers'][] = $item['title'];
         }
 
-        $data['sql'] = $this->_buildSQL($data);
         return $data;
     }
 
@@ -203,7 +202,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        $this->updateSQLwithQuery($data); // handles request params
+        if (!$this->hasRequestFilter()) {
+            $data['sql'] = $this->_buildSQL($data);
+        } else {
+            $this->updateSQLwithQuery($data); // handles request params
+        }
 
         // run query
         $clist = array_keys($data['cols']);
@@ -466,10 +469,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $order = 'ORDER BY 1 ASC';
         }
 
-        // add request filters
-        if (!isset($data['filter'])) $data['filter'] = array();
-        $data['filter'] = array_merge($data['filter'], $this->dthlp->_get_filters());
-
         // prepare filters
         if(is_array($data['filter']) && count($data['filter'])){
 
@@ -524,7 +523,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     function updateSQLwithQuery(&$data) {
         // take overrides from HTTP request params into account
-        if(isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt'])){
+        if($this->hasRequestFilter()){
+            if (!isset($data['filter'])) $data['filter'] = array();
+
             if (isset($_REQUEST['datasrt'])) {
                 if($_REQUEST['datasrt']{0} == '^'){
                     $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
@@ -532,6 +533,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $data['sort'] = array($_REQUEST['datasrt'],'ASC');
                 }
             }
+
+            // add request filters
+            $data['filter'] = array_merge($data['filter'], $this->dthlp->_get_filters());
+
             // Rebuild SQL FIXME do this smarter & faster
             $data['sql'] = $this->_buildSQL($data);
         }
@@ -539,6 +544,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         if($data['limit'] && (int) $_REQUEST['dataofs']){
             $data['sql'] .= ' OFFSET '.((int) $_REQUEST['dataofs']);
         }
+    }
+
+    function hasRequestFilter() {
+        return isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt']);
     }
 }
 
