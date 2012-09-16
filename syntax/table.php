@@ -511,6 +511,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         if (!isset($data['filter'])) $data['filter'] = array();
         $filters = array_merge($data['filter'], $this->dthlp->_get_filters());
 
+        // may be disabled from config. as it decreases performance a lot
+        $use_dataresolve = $this->getConf('use_dataresolve');
+
         // prepare filters
         $cnt = 0;
         if(is_array($filters) && count($filters)){
@@ -535,7 +538,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $from2  .= ' AND '.$table.".key = " . $sqlite->quote_string($col);
 
                     // apply data resolving?
-                    if($filter['colname'] && (substr($filter['compare'],-4) == 'LIKE')){
+                    if($use_dataresolve && $filter['colname'] && (substr($filter['compare'],-4) == 'LIKE')){
                         $where2 .= ' '.$filter['logic'].' DATARESOLVE('.$table.'.value,\''.$sqlite->escape_string($filter['colname']).'\') '.$filter['compare'].
                                   " '".$filter['value']."'"; //value is already escaped
                     } else {
