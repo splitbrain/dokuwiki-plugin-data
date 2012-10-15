@@ -140,25 +140,25 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $ret .= '<dt class="' . $class_name . '">'.hsc($data['cols'][$key]['title']).'<span class="sep">: </span></dt>';
             $ret .= '<dd class="' . $class_name . '">';
             if(is_array($val)){
-                switch ($type) {
-                case 'pageid':
-                    $type = 'title';
-                case 'wiki':
-                    $val[$i] = $ID . '|' . $val[$i];
-                    break;
-                }
                 $cnt = count($val);
                 for ($i=0; $i<$cnt; $i++){
+                    switch ($type) {
+                        case 'pageid':
+                            $type = 'title';
+                        case 'wiki':
+                            $val[$i] = $ID . '|' . $val[$i];
+                            break;
+                    }
                     $ret .= $this->dthlp->_formatData($data['cols'][$key], $val[$i],$R);
                     if($i < $cnt - 1) $ret .= '<span class="sep">, </span>';
                 }
             }else{
                 switch ($type) {
-                case 'pageid':
-                    $type = 'title';
-                case 'wiki':
-                    $val = $ID . '|' . $val;
-                    break;
+                    case 'pageid':
+                        $type = 'title';
+                    case 'wiki':
+                        $val = $ID . '|' . $val;
+                        break;
                 }
                 $ret .= $this->dthlp->_formatData($data['cols'][$key], $val, $R);
             }
