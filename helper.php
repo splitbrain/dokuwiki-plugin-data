@@ -28,6 +28,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 return false;
             }
             if(!$db->init('data',dirname(__FILE__).'/db/')){
+                $db = null;
                 return false;
             }
             $db->fetchmode = DOKU_SQLITE_ASSOC;
@@ -297,6 +298,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 $val = $this->_cleanData($val, $column['type']);
             }
             $sqlite = $this->_getDB();
+            if(!$sqlite) return false;
             $val = $sqlite->escape_string($val); //pre escape
 
             return array('key'     => $column['key'],
