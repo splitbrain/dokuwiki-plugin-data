@@ -20,6 +20,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * load the sqlite helper
      */
     function _getDB(){
+
+        /**
+         * static variable: only first time initialised
+         * @var $db helper_plugin_sqlite
+         */
         static $db = null;
         if ($db === null) {
             $db =& plugin_load('helper', 'sqlite');
@@ -31,7 +36,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 $db = null;
                 return false;
             }
-            $db->fetchmode = DOKU_SQLITE_ASSOC;
             $db->create_function('DATARESOLVE',array($this,'_resolveData'),2);
         }
         return $db;
@@ -114,6 +118,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
     /**
      * Return XHTML formated data, depending on column type
+     *
+     * @param $column
+     * @param $value
+     * @param $R Doku_Renderer_xhtml
+     * @return string
      */
     function _formatData($column, $value, &$R){
         global $conf;
@@ -259,6 +268,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     /**
      * Parse a filter line into an array
      *
+     * @param $filterline
      * @return mixed - array on success, false on error
      */
     function _parse_filter($filterline){
