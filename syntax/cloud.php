@@ -77,7 +77,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
                     // filter by hidden column?
                     if(!$tables[$col]){
                         $tables[$col] = 'T'.(++$cnt);
-                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = pages.pid';
+                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = data.pid';
                         $from  .= ' AND '.$tables[$col].".key = '".sqlite_escape_string($col)."'";
                     }
 
