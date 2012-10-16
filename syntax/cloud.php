@@ -118,6 +118,8 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
         if(!isset($data['page'])) $data['page'] = $ID;
 
+        $this->dthlp->_replacePlaceholdersInSQL($data);
+
         // build cloud data
         $tags = array();
         $res = $sqlite->query($data['sql']);
