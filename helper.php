@@ -287,10 +287,6 @@ class helper_plugin_data extends DokuWiki_Plugin {
             }
 
             $val = trim($matches[3]);
-            // allow current user name in filter:
-            $val = str_replace('%user%',$_SERVER['REMOTE_USER'],$val);
-            // allow current date in filter:
-            $val = str_replace('%now%', dformat(null, '%Y-%m-%d'),$val);
 
             if(strpos($com, '~') !== false) {
                 if ($com === '*~') {
@@ -320,6 +316,16 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }
         msg('Failed to parse filter "'.hsc($filterline).'"',-1);
         return false;
+    }
+
+    /**
+     * Replace placeholders in sql
+     */
+    function _replacePlaceholdersInSQL(&$data){
+        // allow current user name in filter:
+        $data['sql'] = str_replace('%user%', $_SERVER['REMOTE_USER'], $data['sql']);
+        // allow current date in filter:
+        $data['sql'] = str_replace('%now%', dformat(null, '%Y-%m-%d'),$data['sql']);
     }
 
     /**

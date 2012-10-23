@@ -31,6 +31,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         if(!$sqlite) return false;
 
         if(!$data['sql']) return true; // sql build
+        $this->dthlp->_replacePlaceholdersInSQL($data);
 
         $res = $sqlite->query($data['sql']);
         if(!$sqlite->res2count($res)) return true; // no rows matched

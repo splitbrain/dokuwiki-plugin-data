@@ -211,6 +211,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         if(!$sqlite) return false;
 
         $this->updateSQLwithQuery($data); // handles request params
+        $this->dthlp->_replacePlaceholdersInSQL($data);
 
         // run query
         $clist = array_keys($data['cols']);
