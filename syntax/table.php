@@ -72,6 +72,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                       'dynfilters' => false,
                       'summarize'  => false,
                       'rownumbers' => (bool)$this->getConf('rownumbers'),
+                      'sepbyheaders' => false,
                       'headers' => array());
 
         // parse info
@@ -108,6 +109,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         $cols = explode(',',$line[1]);
                         foreach($cols as $col){
                             $col = trim($col);
+                            if($col[0]=='"' AND substr($col, -1)=='"'){
+                                $col=substr($col, 1, -1);
+                            }
                             $data['headers'][] = $col;
                         }
                     break;
@@ -167,6 +171,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     break;
                 case 'summarize':
                         $data['summarize'] = (bool) $line[1];
+                    break;
+                case 'sepbyheaders':
+                        $data['sepbyheaders'] = (bool) $line[1];
                     break;
                 default:
                     msg("data plugin: unknown option '".hsc($line[0])."'",-1);
@@ -243,11 +250,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             foreach(array_values($row) as $num => $cval){
                 $num_rn = ($data['rownumbers'] ? $num+1 : $num);
 
-                $R->doc .= sprintf($this->before_val,'class="'.$data['align'][$num_rn].'align"');
+                $R->doc .= sprintf($this->beforeVal($data,$num_rn),'class="'.$data['align'][$num_rn].'align"');
                 $R->doc .= $this->dthlp->_formatData(
                                 $data['cols'][$clist[$num]],
                                 $cval,$R);
-                $R->doc .= $this->after_val;
+                $R->doc .= $this->afterVal($data,$num_rn);
 
                 // clean currency symbols
                 $nval = str_replace('$€₤','',$cval);
@@ -267,6 +274,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $R->doc .= $this->postList($data, $cnt);
 
         return true;
+    }
+
+    protected function beforeVal(&$data, $colno) {
+        return $this->before_val;
+    }
+    protected function afterVal(&$data, $colno) {
+        return $this->after_val;
     }
 
     function preList($clist, $data) {

@@ -26,6 +26,21 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
     protected $before_val  = '';
     protected $after_val   = ' ';
 
+    protected function beforeVal(&$data, $colno) {
+        if($data['sepbyheaders'] AND $colno===0){
+            return $data['headers'][$colno];
+        }else{
+            return $this->before_val;
+        }
+    }
+    protected function afterVal(&$data, $colno) {
+        if($data['sepbyheaders']) {
+            return $data['headers'][$colno+1];
+        }else{
+            return $this->after_val;
+        }
+    }
+
     /**
      * Create output
      */
