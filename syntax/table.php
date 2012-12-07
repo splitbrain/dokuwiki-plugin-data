@@ -74,6 +74,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                       'rownumbers' => (bool)$this->getConf('rownumbers'),
                       'sepbyheaders' => false,
                       'headers'    => array(),
+                      'widths'     => array(),
                       'filter'     => array());
 
         // parse info
@@ -129,6 +130,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                             }
                             $data['align'][] = $col;
                         }
+                case 'widths':
+                    $cols = explode(',',$line[1]);
+                    foreach($cols as $col){
+                        $col = trim($col);
+                        $data['widths'][] = $col;
+                    }
+                    break;
                 case 'min':
                         $data['min']   = abs((int) $line[1]);
                     break;
@@ -293,7 +301,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         // Save current request params to not loose them
         $cur_params = $this->dthlp->_get_current_param();
 
-        // build table
+        //show active filters
         $text = '<div class="table dataaggregation">';
         if(isset($_REQUEST['dataflt'])){
             $filters=$this->dthlp->_get_filters();
@@ -318,6 +326,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         '</div>';
             $text .= '</div>';
         }
+        // build table
         $text .= '<table class="inline dataplugin_table '.$data['classes'].'">';
         // build column headers
         $text .= '<tr>';
@@ -327,7 +336,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         foreach($data['headers'] as $num => $head){
             $ckey = $clist[$num];
 
-            $text .= '<th>';
+            $width = '';
+            if(isset($data['widths'][$num]) AND $data['widths'][$num] != '-') {
+                $width = ' style="width: '.$data['widths'][$num].';"';
+            }
+            $text .= '<th'.$width.'>';
 
             // add sort arrow
             if(isset($data['sort']) && $ckey == $data['sort'][0]){
