@@ -146,26 +146,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $renderer->doc .= sprintf($this->before_item,hsc($data['classes']));
         foreach($tags as $tag => $lvl){
             $renderer->doc .= sprintf($this->before_val,$lvl);
- 
-            $cur_params = array();
-            if (isset($_REQUEST['dataflt'])) {
-                $cur_params = (array)$_REQUEST['dataflt'];
-
-                //remove all filters for last clicked tag $ckey
-                foreach($cur_params as $key => $flt){
-                    if(strpos($flt,$data['cols'][$ckey]['colname']."=")!==false){
-                        unset($cur_params[$key]);
-                    }
-                }
-            }
-            $cur_params[]=$data['cols'][$ckey]['colname']."=$tag";
-            $cur_params = $this->dthlp->_a2ua('dataflt', $cur_params) ;
-            $cur_params['datasrt'] =$_REQUEST['datasrt'];
-            if (isset($_REQUEST['dataofs'])) {
-            	$cur_params['dataofs'] = $_REQUEST['dataofs'];
-            }
-
-            $renderer->doc .= '<a href="'.wl($data['page'],$cur_params).
+            $renderer->doc .= '<a href="'.wl($data['page'], $this->dthlp->_getTagUrlparam($data['cols'][$ckey], $tag)).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).
                               '" class="wikilink1">'.hsc($tag).'</a>';
             $renderer->doc .= $this->after_val;

@@ -174,7 +174,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                         $target = $this->_addPrePostFixes($column['type'],'');
                     }
 
-                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)),array('dataflt'=>$column['key'].'_='.$val )).
+                    $outs[] = '<a href="'.wl(str_replace('/',':',cleanID($target)), $this->_getTagUrlparam($column, $val)).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($val)).
                               '" class="wikilink1">'.hsc($val).'</a>';
                     break;
@@ -390,5 +390,39 @@ class helper_plugin_data extends DokuWiki_Plugin {
             $cur_params=$flat_param;
         }
         return $cur_params;
+    }
+
+    /**
+     * Get url parameters, remove all filters for given column and add filter for desired tag
+     * @param array  $column
+     * @param string $tag
+     * @return array of url parameters
+     */
+    function _getTagUrlparam($column, $tag) {
+        $param = array();
+
+        if(isset($_REQUEST['dataflt'])) {
+            $param = (array) $_REQUEST['dataflt'];
+
+            //remove all filters equal to column
+            foreach($param as $key => $flt) {
+                if(!is_numeric($key)) $flt = $key.$flt;
+                $filter = $this->_parse_filter($flt);
+                if($filter['key'] == $column['key']) {
+                    unset($param[$key]);
+                }
+            }
+        }
+        $param[] = $column['key']."_=$tag";
+        $param   = $this->_a2ua('dataflt', $param);
+
+        if(isset($_REQUEST['datasrt'])) {
+            $param['datasrt'] = $_REQUEST['datasrt'];
+        }
+        if(isset($_REQUEST['dataofs'])) {
+            $param['dataofs'] = $_REQUEST['dataofs'];
+        }
+
+        return $param;
     }
 }
