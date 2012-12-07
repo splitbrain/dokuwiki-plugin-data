@@ -12,6 +12,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
     /**
      * will hold the data helper plugin
+     * @var $dthlp helper_plugin_data
      */
     var $dthlp = null;
 
@@ -177,7 +178,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
     /**
      * Create a weighted tag distribution
      *
-     * @param $tag arrayref The tags to weight ( tag => count)
+     * @param $tags array ref The tags to weight ( tag => count)
      * @param $min int      The lowest count of a single tag
      * @param $max int      The highest count of a single tag
      * @param $levels int   The number of levels you want. A 5 gives levels 0 to 4.

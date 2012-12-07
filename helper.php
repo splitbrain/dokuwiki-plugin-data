@@ -142,7 +142,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 case 'pageid':
                     list($id,$title) = explode('|',$val,2);
                     $id = $this->_addPrePostFixes($column['type'], $id, ':');
-                    $outs[] = $R->internallink($id,$title,null,true);
+                $outs[] = $R->internallink($id,$title,null,true);
                     break;
                 case 'nspage':
                     // no prefix/postfix here
@@ -272,6 +272,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * @return mixed - array on success, false on error
      */
     function _parse_filter($filterline){
+        //split filterline on comparator
         if(preg_match('/^(.*?)([\*=<>!~]{1,2})(.*)$/',$filterline,$matches)){
             $column = $this->_column(trim($matches[1]));
 

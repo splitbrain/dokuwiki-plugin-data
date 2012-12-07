@@ -11,6 +11,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     /**
      * will hold the data helper plugin
+     * @var $dthlp helper_plugin_data
      */
     var $dthlp = null;
 
