@@ -135,13 +135,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
             if (is_array($type)) $type = $type['type'];
             switch($type){
                 case 'page':
-                    $val = $this->_addPrePostFixes($column['type'], $val, ':');
+                    $val = $this->_addPrePostFixes($column['type'], $val);
                     $outs[] = $R->internallink($val,null,null,true);
                     break;
                 case 'title':
                 case 'pageid':
                     list($id,$title) = explode('|',$val,2);
-                    $id = $this->_addPrePostFixes($column['type'], $id, ':');
+                    $id = $this->_addPrePostFixes($column['type'], $id);
                 $outs[] = $R->internallink($id,$title,null,true);
                     break;
                 case 'nspage':
