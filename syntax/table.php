@@ -67,13 +67,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $class = preg_replace('/^----+ *data[a-z]+/','',$class);
         $class = trim($class,'- ');
 
-        $data = array('classes' => $class,
-                      'limit'   => 0,
+        $data = array('classes'    => $class,
+                      'limit'      => 0,
                       'dynfilters' => false,
                       'summarize'  => false,
                       'rownumbers' => (bool)$this->getConf('rownumbers'),
                       'sepbyheaders' => false,
-                      'headers' => array());
+                      'headers'    => array(),
+                      'filter'     => array());
 
         // parse info
         foreach ( $lines as $line ) {
@@ -218,7 +219,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        $this->updateSQLwithQuery($data); // handles request params
+        if ($this->hasRequestFilter() OR isset($_REQUEST['dataofs'])) {
+            $this->updateSQLwithQuery($data); // handles request params
+        }
         $this->dthlp->_replacePlaceholdersInSQL($data);
 
         // run query
@@ -524,18 +527,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $order = 'ORDER BY 1 ASC';
         }
 
-        // add request filters
-        if (!isset($data['filter'])) $data['filter'] = array();
-        $filters = array_merge($data['filter'], $this->dthlp->_get_filters());
-
         // may be disabled from config. as it decreases performance a lot
         $use_dataresolve = $this->getConf('use_dataresolve');
 
         // prepare filters
         $cnt = 0;
-        if(is_array($filters) && count($filters)){
+        if(is_array($data['filter']) && count($data['filter'])){
 
-            foreach($filters as $filter){
+            foreach($data['filter'] as $filter){
                 $col = $filter['key'];
 
                 if($col == '%pageid%'){
@@ -587,11 +586,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         return $sql;
     }
 
+    /**
+     * Handle request paramaters, rebuild sql when needed
+     * @param array $data
+     */
     function updateSQLwithQuery(&$data) {
-        // take overrides from HTTP request params into account
-        $cur_params=$this->dthlp->_get_current_param(false);
-
-        if(count(array_diff(array_merge($cur_params, $data['cur_param']), array_intersect($cur_params, $data['cur_param'])))>0){
+        if($this->hasRequestFilter()){
             if (isset($_REQUEST['datasrt'])) {
                 if($_REQUEST['datasrt']{0} == '^'){
                     $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
@@ -599,6 +599,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $data['sort'] = array($_REQUEST['datasrt'],'ASC');
                 }
             }
+
+            // add request filters
+            $data['filter'] = array_merge($data['filter'], $this->dthlp->_get_filters());
+
             // Rebuild SQL FIXME do this smarter & faster
             $data['sql'] = $this->_buildSQL($data);
         }
@@ -606,6 +610,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         if($data['limit'] && (int) $_REQUEST['dataofs']){
             $data['sql'] .= ' OFFSET '.((int) $_REQUEST['dataofs']);
         }
+    }
+
+    function hasRequestFilter() {
+        return isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt']);
     }
 }
 
