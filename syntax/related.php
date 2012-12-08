@@ -31,6 +31,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
         if(!$sqlite) return false;
 
         if(!$data['sql']) return true; // sql build
+        $this->dthlp->_replacePlaceholdersInSQL($data);
 
         $res = $sqlite->query($data['sql']);
         if(!$sqlite->res2count($res)) return true; // no rows matched
@@ -80,13 +81,14 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
                        AND A.pid = B.pid
                        AND B.page = ?";
             $res = $sqlite->query($sql,$col,$id);
-            $values = $sqlite->res2arr($res);
+            while($value = $sqlite->res_fetch_assoc($res)){
+                $values[] = $value['value'];
+            }
             if(!count($values)) continue; // no values? ignore the column.
             $found = true;
-            $values = array_map(array($sqlite, 'escape_string'), $values);
 
             $cond[] = " ( T1.key = ".$sqlite->quote_string($col).
-                      " AND T1.value IN ('".join("','",$values)."') )\n";
+                      " AND T1.value IN (".$sqlite->quote_and_join($values,',').") )\n";
         }
         $where .= ' AND ('.join(' OR ',$cond).') ';
 
