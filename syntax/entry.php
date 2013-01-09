@@ -11,7 +11,7 @@ require_once(DOKU_PLUGIN.'syntax.php');
 class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
     /**
-     * will hold the data helper plugin
+     * @var helper_plugin_data will hold the data helper plugin
      */
     var $dthlp = null;
 
@@ -64,7 +64,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
         // parse info
         $data = array();
-        $meta = array();
+        $columns = array();
         foreach ( $lines as $line ) {
             // ignore comments
             preg_match('/^(.*?(?<![&\\\\]))(?:#(.*))?$/',$line, $matches);
