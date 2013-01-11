@@ -111,7 +111,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $type = $column['type'];
         if(is_array($type)) $type = $type['type'];
         if($type == 'title' || ($type == 'page' && useHeading('content'))){
-            $value = p_get_first_heading($value);
+            $id = $value;
+            if($type == 'title'){
+                list($id,) = explode('|',$value,2);
+            }
+            //DATARESOLVE is only used with the 'LIKE' comparator, so concatenate the different strings is fine.
+            $value .= p_get_first_heading($id);
         }
         return $value;
     }
