@@ -66,6 +66,16 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('prevaluepost', $helper->_addPrePostFixes(array('prefix' => 'pre', 'postfix' => 'post'), 'value'));
     }
 
+    function testResolveData() {
+        $helper = new helper_plugin_data();
+
+        $this->assertEquals('tom', $helper->_resolveData('tom', 'name'));
+        $this->assertEquals('jerry', $helper->_resolveData('jerry', 'name'));
+
+        $this->assertEquals('Formatting Syntax', $helper->_resolveData('wiki:syntax', 'name_title'));
+        $this->assertEquals(null, $helper->_resolveData('none:existing', 'name_title'));
+    }
+
     protected function createColumnEntry($name, $multi, $key, $title, $type) {
         return array(
             'colname' => $name,
