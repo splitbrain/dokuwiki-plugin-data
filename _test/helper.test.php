@@ -1,5 +1,13 @@
 <?php
 
+class data_dummy_renderer {
+
+    function internallink($id, $title = '', $ignored=null, $ignored2=false) {
+        return "link: $id $title";
+    }
+
+}
+
 /**
  * This is the base class for all syntax classes, providing some general stuff
  */
@@ -74,6 +82,52 @@ class helper_plugin_data_test extends DokuWikiTest {
 
         $this->assertEquals('Formatting Syntax', $helper->_resolveData('wiki:syntax', 'name_title'));
         $this->assertEquals(null, $helper->_resolveData('none:existing', 'name_title'));
+    }
+
+    function testFormatData() {
+        global $conf;
+
+        $helper = new helper_plugin_data();
+        $renderer = new data_dummy_renderer();
+
+        $this->assertEquals('value1, value2, val',
+            $helper->_formatData(array('type' => ''), "value1\n value2\n val", $renderer));
+
+        $this->assertEquals('link: :page ',
+            $helper->_formatData(array('type' => 'page'), "page", $renderer));
+
+        $this->assertEquals('link: :page title',
+            $helper->_formatData(array('type' => 'title'), "page|title", $renderer));
+
+        $this->assertEquals('link: :page title',
+            $helper->_formatData(array('type' => 'pageid'), "page|title", $renderer));
+
+        $this->assertEquals('link: :key:page ',
+            $helper->_formatData(array('type' => 'nspage', 'key' => 'key'), "page", $renderer));
+
+        $conf['mailguard'] = '';
+        $this->assertEquals('<a href="mailto:pa:ge" class="mail" title="pa:ge">pa:ge</a>',
+            $helper->_formatData(array('type' => 'mail'), "pa:ge", $renderer));
+
+        $this->assertEquals('<a href="mailto:pa:ge" class="mail" title="pa:ge">some user</a>',
+            $helper->_formatData(array('type' => 'mail'), "pa:ge some user", $renderer));
+
+        $conf['mailguard'] = 'visible';
+        $this->assertEquals('<a href="mailto:pa%3Age" class="mail" title="pa%3Age">pa:ge</a>',
+            $helper->_formatData(array('type' => 'mail'), "pa:ge", $renderer));
+
+        $this->assertEquals('<a href="mailto:pa%3Age" class="mail" title="pa%3Age">some user</a>',
+            $helper->_formatData(array('type' => 'mail'), "pa:ge some user", $renderer));
+
+        $this->assertEquals('<a href="url" class="urlextern" title="url">url</a>',
+            $helper->_formatData(array('type' => 'url'), "url", $renderer));
+
+        $this->assertEquals('<a href="/./doku.php?id=start&amp;dataflt=%3Dvalue" title="Show pages matching \'value\'" class="wikilink1">value</a>',
+            $helper->_formatData(array('type' => 'tag'), "value", $renderer));
+
+        $this->assertEquals('1970/01/15 07:56',
+            $helper->_formatData(array('type' => 'timestamp'), "1234567", $renderer));
+
     }
 
     protected function createColumnEntry($name, $multi, $key, $title, $type) {
