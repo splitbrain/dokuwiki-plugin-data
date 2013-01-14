@@ -54,8 +54,16 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals($this->createColumnEntry('%pageid%', false, '%pageid%', 'Title', 'page'), $helper->_column('%pageid%'));
         $this->assertEquals($this->createColumnEntry('%class%', false, '%class%', 'Page Class', ''), $helper->_column('%class%'));
         $this->assertEquals($this->createColumnEntry('%lastmod%', false, '%lastmod%', 'Last Modified', 'timestamp'), $helper->_column('%lastmod%'));
+    }
 
+    function testAddPrePostFixes() {
+        $helper = new helper_plugin_data();
 
+        $this->assertEquals('value', $helper->_addPrePostFixes('', 'value'));
+        $this->assertEquals('prevaluepost', $helper->_addPrePostFixes('', 'value', 'pre', 'post'));
+        $this->assertEquals('valuepost', $helper->_addPrePostFixes('', 'value', '', 'post'));
+        $this->assertEquals('prevalue', $helper->_addPrePostFixes('', 'value', 'pre'));
+        $this->assertEquals('prevaluepost', $helper->_addPrePostFixes(array('prefix' => 'pre', 'postfix' => 'post'), 'value'));
     }
 
     protected function createColumnEntry($name, $multi, $key, $title, $type) {
