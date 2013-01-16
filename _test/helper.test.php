@@ -217,8 +217,6 @@ class helper_plugin_data_test extends DokuWikiTest {
 
         $this->assertEquals(false, $helper->_parse_filter('name is *tom*'));
         $this->assertEquals(false, $helper->_parse_filter(''));
-
-
     }
 
     protected function createFilterArray($key, $value, $compare, $colname, $type) {
@@ -229,5 +227,37 @@ class helper_plugin_data_test extends DokuWikiTest {
             'colname' => $colname,
             'type' => $type
         );
+    }
+
+    public function testGetFilters() {
+        $helper = new helper_plugin_data();
+
+
+        $this->assertEquals(array(), $helper->_get_filters());
+
+        $_REQUEST['dataflt'] = 'name = tom';
+        $this->assertEquals(array($this->createFilterArrayListEntry('name', 'tom', '=', 'name', '', 'AND')),
+            $helper->_get_filters());
+
+        $_REQUEST['dataflt'] = array();
+        $_REQUEST['dataflt'][] = 'name = tom';
+        $this->assertEquals(array($this->createFilterArrayListEntry('name', 'tom', '=', 'name', '', 'AND')),
+            $helper->_get_filters());
+
+        $_REQUEST['dataflt'] = array();
+        $_REQUEST['dataflt'][] = 'name = tom';
+        $_REQUEST['dataflt'][] = 'unit_url = dokuwiki.org';
+        $this->assertEquals(
+            array(
+                $this->createFilterArrayListEntry('name', 'tom', '=', 'name', '', 'AND'),
+                $this->createFilterArrayListEntry('unit', 'http://dokuwiki.org', '=', 'unit_url', 'url', 'AND')
+            ),
+            $helper->_get_filters());
+    }
+
+    private function createFilterArrayListEntry($key, $value, $compare, $colname, $type, $logic) {
+        $item =  $this->createFilterArray($key, $value, $compare, $colname, $type);
+        $item['logic'] = $logic;
+        return $item;
     }
 }
