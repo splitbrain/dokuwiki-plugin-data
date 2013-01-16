@@ -133,6 +133,12 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('1970/01/15 07:56',
             $helper->_formatData(array('type' => 'timestamp'), "1234567", $renderer));
 
+        $this->assertEquals('<strong>bla</strong>',
+            $helper->_formatData(array('type' => 'wiki'), '|**bla**', $renderer));
+
+
+        $this->assertEquals('<a href="/./lib/exe/fetch.php?media=wiki:dokuwiki-128.png" class="media" rel="lightbox"><img src="/./lib/exe/fetch.php?w=300&amp;media=wiki:dokuwiki-128.png" alt=": dokuwiki-128.png" title=": dokuwiki-128.png" width="300" /></a>',
+            $helper->_formatData(array('type' => 'img300'), 'wiki:dokuwiki-128.png', $renderer));
     }
 
     function testReplacePlaceholdersInSQL() {
