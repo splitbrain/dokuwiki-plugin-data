@@ -232,7 +232,6 @@ class helper_plugin_data_test extends DokuWikiTest {
     public function testGetFilters() {
         $helper = new helper_plugin_data();
 
-
         $this->assertEquals(array(), $helper->_get_filters());
 
         $_REQUEST['dataflt'] = 'name = tom';
@@ -259,5 +258,21 @@ class helper_plugin_data_test extends DokuWikiTest {
         $item =  $this->createFilterArray($key, $value, $compare, $colname, $type);
         $item['logic'] = $logic;
         return $item;
+    }
+
+    public function testA2UA() {
+        $helper = new helper_plugin_data();
+
+        $array = array(
+            'id' => '1',
+            'name' => 'tom'
+        );
+
+        $result = array(
+            'table[id]' => '1',
+            'table[name]' => 'tom'
+        );
+
+        $this->assertEquals($result, $helper->_a2ua('table', $array));
     }
 }
