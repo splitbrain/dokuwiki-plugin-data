@@ -44,6 +44,11 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('123', $helper->_cleanData('123', 'page'));
         $this->assertEquals('123_123', $helper->_cleanData('123 123', 'page'));
         $this->assertEquals('123', $helper->_cleanData('123', 'nspage'));
+
+        $this->assertEquals('test', $helper->_cleanData('test', ''));
+
+        $this->assertEquals('test', $helper->_cleanData('test', array('type' => '')));
+        $this->assertEquals('', $helper->_cleanData('test', array('type' => '', 'enum' => 'some other')));
     }
 
     function testColumn() {
@@ -153,4 +158,9 @@ class helper_plugin_data_test extends DokuWikiTest {
         );
     }
 
+    public  function testNoSqlPlugin() {
+        $helper = new helper_plugin_data();
+        plugin_disable('sqlite');
+        $this->assertFalse($helper->_getDB());
+    }
 }
