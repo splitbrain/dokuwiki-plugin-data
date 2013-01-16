@@ -8,9 +8,6 @@ class data_dummy_renderer {
 
 }
 
-/**
- * This is the base class for all syntax classes, providing some general stuff
- */
 class helper_plugin_data_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');
