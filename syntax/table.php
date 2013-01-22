@@ -182,7 +182,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $item = array_pop(array_slice($data['cols'],$i,1));
             $data['headers'][] = $item['title'];
         }
-
+        $data['sql'] = $this->_buildSQL($data);
         return $data;
     }
 
@@ -202,11 +202,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        if (!$this->hasRequestFilter()) {
-            $data['sql'] = $this->_buildSQL($data);
-        } else {
+        if ($this->hasRequestFilter()) {
             $this->updateSQLwithQuery($data); // handles request params
         }
+        $this->dthlp->_replacePlaceholdersInSQL($data);
 
         // run query
         $clist = array_keys($data['cols']);
