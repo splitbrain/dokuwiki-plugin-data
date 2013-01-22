@@ -17,7 +17,7 @@ require_once(DOKU_INC.'inc/infoutils.php');
 class helper_plugin_data extends DokuWiki_Plugin {
 
     /**
-     * load the sqlite helper
+     * @return helper_plugin_sqlite load the sqlite helper
      */
     function _getDB(){
 
