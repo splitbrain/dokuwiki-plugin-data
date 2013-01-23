@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @group plugin_data
+ */
 class action_handle_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @group plugin_data
+ */
 class DataPluginDummyTest extends DokuWikiTest {
 
     function test() {

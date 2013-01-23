@@ -2,6 +2,9 @@
 
 require_once DOKU_INC . 'inc/parser/xhtml.php';
 
+/**
+ * @group plugin_data
+ */
 class syntax_plugin_data_entry_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');

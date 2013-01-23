@@ -8,6 +8,9 @@ class data_dummy_renderer {
 
 }
 
+/**
+ * @group plugin_data
+ */
 class helper_plugin_data_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');
