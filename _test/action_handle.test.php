@@ -13,6 +13,23 @@ class action_handle_test extends DokuWikiTest {
     /** @var helper_plugin_sqlite */
     protected $db;
 
+    public function tearDown() {
+        parent::tearDown();
+
+        $this->db->query('DELETE FROM pages WHERE page = ?','test');
+    }
+
+    public function setUp() {
+        parent::setUp();
+
+        $this->action = new action_plugin_data();
+        $this->helper = plugin_load('helper', 'data');
+        $this->db = $this->helper->_getDB();
+
+        $this->db->query('INSERT INTO pages ( pid, page, title , class , lastmod) VALUES
+            (?, ?, ?, ?, ?)', 1 , 'test', 'title', 'class', time());
+    }
+
     function testHandleStillPresent() {
 
         $data = array(
@@ -46,28 +63,10 @@ class action_handle_test extends DokuWikiTest {
         $this->assertTrue(!$pid);
     }
 
-    public function setUp() {
-        parent::setUp();
-
-        $this->action = new action_plugin_data();
-        $this->helper = plugin_load('helper', 'data');
-        $this->db = $this->helper->_getDB();
-
-        $this->db->query('INSERT INTO pages ( pid, page, title , class , lastmod) VALUES
-            (?, ?, ?, ?, ?)', 1 , 'test', 'title', 'class', time());
-    }
 
     private function getTestPageId() {
         $res = $this->db->query('SELECT pid FROM pages WHERE page = ?','test');
         $pid = (int) $this->db->res2single($res);
         return $pid;
     }
-
-    protected function tearDown() {
-        parent::tearDown();
-
-        $this->db->query('DELETE FROM pages WHERE pid = ?','test');
-    }
-
-
 }
