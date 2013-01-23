@@ -17,28 +17,30 @@ require_once(DOKU_INC.'inc/infoutils.php');
 class helper_plugin_data extends DokuWiki_Plugin {
 
     /**
+     * initialized via _getDb()
+     * @var $db helper_plugin_sqlite
+     */
+    protected $db = null;
+
+    protected $aliases = null;
+
+    /**
      * @return helper_plugin_sqlite load the sqlite helper
      */
     function _getDB(){
-
-        /**
-         * static variable: only first time initialised
-         * @var $db helper_plugin_sqlite
-         */
-        static $db = null;
-        if ($db === null) {
-            $db =& plugin_load('helper', 'sqlite');
-            if ($db === null) {
+        if ($this->db === null) {
+            $this->db =& plugin_load('helper', 'sqlite');
+            if ($this->db === null) {
                 msg('The data plugin needs the sqlite plugin', -1);
                 return false;
             }
-            if(!$db->init('data',dirname(__FILE__).'/db/')){
+            if(!$this->db->init('data',dirname(__FILE__).'/db/')){
                 $db = null;
                 return false;
             }
-            $db->create_function('DATARESOLVE',array($this,'_resolveData'),2);
+            $this->db->create_function('DATARESOLVE',array($this,'_resolveData'),2);
         }
-        return $db;
+        return $this->db;
     }
 
     /**
@@ -116,7 +118,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 list($id,) = explode('|',$value,2);
             }
             //DATARESOLVE is only used with the 'LIKE' comparator, so concatenate the different strings is fine.
-            $value .= p_get_first_heading($id);
+            $value .= ' ' . p_get_first_heading($id);
         }
         return $value;
     }
@@ -252,22 +254,21 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * Load defined type aliases
      */
     function _aliases(){
-        static $aliases = null;
-        if(!is_null($aliases)) return $aliases;
+        if(!is_null($this->aliases)) return $this->aliases;
 
         $sqlite = $this->_getDB();
         if(!$sqlite) return array();
 
-        $aliases = array();
+        $this->aliases = array();
         $res = $sqlite->query("SELECT * FROM aliases");
         $rows = $sqlite->res2arr($res);
         foreach($rows as $row){
             $name = $row['name'];
             unset($row['name']);
-            $aliases[$name] = array_filter(array_map('trim', $row));
-            if (!isset($aliases[$name]['type'])) $aliases[$name]['type'] = '';
+            $this->aliases[$name] = array_filter(array_map('trim', $row));
+            if (!isset($this->aliases[$name]['type'])) $this->aliases[$name]['type'] = '';
         }
-        return $aliases;
+        return $this->aliases;
     }
 
     /**

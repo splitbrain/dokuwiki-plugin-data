@@ -85,8 +85,8 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('tom', $helper->_resolveData('tom', 'name'));
         $this->assertEquals('jerry', $helper->_resolveData('jerry', 'name'));
 
-        $this->assertEquals('Formatting Syntax', $helper->_resolveData('wiki:syntax', 'name_title'));
-        $this->assertEquals(null, $helper->_resolveData('none:existing', 'name_title'));
+        $this->assertEquals('wiki:syntax Formatting Syntax', $helper->_resolveData('wiki:syntax', 'name_title'));
+        $this->assertEquals('none:existing ', $helper->_resolveData('none:existing', 'name_title'));
     }
 
     function testFormatData() {
@@ -98,13 +98,13 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('value1, value2, val',
             $helper->_formatData(array('type' => ''), "value1\n value2\n val", $renderer));
 
-        $this->assertEquals('link: :page ',
+        $this->assertEquals('link: page ',
             $helper->_formatData(array('type' => 'page'), "page", $renderer));
 
-        $this->assertEquals('link: :page title',
+        $this->assertEquals('link: page title',
             $helper->_formatData(array('type' => 'title'), "page|title", $renderer));
 
-        $this->assertEquals('link: :page title',
+        $this->assertEquals('link: page title',
             $helper->_formatData(array('type' => 'pageid'), "page|title", $renderer));
 
         $this->assertEquals('link: :key:page ',
@@ -124,10 +124,10 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('<a href="mailto:pa%3Age" class="mail" title="pa%3Age">some user</a>',
             $helper->_formatData(array('type' => 'mail'), "pa:ge some user", $renderer));
 
-        $this->assertEquals('<a href="url" class="urlextern" title="url">url</a>',
+        $this->assertEquals('<a href=\'url\' class=\'urlextern\' rel="nofollow">url</a>',
             $helper->_formatData(array('type' => 'url'), "url", $renderer));
 
-        $this->assertEquals('<a href="/./doku.php?id=start&amp;dataflt=%3Dvalue" title="Show pages matching \'value\'" class="wikilink1">value</a>',
+        $this->assertEquals('<a href="' . wl('start', array('dataflt[0]'=>'_=value')) . '" title="Show pages matching \'value\'" class="wikilink1">value</a>',
             $helper->_formatData(array('type' => 'tag'), "value", $renderer));
 
         $this->assertEquals('1970/01/15 07:56',
@@ -137,7 +137,7 @@ class helper_plugin_data_test extends DokuWikiTest {
             $helper->_formatData(array('type' => 'wiki'), '|**bla**', $renderer));
 
 
-        $this->assertEquals('<a href="/./lib/exe/fetch.php?media=wiki:dokuwiki-128.png" class="media" rel="lightbox"><img src="/./lib/exe/fetch.php?w=300&amp;media=wiki:dokuwiki-128.png" alt=": dokuwiki-128.png" title=": dokuwiki-128.png" width="300" /></a>',
+        $this->assertEquals('<a href="'.ml('wiki:dokuwiki-128.png').'" class="media" rel="lightbox"><img src="'.ml('wiki:dokuwiki-128.png', array('w'=>300)).'" alt=": dokuwiki-128.png" title=": dokuwiki-128.png" width="300" /></a>',
             $helper->_formatData(array('type' => 'img300'), 'wiki:dokuwiki-128.png', $renderer));
     }
 

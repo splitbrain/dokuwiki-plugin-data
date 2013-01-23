@@ -113,17 +113,17 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals(1, pq('dl dt.volume')->length);
         $this->assertEquals(1, pq('dl dd.volume')->length);
         $this->assertEquals(1, pq('dl dt.employee')->length);
-        $this->assertEquals(3, pq('dl dd.employee')->length);
+        $this->assertEquals(1, pq('dl dd.employee')->length);
         $this->assertEquals(1, pq('dl dt.customer')->length);
         $this->assertEquals(1, pq('dl dd.customer')->length);
         $this->assertEquals(1, pq('dl dt.deadline')->length);
         $this->assertEquals(1, pq('dl dd.deadline')->length);
         $this->assertEquals(1, pq('dl dt.server')->length);
-        $this->assertEquals(2, pq('dl dd.server')->length);
+        $this->assertEquals(1, pq('dl dd.server')->length);
         $this->assertEquals(1, pq('dl dt.website')->length);
         $this->assertEquals(1, pq('dl dd.website')->length);
         $this->assertEquals(1, pq('dl dt.task')->length);
-        $this->assertEquals(4, pq('dl dd.task')->length);
+        $this->assertEquals(1, pq('dl dd.task')->length);
     }
 }
 
