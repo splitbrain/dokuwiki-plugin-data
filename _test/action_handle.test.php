@@ -8,7 +8,9 @@ class action_handle_test extends DokuWikiTest {
     protected $pluginsEnabled = array('data', 'sqlite');
 
     protected $action;
+    /** @var helper_plugin_data */
     protected $helper;
+    /** @var helper_plugin_sqlite */
     protected $db;
 
     function testHandleStillPresent() {
@@ -40,7 +42,7 @@ class action_handle_test extends DokuWikiTest {
         $this->action->_handle($event, null);
 
         $res = $this->db->query('SELECT pid FROM pages WHERE page = ?','test');
-        $pid = (int) sqlite_fetch_single($res);
+        $pid = $this->db->res2single($res);
         $this->assertTrue(!$pid);
     }
 
@@ -57,7 +59,7 @@ class action_handle_test extends DokuWikiTest {
 
     private function getTestPageId() {
         $res = $this->db->query('SELECT pid FROM pages WHERE page = ?','test');
-        $pid = (int) sqlite_fetch_single($res);
+        $pid = (int) $this->db->res2single($res);
         return $pid;
     }
 
