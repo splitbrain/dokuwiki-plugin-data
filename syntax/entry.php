@@ -205,15 +205,15 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         }
 
         // remove old data
-        $sqlite->query("DELETE FROM data WHERE pid = ?",$pid);
+        $sqlite->query("DELETE FROM DATA WHERE pid = ?",$pid);
 
         // insert new data
         foreach ($data['data'] as $key => $val){
             if(is_array($val)) foreach($val as $v){
-                $sqlite->query("INSERT INTO data (pid, key, value) VALUES (?, ?, ?)",
+                $sqlite->query("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
                                $pid,$key,$v);
             }else {
-                $sqlite->query("INSERT INTO data (pid, key, value) VALUES (?, ?, ?)",
+                $sqlite->query("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
                                $pid,$key,$val);
             }
         }
@@ -224,12 +224,20 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         return true;
     }
 
+    /**
+     * The custom editor for editing data entries
+     *
+     * Gets called from action_plugin_data::_editform() where also the form member is attached
+     *
+     * @param array $data
+     * @param Doku_Renderer_plugin_data_edit $renderer
+     */
     function _editData($data, &$renderer) {
         $renderer->form->startFieldset($this->getLang('dataentry'));
         $renderer->form->_content[count($renderer->form->_content) - 1]['class'] = 'plugin__data';
-        $renderer->form->addHidden('range','0-0'); // Adora Belle bugfix
+        $renderer->form->addHidden('range', '0-0'); // Adora Belle bugfix
 
-        if ($this->getConf('edit_content_only')) {
+        if($this->getConf('edit_content_only')) {
             $renderer->form->addHidden('data_edit[classes]', $data['classes']);
             $renderer->form->addElement('<table>');
         } else {
@@ -251,9 +259,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         foreach($data['cols'] as $key => $vals) {
             $fieldid = 'data_edit[data][' . $n++ . ']';
             $content = $vals['multi'] ? implode(', ', $data['data'][$key]) : $data['data'][$key];
-            if (is_array($vals['type'])) {
+            if(is_array($vals['type'])) {
                 $vals['basetype'] = $vals['type']['type'];
-                if (isset($vals['type']['enum'])) {
+                if(isset($vals['type']['enum'])) {
                     $vals['enum'] = $vals['type']['enum'];
                 }
                 $vals['type'] = $vals['origtype'];
@@ -261,43 +269,55 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $vals['basetype'] = $vals['type'];
             }
             $renderer->form->addElement('<tr>');
-            if ($this->getConf('edit_content_only')) {
-                if (isset($vals['enum'])) {
+            if($this->getConf('edit_content_only')) {
+                if(isset($vals['enum'])) {
                     $values = preg_split('/\s*,\s*/', $vals['enum']);
-                    if (!$vals['multi']) array_unshift($values, '');
-                    $content = form_makeListboxField($fieldid . '[value][]', $values,
-                                                     $data['data'][$key], $vals['title'], '', '', ($vals['multi'] ? array('multiple' => 'multiple'): array()));
+                    if(!$vals['multi']) array_unshift($values, '');
+                    $content = form_makeListboxField(
+                        $fieldid . '[value][]', $values,
+                        $data['data'][$key], $vals['title'], '', '', ($vals['multi'] ? array('multiple' => 'multiple') : array())
+                    );
                 } else {
-                    $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') .  ' ' .
-                               'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
+                    $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') . ' ' .
+                        'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
 
                     $attr = array();
-                    if($vals['basetype'] == 'date' && !$vals['multi']){
+                    if($vals['basetype'] == 'date' && !$vals['multi']) {
                         $attr['class'] = 'datepicker';
                     }
 
                     $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes, $attr);
 
                 }
-                $cells = array($vals['title'] . ':',
-                               $content,
-                               $vals['comment']);
+                $cells = array(
+                    $vals['title'] . ':',
+                    $content,
+                    $vals['comment']
+                );
                 foreach(array('multi', 'comment', 'type') as $field) {
                     $renderer->form->addHidden($fieldid . "[$field]", $vals[$field]);
                 }
                 $renderer->form->addHidden($fieldid . "[title]", $key); //keep key as key, even if title is translated
             } else {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
-                $cells = array(form_makeField('text', $fieldid . '[title]', $key, $this->getLang('title')), // when editable, alsways use the pure key, not a title
-                               form_makeMenuField($fieldid . '[type]',
-                                                  array_merge(array('', 'page', 'nspage', 'title',
-                                                                    'img', 'mail', 'url', 'tag', 'wiki', 'dt'),
-                                                              array_keys($this->dthlp->_aliases())),
-                                                  $vals['type'],
-                                                  $this->getLang('type')),
-                               form_makeCheckboxField($fieldid . '[multi]', array('1', ''), $this->getLang('multi'), '', '', $check_data),
-                               form_makeField('text', $fieldid . '[value]', $content, $this->getLang('value')),
-                               form_makeField('text', $fieldid . '[comment]', $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1)));
+                $cells = array(
+                    form_makeField('text', $fieldid . '[title]', $key, $this->getLang('title')), // when editable, alsways use the pure key, not a title
+                    form_makeMenuField(
+                        $fieldid . '[type]',
+                        array_merge(
+                            array(
+                                 '', 'page', 'nspage', 'title',
+                                 'img', 'mail', 'url', 'tag', 'wiki', 'dt'
+                            ),
+                            array_keys($this->dthlp->_aliases())
+                        ),
+                        $vals['type'],
+                        $this->getLang('type')
+                    ),
+                    form_makeCheckboxField($fieldid . '[multi]', array('1', ''), $this->getLang('multi'), '', '', $check_data),
+                    form_makeField('text', $fieldid . '[value]', $content, $this->getLang('value')),
+                    form_makeField('text', $fieldid . '[comment]', $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1))
+                );
             }
             foreach($cells as $cell) {
                 $renderer->form->addElement('<td>');
