@@ -227,6 +227,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     function _editData($data, &$renderer) {
         $renderer->form->startFieldset($this->getLang('dataentry'));
         $renderer->form->_content[count($renderer->form->_content) - 1]['class'] = 'plugin__data';
+        $renderer->form->addHidden('range','0-0'); // Adora Belle bugfix
 
         if ($this->getConf('edit_content_only')) {
             $renderer->form->addHidden('data_edit[classes]', $data['classes']);
