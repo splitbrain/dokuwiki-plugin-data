@@ -17,12 +17,35 @@ require_once(DOKU_INC.'inc/infoutils.php');
 class helper_plugin_data extends DokuWiki_Plugin {
 
     /**
-     * initialized via _getDb()
-     * @var $db helper_plugin_sqlite
+     * @var helper_plugin_sqlite initialized via _getDb()
      */
     protected $db = null;
 
+    /**
+     * @var array stores the alias definitions
+     */
     protected $aliases = null;
+
+    /**
+     * @var array stores custom key localizations
+     */
+    protected $locs = array();
+
+    /**
+     * Constructor
+     *
+     * Loads custom translations
+     */
+    public function __construct(){
+        global $conf;
+
+        $lang = array();
+        $path = DOKU_CONF.'/lang/en/data-plugin.php';
+        if(file_exists($path)) include($path);
+        $path = DOKU_CONF.'/lang/'.$conf['lang'].'/data-plugin.php';
+        if(file_exists($path)) include($path);
+        $this->locs = $lang;
+    }
 
     /**
      * @return helper_plugin_sqlite load the sqlite helper
@@ -247,6 +270,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
             $column['origtype'] = $column['type'];
             $column['type']     = $aliases[$column['type']];
         }
+
+        // use custom localization for keys
+        if(isset($this->locs[$column['key']])){
+            $column['title'] = $this->locs[$column['key']];
+        }
+
         return $column;
     }
 

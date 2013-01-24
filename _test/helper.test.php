@@ -15,6 +15,12 @@ class helper_plugin_data_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
+    public static function setUpBeforeClass(){
+        parent::setUpBeforeClass();
+        // copy our own config files to the test directory
+        TestUtils::rcopy(dirname(DOKU_CONF), dirname(__FILE__).'/conf');
+    }
+
     function testCleanData() {
 
         $helper = new helper_plugin_data();
@@ -52,6 +58,7 @@ class helper_plugin_data_test extends DokuWikiTest {
     }
 
     function testColumn() {
+        global $conf;
         $helper = new helper_plugin_data();
 
         $this->assertEquals($this->createColumnEntry('type', false, 'type', 'type', ''), $helper->_column('type'));
@@ -67,6 +74,13 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals($this->createColumnEntry('%pageid%', false, '%pageid%', 'Title', 'page'), $helper->_column('%pageid%'));
         $this->assertEquals($this->createColumnEntry('%class%', false, '%class%', 'Page Class', ''), $helper->_column('%class%'));
         $this->assertEquals($this->createColumnEntry('%lastmod%', false, '%lastmod%', 'Last Modified', 'timestamp'), $helper->_column('%lastmod%'));
+
+        // test translated key name
+        $this->assertEquals($this->createColumnEntry('trans_urls', true, 'trans', 'Translated Title', 'url'), $helper->_column('trans_urls'));
+        // retry in different language
+        $conf['lang'] = 'de';
+        $helper = new helper_plugin_data();
+        $this->assertEquals($this->createColumnEntry('trans_urls', true, 'trans', 'Übersetzter Titel', 'url'), $helper->_column('trans_urls'));
     }
 
     function testAddPrePostFixes() {
