@@ -110,6 +110,7 @@ dl.datarelated dt {
 /* the section edit button - yes, it's not the most beautiful CSS you've ever seen */
 div.dokuwiki div.editbutton_plugin_data {
     margin-top: -1em; /* depends on the dl margin */
+    float: none;
 }
 
 div.dokuwiki div.editbutton_plugin_data form input.button {
