@@ -275,18 +275,19 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                         $attr['class'] = 'datepicker';
                     }
 
-                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes,$attr);
+                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes, $attr);
 
                 }
                 $cells = array($vals['title'] . ':',
                                $content,
                                $vals['comment']);
-                foreach(array('title', 'multi', 'comment', 'type') as $field) {
+                foreach(array('multi', 'comment', 'type') as $field) {
                     $renderer->form->addHidden($fieldid . "[$field]", $vals[$field]);
                 }
+                $renderer->form->addHidden($fieldid . "[title]", $key); //keep key as key, even if title is translated
             } else {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
-                $cells = array(form_makeField('text', $fieldid . '[title]', $vals['title'], $this->getLang('title')),
+                $cells = array(form_makeField('text', $fieldid . '[title]', $key, $this->getLang('title')), // when editable, alsways use the pure key, not a title
                                form_makeMenuField($fieldid . '[type]',
                                                   array_merge(array('', 'page', 'nspage', 'title',
                                                                     'img', 'mail', 'url', 'tag', 'wiki', 'dt'),
