@@ -255,6 +255,8 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $data['cols'][''] = array('type' => '', 'multi' => false);
         }
 
+        dbg($data);
+
         $n = 0;
         foreach($data['cols'] as $key => $vals) {
             $fieldid = 'data_edit[data][' . $n++ . ']';
@@ -331,29 +333,45 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $renderer->form->endFieldset();
     }
 
-    function _normalize($txt) {
+    /**
+     * Escapes the given value against being handled as comment
+     *
+     * @todo bad naming
+     * @param $txt
+     * @return mixed
+     */
+    public static function _normalize($txt) {
         return str_replace('#', '\#', trim($txt));
     }
 
+    /**
+     * Handles the data posted from the editor to recreate the entry syntax
+     *
+     * @param array $data data given via POST
+     * @return string
+     */
     public static function editToWiki($data) {
         $nudata = array();
-        $len = 0;
+
+        $len = 0; // we check the maximum lenght for nice alignment later
         foreach ($data['data'] as $field) {
-            if ($field['title'] === '') continue;
-            $s = syntax_plugin_data_entry::_normalize($field['title']);
-            if (trim($field['type']) !== '' ||
-                (substr($s, -1, 1) === 's' && $field['multi'] === '')) {
-                $s .= '_' . syntax_plugin_data_entry::_normalize($field['type']);
-            }
-            if ($field['multi'] === '1') {
-                $s .= 's';
-            }
-            if (is_array($field['value'])) {
+            if (is_array($field['value'])){
                 $field['value'] = join(', ', $field['value']);
             }
+            $field = array_map('trim', $field);
+            if ($field['title'] === '') continue;
 
-            $nudata[] = array($s, syntax_plugin_data_entry::_normalize($field['value']),
-                              isset($field['comment']) ? trim($field['comment']) : '');
+            $name = syntax_plugin_data_entry::_normalize($field['title']);
+
+            if($field['type'] !== '') {
+                $name .= '_' . syntax_plugin_data_entry::_normalize($field['type']);
+            }elseif(substr($name,-1,1) === 's'){
+                $name .= '_'; // when the field name ends in 's' we need to secure it against being assumed as multi
+            }
+            if ($field['multi'] === '1') $name .= 's'; // 's' is added to either type or name for multi
+
+            $nudata[] = array($name, syntax_plugin_data_entry::_normalize($field['value']),
+                              $field['comment']);
             $len = max($len, utf8_strlen($nudata[count($nudata) - 1][0]));
         }
 
@@ -362,11 +380,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $ret .= $field[0] . str_repeat(' ', $len + 1 - utf8_strlen($field[0])) . ': ' .
                     $field[1];
             if ($field[2] !== '') {
-                $ret .= ' #' . $field[2];
+                $ret .= ' # ' . $field[2];
             }
             $ret .= DOKU_LF;
         }
-        $ret .= '----';
+        $ret .= "----\n";
         return $ret;
     }
 }
