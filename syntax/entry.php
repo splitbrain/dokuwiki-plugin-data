@@ -255,8 +255,6 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $data['cols'][''] = array('type' => '', 'multi' => false);
         }
 
-        dbg($data);
-
         $n = 0;
         foreach($data['cols'] as $key => $vals) {
             $fieldid = 'data_edit[data][' . $n++ . ']';
