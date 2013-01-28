@@ -42,9 +42,17 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $lang = array();
         $path = DOKU_CONF.'/lang/en/data-plugin.php';
         if(file_exists($path)) include($path);
-        $path = DOKU_CONF.'/lang/'.$conf['lang'].'/data-plugin.php';
+        $path = DOKU_CONF.'/lang/'.$this->determineLang().'/data-plugin.php';
         if(file_exists($path)) include($path);
         $this->locs = $lang;
+    }
+
+    protected function  determineLang() {
+        if (isset($_SESSION[DOKU_COOKIE]['translationlc'])) {
+            return $_SESSION[DOKU_COOKIE]['translationlc'];
+        }
+        global $conf;
+        return $conf['lang'];
     }
 
     /**
