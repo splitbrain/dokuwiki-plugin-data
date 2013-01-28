@@ -134,6 +134,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             if($val == '' || !count($val)) continue;
             $type = $data['cols'][$key]['type'];
             if (is_array($type)) $type = $type['type'];
+            if ($type === 'hidden') continue;
 
 
             $class_name = hsc(sectionID($key, $class_names));
@@ -268,7 +269,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             } else {
                 $vals['basetype'] = $vals['type'];
             }
-            $renderer->form->addElement('<tr>');
+
+            if ($vals['type'] === 'hidden') {
+                $renderer->form->addElement('<tr class="hidden">');
+            } else {
+                $renderer->form->addElement('<tr>');
+            }
             if($this->getConf('edit_content_only')) {
                 if(isset($vals['enum'])) {
                     $values = preg_split('/\s*,\s*/', $vals['enum']);
@@ -307,7 +313,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                         array_merge(
                             array(
                                  '', 'page', 'nspage', 'title',
-                                 'img', 'mail', 'url', 'tag', 'wiki', 'dt'
+                                 'img', 'mail', 'url', 'tag', 'wiki', 'dt', 'hidden'
                             ),
                             array_keys($this->dthlp->_aliases())
                         ),
