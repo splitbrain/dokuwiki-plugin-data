@@ -84,6 +84,7 @@ class helper_plugin_data_test extends DokuWikiTest {
     }
 
     function testAddPrePostFixes() {
+        global $conf;
         $helper = new helper_plugin_data();
 
         $this->assertEquals('value', $helper->_addPrePostFixes('', 'value'));
@@ -91,6 +92,19 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('valuepost', $helper->_addPrePostFixes('', 'value', '', 'post'));
         $this->assertEquals('prevalue', $helper->_addPrePostFixes('', 'value', 'pre'));
         $this->assertEquals('prevaluepost', $helper->_addPrePostFixes(array('prefix' => 'pre', 'postfix' => 'post'), 'value'));
+
+        $conf['lang'] = 'en';
+        $this->assertEquals('envalue', $helper->_addPrePostFixes(array('prefix' => '%lang%'), 'value'));
+
+        $this->assertEquals('value', $helper->_addPrePostFixes(array('prefix' => '%trans%'), 'value'));
+
+        if (plugin_enable('translation')) {
+            global $ID;
+            $conf['plugin']['translation']['translations'] = 'de';
+            $ID = 'de:somepage';
+            $this->assertEquals('de:value', $helper->_addPrePostFixes(array('prefix' => '%trans%:'), 'value'));
+        }
+
     }
 
     function testResolveData() {
@@ -166,6 +180,10 @@ class helper_plugin_data_test extends DokuWikiTest {
         $data = array('sql' => '%now%');
         $helper->_replacePlaceholdersInSQL($data);
         $this->assertRegExp('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $data['sql']);
+
+        $data = array('sql' => '%lang%');
+        $helper->_replacePlaceholdersInSQL($data);
+        $this->assertEquals('en', $data['sql']);
     }
 
     protected function createColumnEntry($name, $multi, $key, $title, $type) {
@@ -288,5 +306,21 @@ class helper_plugin_data_test extends DokuWikiTest {
         );
 
         $this->assertEquals($result, $helper->_a2ua('table', $array));
+    }
+
+    public function testMakeTranslationReplacement() {
+        $helper = new helper_plugin_data();
+
+        $this->assertEquals('en', $helper->makeTranslationReplacement('%lang%'));
+        $this->assertEquals('', $helper->makeTranslationReplacement('%trans%'));
+
+        if (plugin_enable('translation')) {
+            global $conf;
+            global $ID;
+            $conf['plugin']['translation']['translations'] = 'de';
+            $ID = 'de:somepage';
+            $this->assertEquals('en', $helper->makeTranslationReplacement('%lang%'));
+            $this->assertEquals('de', $helper->makeTranslationReplacement('%trans%'));
+        }
     }
 }

@@ -379,7 +379,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $data['sql'] = $this->makeTranslationReplacement($data['sql']);
     }
 
-    private function makeTranslationReplacement($data) {
+    public function makeTranslationReplacement($data) {
         global $conf;
         global $ID;
 
