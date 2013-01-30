@@ -48,8 +48,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     protected function  determineLang() {
-        if (isset($_SESSION[DOKU_COOKIE]['translationlc'])) {
-            return $_SESSION[DOKU_COOKIE]['translationlc'];
+        global $ID;
+        $trans = plugin_load('helper','translation');
+        if ($trans) {
+            $values['__trans__'] = $trans->getLangPart($ID);
         }
         global $conf;
         return $conf['lang'];
@@ -127,7 +129,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
             if (isset($type['prefix'])) $pre = $type['prefix'];
             if (isset($type['postfix'])) $post = $type['postfix'];
         }
-        return $pre.$val.$post;
+        $val = $pre.$val.$post;
+        $val = $this->replacePlaceholders($val);
+        return $val;
     }
 
     /**
@@ -370,6 +374,25 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $data['sql'] = str_replace('%user%', $_SERVER['REMOTE_USER'], $data['sql']);
         // allow current date in filter:
         $data['sql'] = str_replace('%now%', dformat(null, '%Y-%m-%d'),$data['sql']);
+
+        // language filter
+        $data['sql'] = $this->makeTranslationReplacement($data['sql']);
+    }
+
+    private function makeTranslationReplacement($data) {
+        global $conf;
+        global $ID;
+
+        $patterns[] = '%lang%';
+        $values[]   = $conf['lang'];
+
+        // if translation plugin available, get current translation (empty for default lang)
+        $patterns[] = '%trans%';
+        $trans = plugin_load('helper','translation');
+        if($trans) $values[] = $trans->getLangPart($ID);
+        else $values[]   = '';
+
+        return str_replace($patterns, $values, $data);
     }
 
     /**
@@ -467,5 +490,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
         }
 
         return $param;
+    }
+
+    private function replacePlaceholders($value) {
+        return $this->makeTranslationReplacement($value);
     }
 }
