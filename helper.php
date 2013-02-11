@@ -68,7 +68,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 return false;
             }
             if(!$this->db->init('data',dirname(__FILE__).'/db/')){
-                $db = null;
+                $this->db = null;
                 return false;
             }
             $this->db->create_function('DATARESOLVE',array($this,'_resolveData'),2);
