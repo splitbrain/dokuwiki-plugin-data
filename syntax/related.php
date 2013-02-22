@@ -26,6 +26,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
 
         if($format != 'xhtml') return false;
         if(is_null($data)) return false;
+        if(!$this->dthlp->ready()) return false;
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;

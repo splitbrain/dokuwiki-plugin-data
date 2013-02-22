@@ -58,6 +58,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
+     * Simple function to check if the database is ready to use
+     */
+    public function ready(){
+        return (bool) $this->_getDB();
+    }
+
+    /**
      * @return helper_plugin_sqlite load the sqlite helper
      */
     function _getDB(){

@@ -55,6 +55,8 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * Handle the match - parse the data
      */
     function handle($match, $state, $pos, &$handler){
+        if(!$this->dthlp->ready()) return null;
+
         // get lines
         $lines = explode("\n",$match);
         array_pop($lines);
@@ -102,6 +104,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * Create output or save the data
      */
     function render($format, &$renderer, $data) {
+        if(is_null($data)) return false;
+        if(!$this->dthlp->ready()) return false;
+
         global $ID;
         switch ($format){
             case 'xhtml':

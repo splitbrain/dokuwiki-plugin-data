@@ -60,6 +60,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * syntaxes
      */
     function handle($match, $state, $pos, &$handler){
+        if(!$this->dthlp->ready()) return null;
+
         // get lines and additional class
         $lines = explode("\n",$match);
         array_pop($lines);
@@ -222,6 +224,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     function render($format, &$R, $data) {
         if($format != 'xhtml') return false;
         if(is_null($data)) return false;
+        if(!$this->dthlp->ready()) return false;
         $R->info['cache'] = false;
 
         $sqlite = $this->dthlp->_getDB();

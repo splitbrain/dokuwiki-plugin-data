@@ -116,8 +116,9 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         global $ID;
 
         if($format != 'xhtml') return false;
-        $renderer->info['cache'] = false;
         if(is_null($data)) return;
+        if(!$this->dthlp->ready()) return false;
+        $renderer->info['cache'] = false;
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
