@@ -184,7 +184,6 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        $error = '';
         if(!$title) $title = $id;
 
         $class = $data['classes'];
@@ -207,6 +206,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
         if(!$pid){
             msg("data plugin: failed saving data",-1);
+            $sqlite->query("ROLLBACK TRANSACTION");
             return false;
         }
 
