@@ -1,43 +1,140 @@
 /**
  * Init datepicker for all date fields
- *
- * @author Adrian Lang <lang@cosmocode.de>
  */
 jQuery(function () {
-    if (typeof calendar === 'undefined') return;
-    var datepickers = getElementsByClass('data_type_dt', document, 'label');
-    for (var i = 0 ; i < datepickers.length ; ++i) {
-        var pick = datepickers[i].lastChild;
-        if (!pick.id) {
-            pick.id = 'data_datepicker' + i;
-        }
-        calendar.set(pick.id);
-    }
+    jQuery('.data_type_dt input').datepicker({
+        dateFormat: "yy-mm-dd",
+        changeMonth: true,
+        changeYear: true
+    });
 });
 
 /**
  * Init autocompletion for all page alias fields
  *
  * @author Adrian Lang <lang@cosmocode.de>
+ * @author Gerrit Uitslag <klapinklapin@gmail.com>
  */
 jQuery(function () {
-    if (typeof addAutoCompletion !== 'function') return;
+    /**
+     * Returns aliastype of field
+     *
+     * @param {jQuery} $input
+     * @return {String} aliastype of the input
+     */
+    function getAliastype($input) {
+        var classes = $input.parent().attr('class').split(' '),
+            multi = false,
+            aliastype = 'data_type_page';
 
-    function prepareLi(li, value) {
-            var name = value[0];
-            li.innerHTML = '<a href="#">' + value[1] + ' (' + name + ')' + '</a>';
-            li.id = 'data__' + name.replace(/\W/g, '_');
-            li._value = name;
-    };
-    var classes = {'data_type_page' : [false, /data_type_(\w+) data_type_page/],
-                   'data_type_pages': [true, /data_type_(\w+)s data_type_pages/] };
-    for (var c_class in classes) {
-        var pickers = getElementsByClass(c_class, document, 'label');
-        for (var i = 0 ; i < pickers.length ; ++i) {
-            addAutoCompletion(pickers[i].lastChild,
-                           'data_page_' + pickers[i].className.match(classes[c_class][1])[1],
-                           classes[c_class][0],
-                           prepareLi);
-        }
+        jQuery.each(classes, function (i, cls) {
+            //skip base type
+            if (cls == 'data_type_page' || cls == 'data_type_pages') {
+                multi = cls.substr(-1) == 's';
+                return true;
+            }
+            //only data types, no other classes
+            if (cls.substr(0, 10) == 'data_type_') {
+                aliastype = cls;
+            }
+        });
+        //return singular aliastype
+        return (multi ? aliastype.substr(0, aliastype.length - 1) : aliastype);
     }
+
+    /**
+     * Ajax request for user suggestions
+     *
+     * @param {Object} request object, with single 'term' property
+     * @param {Function} response(data) callback, argument: the data to suggest to the user.
+     * @param {Function} getTerm(request) callback, argument: the request Object, returns: search term
+     */
+    function ajaxsource(request, response, getTerm, aliastype) {
+        jQuery.getJSON(
+            DOKU_BASE + 'lib/exe/ajax.php', {
+                call: 'data_page',
+                aliastype: aliastype,
+                search: getTerm(request)
+            }, function (data) {
+                response(jQuery.map(data, function (name, id) {
+                    return {
+                        label: name + ' (' + id + ')',
+                        value: id
+                    }
+                }))
+            }
+        );
+    }
+
+    function split(val) {
+        return val.split(/,\s*/);
+    }
+
+    function extractLast(term) {
+        return split(term).pop();
+    }
+
+
+    /**
+     * pick one user
+     */
+    jQuery(".data_type_page input").autocomplete({
+        source: function (request, response) {
+            ajaxsource(
+                request,
+                response,
+                function (req) {
+                    return req.term
+                },
+                getAliastype(this.element)
+            );
+        }
+    });
+
+    /**
+     * pick one or more users
+     */
+    jQuery(".data_type_pages input")
+        // don't navigate away from the field on tab when selecting an item
+        .bind("keydown", function (event) {
+            if (event.keyCode === jQuery.ui.keyCode.TAB &&
+                jQuery(this).data("ui-autocomplete").menu.active) {
+                event.preventDefault();
+            }
+        })
+        .autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                ajaxsource(
+                    request,
+                    response,
+                    function (req) {
+                        return extractLast(req.term)
+                    },
+                    getAliastype(this.element)
+                );
+            },
+            search: function () {
+                // custom minLength
+                var term = extractLast(this.value);
+                if (term.length < 2) {
+                    return false;
+                }
+            },
+            focus: function () {
+                // prevent value inserted on focus
+                return false;
+            },
+            select: function (event, ui) {
+                var terms = split(this.value);
+                // remove the current input
+                terms.pop();
+                // add the selected item
+                terms.push(ui.item.value);
+                // add placeholder to get the comma-and-space at the end
+                terms.push("");
+                this.value = terms.join(", ");
+                return false;
+            }
+        });
 });
