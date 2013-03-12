@@ -3,7 +3,7 @@
  *
  * @author Adrian Lang <lang@cosmocode.de>
  */
-addInitEvent(function () {
+jQuery(function () {
     if (typeof calendar === 'undefined') return;
     var datepickers = getElementsByClass('data_type_dt', document, 'label');
     for (var i = 0 ; i < datepickers.length ; ++i) {
@@ -20,7 +20,7 @@ addInitEvent(function () {
  *
  * @author Adrian Lang <lang@cosmocode.de>
  */
-addInitEvent(function () {
+jQuery(function () {
     if (typeof addAutoCompletion !== 'function') return;
 
     function prepareLi(li, value) {
