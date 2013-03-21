@@ -101,17 +101,20 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     }
 
     function _handle_ajax($event) {
-        if (strpos($event->data, 'data_page_') !== 0) {
+        if ($event->data !== 'data_page') {
             return;
         }
+        $event->stopPropagation();
         $event->preventDefault();
 
-        $type = substr($event->data, 10);
+        $type = substr($_REQUEST['aliastype'], 10);
         $aliases = $this->dthlp->_aliases();
+
         if (!isset($aliases[$type])) {
             echo 'Unknown type';
             return;
         }
+
         if ($aliases[$type]['type'] !== 'page') {
             echo 'AutoCompletion is only supported for page types';
             return;
@@ -123,7 +126,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
             $aliases[$type]['postfix'] .= $conf['start'];
         }
 
-        $search = $_POST['search'];
+        $search = $_REQUEST['search'];
 
         $c_search = $search;
         $in_ns = false;
@@ -168,6 +171,6 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         }
 
         $json = new JSON();
-        echo '(' . $json->encode($result) . ')';
+        echo $json->encode($result);
     }
 }
