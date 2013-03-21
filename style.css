@@ -124,3 +124,10 @@ div.dokuwiki div.editbutton_plugin_data form input.button {
 table.dataplugin_table th input {
     width: 98%;
 }
+/* datapicker and autocomplete menu */
+.ui-datepicker {
+    font-size: 0.9em;
+}
+.ui-menu {
+    font-size: 1em;
+}
