@@ -584,7 +584,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         // build the query
         $sql = "SELECT ".join(', ',$select)."
                 FROM (
-                    SELECT DISTINCT pages.pid 
+                    SELECT DISTINCT pages.pid AS pid
                     FROM pages $from2
                     WHERE $where2
                 ) AS W1 
