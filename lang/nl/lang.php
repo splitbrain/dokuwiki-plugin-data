@@ -2,6 +2,7 @@
 
 $lang['menu_alias'] = 'Data Plugin: Veldaliases';
 $lang['menu_clean'] = 'Data Plugin: Schoon de database op';
+$lang['menu_rebuild'] = 'Data Plugin: Bouw de database opnieuw op';
 
 $lang['pages_del']    = '%d blokken verwijderd.';
 $lang['submit_clean'] = 'Database opschonen!';

@@ -9,7 +9,29 @@ if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
 require_once(DOKU_INC.'inc/infoutils.php');
+require_once(DOKU_INC.'inc/search.php');
+require_once(DOKU_INC.'/inc/DifferenceEngine.php');
 
+function data_callback_search_wanted(&$data,$base,$file,$type,$lvl,$opts) {
+    global $conf;
+
+	if($type == 'd'){
+		return true; // recurse all directories, but we don't store namespaces
+	}
+    
+    if(!preg_match("/.*\.txt$/", $file)) {  // Ignore everything but TXT
+		return true;
+	}
+    
+	// get id of this file
+	$id = pathID($file);
+    
+    $item = &$data["$id"];
+    if(! isset($item)) {
+        $data["$id"]= array('id' => $id, 
+                'file' => $file);
+    }
+}
 
 /**
  * This is the base class for all syntax classes, providing some general stuff
@@ -46,6 +68,54 @@ class helper_plugin_data extends DokuWiki_Plugin {
         if(file_exists($path)) include($path);
         $this->locs = $lang;
     }
+
+    function rebuild_data() {
+
+        // Load the data plugin only if we need to
+        $data_entry = null;
+        $data_entry =& plugin_load('syntax', 'data_entry');
+        if(!$data_entry)
+        {
+            msg('Error loading the data entry class from data Helper. stopping current action.',-1);
+            return;
+        }
+
+        global $conf;
+        $result = '';
+        $data = array();
+        search($data,$conf['datadir'],'data_callback_search_wanted',array('ns' => $ns));
+
+        $output = array();        
+        foreach($data as $entry) {
+            
+            // Get the content of the file
+            $filename = $conf['datadir'].$entry['file'];
+            if (strpos($filename, 'syntax') > 0) continue;  // Skip instructional pages
+            $body = @file_get_contents($filename);
+            
+            // Run the regular expression to get the dataentry section
+            $pattern = '/----.*dataentry.*\R----/s';
+            if (preg_match($pattern, $body, $matches) === false) {
+                continue;
+            }
+
+            foreach ($matches as $match) {
+                
+                // Re-use the handle method to get the formatted data
+                $cleanedMatch = htmlspecialchars($match);             
+                $dummy = "";
+                $formatted = $data_entry->handle($cleanedMatch, null, null, $dummy);
+                $output['id'.count($output)] = $formatted;                  
+
+                // Re-use the save_data method to .... (drum roll) save the data. 
+                // Ignore the returned html, just move on to the next file
+                $html = $data_entry->_saveData($formatted, $entry['id'], 'Title'.count($output));
+            }
+        }
+        
+        msg('Data entry plugin found and refreshed all '.count($output).' entries.');
+    }    
+    
 
     protected function  determineLang() {
         global $ID;
