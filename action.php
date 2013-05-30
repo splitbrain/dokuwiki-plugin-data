@@ -33,7 +33,20 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform');
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, '_handle_edit_post');
         $controller->register_hook('AJAX_CALL_UNKNOWN', 'BEFORE', $this, '_handle_ajax');
+		$controller->register_hook('TPL_METAHEADER_OUTPUT', 'BEFORE', $this, '_handle_refresh_data');
     }
+    
+    function _handle_refresh_data(&$event, $param) {
+
+        if ($_REQUEST['cmd'] === null) return;
+
+        // verify valid values
+        switch (key($_REQUEST['cmd'])) {
+            case 'refresh_data' : 
+                $this->dthlp->rebuild_data();
+                break;
+        }   
+    }    
 
     /**
      * Handles the page write event and removes the database info
