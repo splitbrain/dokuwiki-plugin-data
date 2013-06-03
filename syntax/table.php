@@ -552,17 +552,18 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
             foreach($data['filter'] as $filter){
                 $col = $filter['key'];
+                $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if($col == '%pageid%'){
-                    $where2 .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                    $where2 .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'".$closecompare;
                 }elseif($col == '%class%'){
-                    $where2 .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'";
+                    $where2 .= " ".$filter['logic']." pages.class ".$filter['compare']." '".$filter['value']."'".$closecompare;
                 }elseif($col == '%title%'){
-                    $where2 .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
+                    $where2 .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'".$closecompare;
                 }elseif($col == '%lastmod%'){
                     # parse value to int?
                     $filter['value'] = (int) strtotime($filter['value']);
-                    $where2 .= " ".$filter['logic']." pages.lastmod ".$filter['compare']." ".$filter['value'];
+                    $where2 .= " ".$filter['logic']." pages.lastmod ".$filter['compare']." ".$filter['value'].$closecompare;
                 }else{
                     // filter by hidden column?
                     $table= 'T'.(++$cnt);
@@ -575,7 +576,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                                   " '".$filter['value']."'"; //value is already escaped
                     } else {
                         $where2 .= ' '.$filter['logic'].' '.$table.'.value '.$filter['compare'].
-                                  " '".$filter['value']."'"; //value is already escaped
+                                  " '".$filter['value']."'".$closecompare; //value is already escaped
                     }
                 }
             }
