@@ -173,12 +173,18 @@ class helper_plugin_data_test extends DokuWikiTest {
     }
 
     function testReplacePlaceholdersInSQL() {
+        global $USERINFO;
         $helper = new helper_plugin_data();
 
         $data = array('sql' => '%user%');
         $_SERVER['REMOTE_USER'] = 'test';
         $helper->_replacePlaceholdersInSQL($data);
         $this->assertEquals('test', $data['sql']);
+
+        $data = array('sql' => '%groups%');
+        $USERINFO['grps'] = array('test','admin');
+        $helper->_replacePlaceholdersInSQL($data);
+        $this->assertEquals("test','admin", $data['sql']);
 
         $data = array('sql' => '%now%');
         $helper->_replacePlaceholdersInSQL($data);
