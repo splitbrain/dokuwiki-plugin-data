@@ -98,7 +98,10 @@ class helper_plugin_data_test extends DokuWikiTest {
 
         $this->assertEquals('value', $helper->_addPrePostFixes(array('prefix' => '%trans%'), 'value'));
 
-        if (plugin_enable('translation')) {
+        $plugininstalled = in_array('translation', plugin_list('helper',$all=true));
+        if (!$plugininstalled) $this->markTestSkipped('Pre-condition not satisfied: translation plugin must be installed');
+
+        if ($plugininstalled && plugin_enable('translation')) {
             global $ID;
             $conf['plugin']['translation']['translations'] = 'de';
             $ID = 'de:somepage';
@@ -314,7 +317,10 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('en', $helper->makeTranslationReplacement('%lang%'));
         $this->assertEquals('', $helper->makeTranslationReplacement('%trans%'));
 
-        if (plugin_enable('translation')) {
+        $plugininstalled = in_array('translation', plugin_list('helper',$all=true));
+        if (!$plugininstalled) $this->markTestSkipped('Pre-condition not satisfied: translation plugin must be installed');
+
+        if ($plugininstalled && plugin_enable('translation')) {
             global $conf;
             global $ID;
             $conf['plugin']['translation']['translations'] = 'de';
