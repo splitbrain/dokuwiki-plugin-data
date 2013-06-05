@@ -256,6 +256,12 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals($this->createFilterArray('name', '%tom%', 'LIKE', 'name', '')
             , $helper->_parse_filter('name ~ *tom*'));
 
+        $this->assertEquals($this->createFilterArray('name', 'tom', 'IN(', 'name', '')
+            , $helper->_parse_filter('name ~~ tom'));
+
+        $this->assertEquals($this->createFilterArray('name', "t''om','john*", 'IN(', 'name', '')
+            , $helper->_parse_filter("name ~~ t'om,john*"));
+
         $this->assertEquals(false, $helper->_parse_filter('name is *tom*'));
         $this->assertEquals(false, $helper->_parse_filter(''));
     }
