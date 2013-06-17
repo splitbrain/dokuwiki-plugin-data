@@ -34,6 +34,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('', $helper->_cleanData('this is not a date', 'dt'));
         $this->assertEquals('1234-01-01', $helper->_cleanData('1234-1-1', 'dt'));
         $this->assertEquals('1234-01-01', $helper->_cleanData('1234-01-01', 'dt'));
+        $this->assertEquals('%now%', $helper->_cleanData('%now%', 'dt'));
         $this->assertEquals('', $helper->_cleanData('1234-01-011', 'dt'));
 
         $this->assertEquals('http://bla', $helper->_cleanData('bla', 'url'));
