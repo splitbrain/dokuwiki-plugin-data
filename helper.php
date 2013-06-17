@@ -101,6 +101,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 if(preg_match('/^(\d\d\d\d)-(\d\d?)-(\d\d?)$/',$value,$m)){
                     return sprintf('%d-%02d-%02d',$m[1],$m[2],$m[3]);
                 }
+                if ($value === '%now%') {
+                    return $value;
+                }
                 return '';
             case 'url':
                 if(!preg_match('!^[a-z]+://!i',$value)) $value='http://'.$value;
