@@ -409,7 +409,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $patterns[] = '%trans%';
         $trans = plugin_load('helper','translation');
         if($trans) {
-            $values[] = $trans->getLangPart($ID);
+            $local = $trans->getLangPart($ID);
+            if ($local === '') {
+                $local = $conf['lang'];
+            }
+            $values[] = $local;
         }
         else $values[]   = '';
         return str_replace($patterns, $values, $data);
