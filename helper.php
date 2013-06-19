@@ -37,21 +37,26 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * Loads custom translations
      */
     public function __construct(){
-        global $conf;
+        $this->loadLocalizedLabels();
+    }
 
+    private function  loadLocalizedLabels() {
         $lang = array();
         $path = DOKU_CONF.'/lang/en/data-plugin.php';
         if(file_exists($path)) include($path);
         $path = DOKU_CONF.'/lang/'.$this->determineLang().'/data-plugin.php';
         if(file_exists($path)) include($path);
+        foreach ($lang as $key => $val) {
+            $lang[utf8_strtolower($key)] = $val;
+        }
         $this->locs = $lang;
     }
 
     protected function  determineLang() {
-        global $ID;
         $trans = plugin_load('helper','translation');
         if ($trans) {
-            $values['__trans__'] = $trans->getLangPart($ID);
+            $value = $trans->getLangPart(getID());
+            if ($value) return $value;
         }
         global $conf;
         return $conf['lang'];
@@ -394,14 +399,19 @@ class helper_plugin_data extends DokuWiki_Plugin {
         global $ID;
 
         $patterns[] = '%lang%';
-        $values[]   = $conf['lang'];
+        if (isset($conf['lang_before_translation'])) {
+            $values[] = $conf['lang_before_translation'];
+        } else {
+            $values[] = $conf['lang'];
+        }
 
         // if translation plugin available, get current translation (empty for default lang)
         $patterns[] = '%trans%';
         $trans = plugin_load('helper','translation');
-        if($trans) $values[] = $trans->getLangPart($ID);
+        if($trans) {
+            $values[] = $trans->getLangPart($ID);
+        }
         else $values[]   = '';
-
         return str_replace($patterns, $values, $data);
     }
 
