@@ -251,6 +251,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $rows = array_slice($rows, 0, $data['limit']);
         }
 
+        // create an array of class name for the cells
+        $class_names = array();
+
         $R->doc .= $this->preList($clist, $data);
         foreach ($rows as $rownum => $row) {
             // build data rows
@@ -261,10 +264,19 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->doc .= $this->after_val;
             }
             
+            // used as counter in the loop
+            $i = -1;
             foreach(array_values($row) as $num => $cval){
                 $num_rn = ($data['rownumbers'] ? $num+1 : $num);
+                
+                // retrieve the column name to be used as class name for the cell
+                $i++;
+                $item = array_pop(array_slice($data['cols'],$i,1));
+                $class_name = hsc(sectionID($item['title'], $class_names));
 
-                $R->doc .= sprintf($this->beforeVal($data,$num_rn),'class="'.$data['align'][$num_rn].'align"');
+                // use the retrieved column name as class name for the cell
+                //$R->doc .= sprintf($this->beforeVal($data,$num_rn),'class="'.$data['align'][$num_rn].'align"');
+                $R->doc .= sprintf($this->beforeVal($data,$num_rn),'class="'.$data['align'][$num_rn].''.$class_name.'"');
                 $R->doc .= $this->dthlp->_formatData(
                                 $data['cols'][$clist[$num]],
                                 $cval,$R);
