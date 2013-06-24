@@ -6,6 +6,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
     class syntax_plugin_bureaucracy_field_dataplugin extends syntax_plugin_bureaucracy_field {
 
         function __construct($args) {
+            /** @var helper_plugin_data $dthlp */
             $dthlp =& plugin_load('helper', 'data');
             if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
 
@@ -16,6 +17,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                     $n_args[] = $arg;
                     continue;
                 }
+                $arg = $this->replaceTranslation($arg);
                 $datatype = $dthlp->_column($arg);
                 if (is_array($datatype['type'])) {
                     $datatype['basetype'] = $datatype['type']['type'];
@@ -75,5 +77,18 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             return parent::handle_post($value);
         }
 
+        function replaceTranslation($string) {
+            global $conf;
+            global $ID;
+
+            $string = str_replace('@LANG@/', $conf['lang'], $string);
+
+            // if translation plugin available, get current translation (empty for default lang)
+            $value = '';
+            $trans = plugin_load('helper','translation');
+            if($trans) $value = $trans->getLangPart($ID);
+
+            return str_replace('@TRANS@', $value, $string);
+        }
     }
 }
