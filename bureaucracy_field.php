@@ -38,6 +38,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                     $datatype['basetype'] = $datatype['type'];
                 }
             }
+            $datatype['title'] = '@@DISPLAY@@';
             if (isset($datatype['enum'])) {
                 $values = preg_split('/\s*,\s*/', $datatype['enum']);
                 if (!$datatype['multi'] && $this->opt['optional']) array_unshift($values, '');
@@ -46,9 +47,12 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             } else {
                 $classes = 'data_type_' . $datatype['type'] . ($datatype['multi'] ? 's' : '') .  ' ' .
                            'data_type_' . $datatype['basetype'] . ($datatype['multi'] ? 's' : '');
-                $content = form_makeTextField('@@NAME@@', '@@VALUE@@', '@@LABEL@@', '', '@@CLASS@@ ' . $classes);
+                $content = form_makeTextField('@@NAME@@', '@@VALUE@@', '@@DISPLAY@@', '', '@@CLASS@@ ' . $classes);
 
                 $this->tpl = $content;
+            }
+            if (!isset($this->opt['display'])) {
+                $this->opt['display'] = $this->opt['label'];
             }
 
         }
@@ -76,7 +80,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                 $form->addElement(call_user_func_array('form_makeListboxField',
                                                        $this->_parse_tpl(array('@@NAME@@[]',
                                                         $params['args'], $params['value'],
-                                                        '@@LABEL@@', '', '@@CLASS@@', $this->additional),
+                                                        '@@DISPLAY@@', '', '@@CLASS@@', $this->additional),
                                                         $params)));
             }
         }
