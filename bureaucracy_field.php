@@ -5,18 +5,29 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
     class syntax_plugin_bureaucracy_field_dataplugin extends syntax_plugin_bureaucracy_field {
 
-        function __construct($args) {
-            /** @var helper_plugin_data $dthlp */
-            $dthlp =& plugin_load('helper', 'data');
-            if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+        private $args;
 
+        function __construct($args) {
             $this->init($args);
             $n_args = array();
+            $this->args = array();
             foreach ($args as $arg) {
                 if ($arg[0] !== '_') {
                     $n_args[] = $arg;
                     continue;
                 }
+                $this->args[] = $arg;
+            }
+            $this->standardArgs($n_args);
+
+        }
+
+        function prepareColumns($args) {
+            /** @var helper_plugin_data $dthlp */
+            $dthlp =& plugin_load('helper', 'data');
+            if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+
+            foreach ($args as $arg) {
                 $arg = $this->replaceTranslation($arg);
                 $datatype = $dthlp->_column($arg);
                 if (is_array($datatype['type'])) {
@@ -27,8 +38,6 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                     $datatype['basetype'] = $datatype['type'];
                 }
             }
-            $this->standardArgs($n_args);
-
             if (isset($datatype['enum'])) {
                 $values = preg_split('/\s*,\s*/', $datatype['enum']);
                 if (!$datatype['multi'] && $this->opt['optional']) array_unshift($values, '');
@@ -41,9 +50,12 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
                 $this->tpl = $content;
             }
+
         }
 
         function render($params, $form) {
+            $this->prepareColumns($this->args);
+
             if (isset($this->tpl)) {
                 parent::render($params, $form);
             } else {
@@ -79,15 +91,14 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
         function replaceTranslation($string) {
             global $conf;
-            global $ID;
 
             $string = str_replace('@LANG@/', $conf['lang'], $string);
 
             // if translation plugin available, get current translation (empty for default lang)
-            $value = '';
             $trans = plugin_load('helper','translation');
-            if($trans) $value = $trans->getLangPart($ID);
-
+            // don't use $ID - include plugin will fool you
+            if($trans) $value = $trans->getLangPart(getID());
+            if ($value === '') $value = $conf['lang'];
             return str_replace('@TRANS@', $value, $string);
         }
     }
