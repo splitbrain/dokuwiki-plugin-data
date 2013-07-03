@@ -94,16 +94,21 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
         }
 
         function replaceTranslation($string) {
+            global $ID;
             global $conf;
 
-            $string = str_replace('@LANG@/', $conf['lang'], $string);
+            $lang = $conf['lang'];
+            $trans = '';
 
-            // if translation plugin available, get current translation (empty for default lang)
-            $trans = plugin_load('helper','translation');
-            // don't use $ID - include plugin will fool you
-            if($trans) $value = $trans->getLangPart(getID());
-            if ($value === '') $value = $conf['lang'];
-            return str_replace('@TRANS@', $value, $string);
+            /** @var helper_plugin_translation $translationPlugin */
+            $translationPlugin = plugin_load('helper', 'translation');
+            if ($translationPlugin) {
+                $trans = $translationPlugin->getLangPart($ID);
+                $lang = $translationPlugin->realLC('');
+            }
+
+            $string = str_replace('@LANG@', $lang, $string);
+            return str_replace('@TRANS@', $trans, $string);
         }
     }
 }
