@@ -7,7 +7,7 @@
  */
 $lang['menu_alias']            = '데이터 플러그인: 필드 별칭';
 $lang['menu_clean']            = '데이터 플러그인: 데이터베이스 정리';
-$lang['pages_del']             = '항목 %d개가 제거됨';
+$lang['pages_del']             = '항목 %d개가 제거되었습니다.';
 $lang['submit_clean']          = '데이터베이스 정리!';
 $lang['sort']                  = '이 열을 기준으로 정렬';
 $lang['next']                  = '다음 문서';
