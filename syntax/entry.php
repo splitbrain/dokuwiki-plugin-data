@@ -198,16 +198,16 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $sqlite->query("BEGIN TRANSACTION");
 
         // store page info
-        $sqlite->query("INSERT OR IGNORE INTO pages (page,title,class) VALUES (?,?,?)",
-                       $id,$title,$class);
+        $this->replaceQuery("INSERT OR IGNORE INTO pages (page,title,class) VALUES (?,?,?)",
+                            $id,$title,$class);
 
         // Update title if insert failed (record already saved before)
         $revision = filemtime(wikiFN($id));
-        $sqlite->query("UPDATE pages SET title = ?, class = ?, lastmod = ? WHERE page = ?",
-                       $title,$class,$revision,$id);
+        $this->replaceQuery("UPDATE pages SET title = ?, class = ?, lastmod = ? WHERE page = ?",
+                            $title,$class,$revision,$id);
 
         // fetch page id
-        $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
+        $res = $this->replaceQuery("SELECT pid FROM pages WHERE page = ?",$id);
         $pid = (int) $sqlite->res2single($res);
         $sqlite->res_close($res);
 
@@ -223,11 +223,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         // insert new data
         foreach ($data['data'] as $key => $val){
             if(is_array($val)) foreach($val as $v){
-                $sqlite->query("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
-                               $pid,$key,$v);
+                $this->replaceQuery("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
+                                    $pid,$key,$v);
             }else {
-                $sqlite->query("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
-                               $pid,$key,$val);
+                $this->replaceQuery("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
+                                    $pid,$key,$val);
             }
         }
 
@@ -235,6 +235,25 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $sqlite->query("COMMIT TRANSACTION");
 
         return true;
+    }
+
+    function replaceQuery() {
+        $args = func_get_args();
+        $argc = func_num_args();
+
+        if ($argc > 1) {
+            for ($i = 1; $i < $argc; $i++) {
+                $data = array();
+                $data['sql'] = $args[$i];
+                $this->dthlp->_replacePlaceholdersInSQL($data);
+                $args[$i] = $data['sql'];
+            }
+        }
+
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
+
+        return call_user_func_array(array(&$sqlite, 'query'), $args);
     }
 
     /**

@@ -105,6 +105,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         if ($event->data !== 'data_page') {
             return;
         }
+
         $event->stopPropagation();
         $event->preventDefault();
 
@@ -172,6 +173,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         }
 
         $json = new JSON();
+        header('Content-Type: application/json');
         echo $json->encode($result);
     }
 }
