@@ -21,7 +21,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * Constructor. Load helper plugin
      */
     function syntax_plugin_data_table(){
-        $this->dthlp =& plugin_load('helper', 'data');
+        $this->dthlp = plugin_load('helper', 'data');
     }
 
     /**
@@ -59,7 +59,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * This parsing is shared between the multiple different output/control
      * syntaxes
      */
-    function handle($match, $state, $pos, &$handler){
+    function handle($match, $state, $pos, Doku_Handler &$handler){
         if(!$this->dthlp->ready()) return null;
 
         // get lines and additional class
@@ -221,7 +221,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     /**
      * Create output
      */
-    function render($format, &$R, $data) {
+    function render($format, Doku_Renderer &$R, $data) {
         if($format != 'xhtml') return false;
         if(is_null($data)) return false;
         if(!$this->dthlp->ready()) return false;

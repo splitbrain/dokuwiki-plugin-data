@@ -28,8 +28,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
     function testHandle() {
         $plugin = new syntax_plugin_data_entry();
 
-        $null = null;
-        $result = $plugin->handle($this->exampleEntry, 0, 10, $null);
+        $handler = new Doku_Handler();
+        $result = $plugin->handle($this->exampleEntry, 0, 10, $handler);
 
         $this->assertEquals(10,         $result['pos'],     'Position has changed');
         $this->assertEquals('projects', $result['classes'], 'wrong class name detected');
@@ -154,8 +154,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
             . "\n"
             . "----\n";
 
-        $null = null;
-        $result = $plugin->handle($entry, 0, 10, $null);
+        $handler = new Doku_Handler();
+        $result = $plugin->handle($entry, 0, 10, $handler);
 
         $this->assertEquals(10,         $result['pos'],     'Position has changed');
         $this->assertEquals(35,        $result['len'],     'wrong entry length');
@@ -183,11 +183,11 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
     }
 
     function testShowData() {
+        $handler = new Doku_Handler();
         $xhtml = new Doku_Renderer_xhtml();
         $plugin = new syntax_plugin_data_entry();
 
-        $null = null;
-        $result = $plugin->handle($this->exampleEntry, 0, 10, $null);
+        $result = $plugin->handle($this->exampleEntry, 0, 10, $handler);
 
         $plugin->_showData($result, $xhtml);
         $doc = phpQuery::newDocument($xhtml->doc);
