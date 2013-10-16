@@ -6,7 +6,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
     class syntax_plugin_bureaucracy_field_dataplugin extends syntax_plugin_bureaucracy_field {
 
         function __construct($args) {
-            $dthlp =& plugin_load('helper', 'data');
+            $dthlp = plugin_load('helper', 'data');
             if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
 
             $this->init($args);
@@ -41,9 +41,9 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             }
         }
 
-        function render($params, $form) {
+        function renderfield($params, Doku_Form $form) {
             if (isset($this->tpl)) {
-                parent::render($params, $form);
+                parent::renderfield($params, $form);
             } else {
                 // Is an enum type, otherwise $this->tpl would be set in __construct
                 $this->_handlePreload();
@@ -67,7 +67,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             }
         }
 
-        function handle_post($value) {
+        function handle_post(&$value) {
             if (is_array($value)) {
                 $value = join(', ', $value);
             }
