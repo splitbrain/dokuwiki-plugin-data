@@ -24,7 +24,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
         function prepareColumns($args) {
             /** @var helper_plugin_data $dthlp */
-            $dthlp =& plugin_load('helper', 'data');
+            $dthlp = plugin_load('helper', 'data');
             if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
 
             foreach ($args as $arg) {
