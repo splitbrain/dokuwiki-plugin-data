@@ -24,7 +24,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
         function prepareColumns($args) {
             /** @var helper_plugin_data $dthlp */
-            $dthlp =& plugin_load('helper', 'data');
+            $dthlp = plugin_load('helper', 'data');
             if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
 
             foreach ($args as $arg) {
@@ -57,11 +57,11 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
         }
 
-        function render($params, $form) {
+        function renderfield($params, Doku_Form $form) {
             $this->prepareColumns($this->args);
 
             if (isset($this->tpl)) {
-                parent::render($params, $form);
+                parent::renderfield($params, $form);
             } else {
                 // Is an enum type, otherwise $this->tpl would be set in __construct
                 $this->_handlePreload();
@@ -85,7 +85,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             }
         }
 
-        function handle_post($value) {
+        function handle_post(&$value) {
             if (is_array($value)) {
                 $value = join(', ', $value);
             }

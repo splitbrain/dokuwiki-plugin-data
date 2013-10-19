@@ -20,7 +20,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
      * Constructor. Load helper plugin
      */
     function syntax_plugin_data_cloud(){
-        $this->dthlp =& plugin_load('helper', 'data');
+        $this->dthlp = plugin_load('helper', 'data');
         if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
     }
 
@@ -112,7 +112,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
     /**
      * Create output or save the data
      */
-    function render($format, &$renderer, $data) {
+    function render($format, Doku_Renderer &$renderer, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;

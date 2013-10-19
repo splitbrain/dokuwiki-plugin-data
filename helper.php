@@ -53,6 +53,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     protected function  determineLang() {
+        /** @var helper_plugin_translation $trans */
         $trans = plugin_load('helper','translation');
         if ($trans) {
             $value = $trans->getLangPart(getID());
@@ -74,7 +75,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _getDB(){
         if ($this->db === null) {
-            $this->db =& plugin_load('helper', 'sqlite');
+            $this->db = plugin_load('helper', 'sqlite');
             if ($this->db === null) {
                 msg('The data plugin needs the sqlite plugin', -1);
                 return false;

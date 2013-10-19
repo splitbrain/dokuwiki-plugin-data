@@ -21,7 +21,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
      * Constructor. Load helper plugin
      */
     function admin_plugin_data_aliases(){
-        $this->dthlp =& plugin_load('helper', 'data');
+        $this->dthlp = plugin_load('helper', 'data');
     }
 
     function getMenuSort() { return 501; }
