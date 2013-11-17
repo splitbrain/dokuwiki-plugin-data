@@ -1,0 +1,3 @@
+====== Purigado de la datumbazo ======
+
+Kiam paĝoj kun aldonaj datumoj foriĝas, iliaj metadatumoj ankaŭ foriĝas. Sed tio validas nur, kiam la paĝo foriĝis per ordinara viki-modifado. Se la paĝo foriĝis alimaniere, ekzemple foriginte ĝin el la dosierujo, ĝiaj metadatumoj restos en la datumbazo. Tiu ĉi ilo forigas ĉiujn datumojn de paĝoj, kiuj ne plu ekzistas.
