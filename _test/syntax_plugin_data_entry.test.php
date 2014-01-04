@@ -4,6 +4,7 @@ require_once DOKU_INC . 'inc/parser/xhtml.php';
 
 /**
  * @group plugin_data
+ * @group plugins
  */
 class syntax_plugin_data_entry_test extends DokuWikiTest {
 

@@ -1,7 +1,7 @@
 <?php
-
 /**
  * @group plugin_data
+ * @group plugins
  */
 class helper_plugin_data_test_aliases extends DokuWikiTest {
 

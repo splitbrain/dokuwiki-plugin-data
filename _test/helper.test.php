@@ -10,6 +10,7 @@ class data_dummy_renderer {
 
 /**
  * @group plugin_data
+ * @group plugins
  */
 class helper_plugin_data_test extends DokuWikiTest {
 
