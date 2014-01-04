@@ -160,7 +160,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('<a href="' . wl('start', array('dataflt[0]'=>'_=value')) . '" title="Show pages matching \'value\'" class="wikilink1">value</a>',
             $helper->_formatData(array('type' => 'tag'), "value", $renderer));
 
-        $this->assertEquals('1970/01/15 07:56',
+        $this->assertEquals(strftime('%Y/%m/%d %H:%M', 1234567),
             $helper->_formatData(array('type' => 'timestamp'), "1234567", $renderer));
 
         $this->assertEquals('<strong>bla</strong>',
