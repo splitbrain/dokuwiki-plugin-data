@@ -11,5 +11,5 @@ fi
 # get the sqlite plugin which is required for this plugin
 cd lib/plugins || exit 1
 git clone https://github.com/cosmocode/sqlite.git sqlite
-
+git clone https://github.com/splitbrain/dokuwiki-plugin-translation.git translation
 
