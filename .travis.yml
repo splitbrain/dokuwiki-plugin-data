@@ -5,5 +5,4 @@ php:
   - "5.3"
 before_install: wget https://raw.github.com/splitbrain/dokuwiki-travis/master/travis.sh
 install: sh travis.sh
-before_script: sh lib/plugins/data/travis-require.sh
 script: cd _test && phpunit --stderr --group plugin_data
