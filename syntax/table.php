@@ -230,6 +230,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
+        //reset counters
+        $this->sums = array();
+
         if ($this->hasRequestFilter() OR isset($_REQUEST['dataofs'])) {
             $this->updateSQLwithQuery($data); // handles request params
         }
