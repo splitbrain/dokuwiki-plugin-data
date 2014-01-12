@@ -7,6 +7,9 @@
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
+/**
+ * Class syntax_plugin_data_table
+ */
 class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     /**
@@ -58,6 +61,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      *
      * This parsing is shared between the multiple different output/control
      * syntaxes
+     *
+     * @param string        $match
+     * @param int           $state
+     * @param int           $pos
+     * @param Doku_Handler  $handler
+     * @return array|null instructions for renderer
      */
     function handle($match, $state, $pos, Doku_Handler &$handler){
         if(!$this->dthlp->ready()) return null;
@@ -132,6 +141,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                             }
                             $data['align'][] = $col;
                         }
+                     break;
                 case 'widths':
                     $cols = explode(',',$line[1]);
                     foreach($cols as $col){
@@ -159,6 +169,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'where':
                 case 'filter':
                 case 'filterand':
+                /** @noinspection PhpMissingBreakStatementInspection */
                 case 'and':
                         $logic = 'AND';
                 case 'filteror':
@@ -220,15 +231,22 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     /**
      * Create output
+     *
+     * @param string         $format
+     * @param Doku_Renderer &$R
+     * @param array          $data instructions by handler
+     * @return bool
      */
     function render($format, Doku_Renderer &$R, $data) {
         if($format != 'xhtml') return false;
+        /** @var Doku_Renderer_xhtml $R */
+
         if(is_null($data)) return false;
         if(!$this->dthlp->ready()) return false;
-        $R->info['cache'] = false;
-
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
+
+        $R->info['cache'] = false;
 
         //reset counters
         $this->sums = array();
@@ -293,13 +311,35 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         return true;
     }
 
+    /**
+     * Before value in table cell
+     *
+     * @param array $data  instructions by handler
+     * @param int   $colno column number
+     * @return string
+     */
     protected function beforeVal(&$data, $colno) {
         return $this->before_val;
     }
+
+    /**
+     * After value in table cell
+     *
+     * @param array $data
+     * @param int $colno
+     * @return string
+     */
     protected function afterVal(&$data, $colno) {
         return $this->after_val;
     }
 
+    /**
+     * Create table header
+     *
+     * @param array $clist keys of the columns
+     * @param array $data instruction by handler
+     * @return string html of table header
+     */
     function preList($clist, $data) {
         global $ID;
         global $conf;
@@ -397,6 +437,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         return $text;
     }
 
+    /**
+     * Create an empty table
+     *
+     * @param array $data  instruction by handler()
+     * @param array $clist keys of the columns
+     * @param Doku_Renderer &$R
+     */
     function nullList($data, $clist, &$R) {
         $R->doc .= $this->preList($clist, $data);
         $R->tablerow_open();
@@ -407,6 +454,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $R->doc .= '</table></div>';
     }
 
+    /**
+     * Create table footer
+     *
+     * @param array $data   instruction by handler()
+     * @param int   $rowcnt number of rows
+     * @return string html of table footer
+     */
     function postList($data, $rowcnt) {
         global $ID;
         $text = '';
@@ -470,13 +524,15 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     /**
      * Builds the SQL query from the given data
+     *
+     * @param array &$data instruction by handler
+     * @return bool|string SQL query or false
      */
     function _buildSQL(&$data){
         $cnt    = 0;
         $tables = array();
         $select = array();
         $from   = '';
-        $order  = '';
 
         $from2   = '';
         $where2  = '1 = 1';
@@ -607,7 +663,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
     /**
      * Handle request paramaters, rebuild sql when needed
-     * @param array $data
+     *
+     * @param array $data instruction by handler()
      */
     function updateSQLwithQuery(&$data) {
         if($this->hasRequestFilter()){
@@ -631,6 +688,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
     }
 
+    /**
+     * Check whether a sort or filter request parameters are available
+     *
+     * @return bool
+     */
     function hasRequestFilter() {
         return isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt']);
     }
