@@ -46,8 +46,9 @@ jQuery(function () {
      * Ajax request for user suggestions
      *
      * @param {Object} request object, with single 'term' property
-     * @param {Function} response(data) callback, argument: the data to suggest to the user.
-     * @param {Function} getTerm(request) callback, argument: the request Object, returns: search term
+     * @param {Function} response callback, argument: the data to suggest to the user.
+     * @param {Function} getTerm callback, argument: the request Object, returns: search term
+     * @param aliastype
      */
     function ajaxsource(request, response, getTerm, aliastype) {
         jQuery.getJSON(
