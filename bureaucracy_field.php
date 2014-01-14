@@ -3,11 +3,26 @@
 if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
     require_once DOKU_PLUGIN . 'bureaucracy/fields/field.php';
 
+    /**
+     * Class syntax_plugin_bureaucracy_field_dataplugin
+     *
+     * Create a field with properties defined by given type alias
+     * Mostly this is a single line input field, but for enum type a select field.
+     */
     class syntax_plugin_bureaucracy_field_dataplugin extends syntax_plugin_bureaucracy_field {
 
         private $args;
+        private $additional;
 
-        function __construct($args) {
+        /**
+         * Arguments:
+         *  - cmd
+         *  - label
+         *  - _typealias (optional)
+         *
+         * @param array $args The tokenized definition, only split at spaces
+         */
+        public function __construct($args) {
             $this->init($args);
             $n_args = array();
             $this->args = array();
@@ -22,7 +37,12 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
         }
 
-        function prepareColumns($args) {
+        /**
+         * Prepare
+         *
+         * @param array $args data plugin related field arguments
+         */
+        private function prepareColumns($args) {
             /** @var helper_plugin_data $dthlp */
             $dthlp = plugin_load('helper', 'data');
             if(!$dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
@@ -57,7 +77,15 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
 
         }
 
-        function renderfield($params, Doku_Form $form) {
+        /**
+         * Render the field as XHTML
+         *
+         * Creates a single line input field or select field
+         *
+         * @params array     $params Additional HTML specific parameters
+         * @params Doku_Form $form   The target Doku_Form object
+         */
+        public function renderfield($params, Doku_Form $form) {
             $this->prepareColumns($this->args);
 
             if (isset($this->tpl)) {
@@ -85,7 +113,15 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             }
         }
 
-        function handle_post(&$value) {
+        /**
+         * Handle a post to the field
+         *
+         * Accepts and validates a posted value.
+         *
+         * @param string $value The passed value or array or null if none given
+         * @return bool|array Whether the passed value is valid
+         */
+        public function handle_post(&$value) {
             if (is_array($value)) {
                 $value = join(', ', $value);
             }
@@ -93,7 +129,13 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             return parent::handle_post($value);
         }
 
-        function replaceTranslation($string) {
+        /**
+         * Replace the translation placeholders
+         *
+         * @param string $string
+         * @return string parsed string
+         */
+        private function replaceTranslation($string) {
             global $ID;
             global $conf;
 
