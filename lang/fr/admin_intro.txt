@@ -1,0 +1,7 @@
+====== Configuration des alias de types de champ de données ======
+
+Cette interface vous permet de définir de nouveaux alias de types de champ de données.
+
+On peut utiliser les alias de types comme tous les autres types de l'extension, mais les préfixes et suffixes que vous indiquez ici seront ajoutés aux valeurs. On utilise généralement ceci pour lier certains types de champs à des [[doku>fr:namespaces|catégories]].
+
+Veuillez vous reporter à la [[doku>plugin:data|description de l'extension]] pour de plus amples informations.
