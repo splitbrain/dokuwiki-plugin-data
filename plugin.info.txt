@@ -1,8 +1,8 @@
 base    data
-author  FORK, original author: Andreas Gohr
-email   hh.lohmann@yahoo.de
-date    2014-01-22
+author  Andreas Gohr
+email   andi@splitbrain.org
+date    2013-10-09
 name    Structured Data Plugin
 desc    Add and query structured data in your wiki
-url     https://github.com/hh-lohmann/dokuwiki-plugin-data/
+url     http://www.dokuwiki.org/plugin:data
 
