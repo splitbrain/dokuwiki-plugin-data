@@ -142,7 +142,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
           if ( $i == 1 ) { break; }
           $i++;
         }
-        $meta = p_get_metadata( $id, METADATA_RENDER_UNLIMITED );
+        $meta = p_get_metadata( $id );
         $ret .= '<p style=" margin: 1em; border: thin outset; padding: 0.5em; font-weight: bold; font-style: italic; ">'.html_wikilink(':'.$id,'⇐ zurück zu: '.$meta['title']).'</p>';
 
 
