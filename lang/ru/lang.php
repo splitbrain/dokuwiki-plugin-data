@@ -3,18 +3,18 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * 
- * @author     Aleksandr Selivanov <alexgearbox@gmail.com>
- * @author     sindikat <http://forum.anarhist.org/>
  * @author Aleksandr Selivanov <alexgearbox@gmail.com>
+ * @author sindikat <http://forum.anarhist.org/>
+ * @author Aleksandr Selivanov <alexgearbox@yandex.ru>
  */
-$lang['menu_alias']            = 'Плагин «Данные»: описание полей';
-$lang['menu_clean']            = 'Плагин «Данные»: очистка базы данных';
+$lang['menu_alias']            = 'Плагин Data: описание полей';
+$lang['menu_clean']            = 'Плагин Data: очистка базы данных';
 $lang['pages_del']             = 'Удалено вхождений: %d';
 $lang['submit_clean']          = 'Очистить базу данных!';
 $lang['sort']                  = 'Сортировка по столбцу';
 $lang['next']                  = 'Следующая страница';
 $lang['prev']                  = 'Предыдущая страница';
-$lang['tagfilter']             = 'Показать страницы, совпадающие с «%s»';
+$lang['tagfilter']             = 'Показать страницы, совпадающие с %s';
 $lang['related']               = 'Похожие страницы:';
 $lang['page']                  = 'Страница';
 $lang['title']                 = 'Заголовок';
