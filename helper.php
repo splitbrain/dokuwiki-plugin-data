@@ -410,6 +410,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
         // if translation plugin available, get current translation (empty for default lang)
         $patterns[] = '%trans%';
+        /** @var helper_plugin_translation $trans */
         $trans = plugin_load('helper','translation');
         if($trans) {
             $local = $trans->getLangPart($ID);
