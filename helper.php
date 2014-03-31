@@ -274,7 +274,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
         $column = array(
             'colname' => $col,
             'multi'   => ($matches[3] === 's'),
-            'key'     => utf8_strtolower($matches[1]),
+            'key'     => $matches[1],
             'title'   => $matches[1],
             'type'    => utf8_strtolower($matches[2])
         );
