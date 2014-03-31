@@ -267,6 +267,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     /**
      * Split a column name into its parts
      *
+     * @param string $col column name
      * @returns array with key, type, ismulti, title, opt
      */
     function _column($col){
@@ -275,6 +276,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             'colname' => $col,
             'multi'   => ($matches[3] === 's'),
             'key'     => utf8_strtolower($matches[1]),
+            'origkey' => $matches[1], //similar to key, but stores upper case
             'title'   => $matches[1],
             'type'    => utf8_strtolower($matches[2])
         );
