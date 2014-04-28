@@ -334,11 +334,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 foreach(array('multi', 'comment', 'type') as $field) {
                     $renderer->form->addHidden($fieldid . "[$field]", $vals[$field]);
                 }
-                $renderer->form->addHidden($fieldid . "[title]", $key); //keep key as key, even if title is translated
+                $renderer->form->addHidden($fieldid . "[title]", $vals['origkey']); //keep key as key, even if title is translated
             } else {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
                 $cells = array(
-                    form_makeField('text', $fieldid . '[title]', $key, $this->getLang('title')), // when editable, alsways use the pure key, not a title
+                    form_makeField('text', $fieldid . '[title]', $vals['origkey'], $this->getLang('title')), // when editable, alsways use the pure key, not a title
                     form_makeMenuField(
                         $fieldid . '[type]',
                         array_merge(

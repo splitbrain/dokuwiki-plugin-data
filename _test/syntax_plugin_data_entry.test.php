@@ -20,7 +20,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
             . "customer_page : customers:microsoft\n"
             . "deadline_dt   : 2009-08-17\n"
             . "server_pages  : servers:devel01, extern:microsoft\n"
-            . "website_url   : http://www.microsoft.com\n"
+            . "Website_url   : http://www.microsoft.com\n"
             . "task_tags     : programming, coding, design, html\n"
             . "tests_        : \\#5 done\n"
             . "----\n";
@@ -50,16 +50,16 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals($data, $result['data'], 'Data array corrupted');
 
         $cols = array(
-            'type' => $this->createColumnEntry('type', false, 'type', 'type', false),
-            'volume' => $this->createColumnEntry('volume', false, 'volume', 'volume', false),
-            'employee' => $this->createColumnEntry('employees', 1, 'employee', 'employee', false),
-            'customer' => $this->createColumnEntry('customer_page', false, 'customer', 'customer', 'page'),
-            'deadline' => $this->createColumnEntry('deadline_dt', false, 'deadline', 'deadline', 'dt'),
-            'server' => $this->createColumnEntry('server_pages', 1, 'server', 'server', 'page'),
-            'website' => $this->createColumnEntry('website_url', false, 'website', 'website', 'url'),
-            'task' => $this->createColumnEntry('task_tags', 1, 'task', 'task', 'tag'),
-            'tests' => $this->createColumnEntry('tests_', 0, 'tests', 'tests', false),
-            '----' => $this->createColumnEntry('----', false, '----', '----', false)
+            'type' => $this->createColumnEntry('type', false, 'type', 'type', 'type', false),
+            'volume' => $this->createColumnEntry('volume', false, 'volume', 'volume', 'volume', false),
+            'employee' => $this->createColumnEntry('employees', 1, 'employee', 'employee', 'employee', false),
+            'customer' => $this->createColumnEntry('customer_page', false, 'customer', 'customer', 'customer', 'page'),
+            'deadline' => $this->createColumnEntry('deadline_dt', false, 'deadline', 'deadline', 'deadline', 'dt'),
+            'server' => $this->createColumnEntry('server_pages', 1, 'server', 'server', 'server', 'page'),
+            'website' => $this->createColumnEntry('Website_url', false, 'website', 'Website', 'Website', 'url'),
+            'task' => $this->createColumnEntry('task_tags', 1, 'task', 'task', 'task', 'tag'),
+            'tests' => $this->createColumnEntry('tests_', 0, 'tests', 'tests', 'tests', false),
+            '----' => $this->createColumnEntry('----', false, '----', '----', '----', false)
         );
         $cols['volume']['comment'] = ' how much do they pay?';
         $this->assertEquals($cols, $result['cols'], 'Cols array corrupted');
@@ -112,7 +112,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'website',
+                    'title'   => 'Website',
                     'type'    => 'url',
                     'multi'   => '',
                     'value'   => 'http://www.microsoft.com',
@@ -168,16 +168,17 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals($data, $result['data'], 'Data array corrupted');
 
         $cols = array(
-            '----' => $this->createColumnEntry('----', false, '----', '----', false)
+            '----' => $this->createColumnEntry('----', false, '----', '----', '----', false)
         );
         $this->assertEquals($cols, $result['cols'], 'Cols array corrupted');
     }
 
-    protected function createColumnEntry($name, $multi, $key, $title, $type) {
+    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type) {
         return array(
             'colname' => $name,
             'multi' => $multi,
             'key' => $key,
+            'origkey' => $origkey,
             'title' => $title,
             'type' => $type
         );
