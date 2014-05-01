@@ -583,7 +583,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                                   " '".$filter['value']."'"; //value is already escaped
                       }else{
                         $where2 .= ' '.$filter['logic'].' '.$table.'.value '.$filter['compare'].
-                                  " cast(".$filter['value']." as real)"; //value is already escaped
+                                  " cast(".$filter['value']." as real)"; //value is cast as real type
                       }
                     }
                 }
