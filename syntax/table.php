@@ -281,7 +281,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->doc .= $rownum+1;
                 $R->doc .= $this->after_val;
             }
-            
+
             foreach(array_values($row) as $num => $cval){
                 $num_rn = ($data['rownumbers'] ? $num+1 : $num);
 
@@ -596,7 +596,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $from  .= ' AND '.$tables[$col].".key = " . $sqlite->quote_string($col);
                 }
 
-                $order = 'ORDER BY '.$tables[$col].'.value '.$data['sort'][1];
+                if(strpos($col,'-val')!==FALSE){
+                    $order = 'ORDER BY '.$tables[$col].'.value + 0 '.$data['sort'][1];
+                }else{
+                    $order = 'ORDER BY '.$tables[$col].'.value '.$data['sort'][1];
+                }
             }
         }else{
             $order = 'ORDER BY 1 ASC';
@@ -633,8 +637,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         $where2 .= ' '.$filter['logic'].' DATARESOLVE('.$table.'.value,\''.$sqlite->escape_string($filter['colname']).'\') '.$filter['compare'].
                                   " '".$filter['value']."'"; //value is already escaped
                     } else {
+                      if(!is_numeric($filter['value'])){
                         $where2 .= ' '.$filter['logic'].' '.$table.'.value '.$filter['compare'].
                                   " '".$filter['value']."'"; //value is already escaped
+                      }else{
+                        $where2 .= ' '.$filter['logic'].' '.$table.'.value '.$filter['compare'].
+                                  " cast(".$filter['value']." as real)"; //value is cast as real type
+                      }
                     }
                 }
             }
@@ -646,7 +655,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     SELECT DISTINCT pages.pid AS pid
                     FROM pages $from2
                     WHERE $where2
-                ) AS W1 
+                ) AS W1
                 $from
                 LEFT JOIN pages ON W1.pid=pages.pid
                 GROUP BY W1.pid
