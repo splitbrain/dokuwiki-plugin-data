@@ -158,13 +158,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     break;
                 case 'order':
                 case 'sort':
-                        $column = $this->dthlp->_column($line[1]);
-                        $sort = $column['key'];
-                        if(substr($sort,0,1) == '^'){
-                            $data['sort'] = array(substr($sort,1),'DESC');
-                        }else{
-                            $data['sort'] = array($sort,'ASC');
-                        }
+                    $cols = explode(',', $line[1]);
+                    foreach($cols as $col) {
+                        $param = $this->parseSortParam($col);
+                        $data['sort'][$param[0]] = $param;
+                    }
                     break;
                 case 'where':
                 case 'filter':
@@ -389,14 +387,16 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $text .= '<th'.$width.'>';
 
             // add sort arrow
-            if(isset($data['sort']) && $ckey == $data['sort'][0]){
-                if($data['sort'][1] == 'ASC'){
+            if(isset($data['sort']) && isset($data['sort'][$ckey])) {
+                $sortterm = $data['sort'][$ckey];
+                if($sortterm[1] == 'ASC'){
                     $text .= '<span>&darr;</span> ';
                     $ckey = '^'.$ckey;
                 }else{
                     $text .= '<span>&uarr;</span> ';
                 }
-            }
+                if($sortterm[2] == 'numeric') $ckey = $ckey . '(num)';
+            };
 
             // Clickable header for dynamic sorting
             $text .= '<a href="'.wl($ID,array('datasrt' => $ckey)+$cur_params).
@@ -578,26 +578,34 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         // prepare sorting
         if(isset($data['sort'])){
-            $col = $data['sort'][0];
+            $orderingterms = array();
+            foreach($data['sort'] AS $term) {
+                @list($col, $direction, $type) = $term;
 
-            if($col == '%pageid%'){
-                $order = 'ORDER BY pages.page '.$data['sort'][1];
-            }elseif($col == '%class%'){
-                $order = 'ORDER BY pages.class '.$data['sort'][1];
-            }elseif($col == '%title%'){
-                $order = 'ORDER BY pages.title '.$data['sort'][1];
-            }elseif($col == '%lastmod%'){
-                $order = 'ORDER BY pages.lastmod '.$data['sort'][1];
-            }else{
-                // sort by hidden column?
-                if(!$tables[$col]){
-                    $tables[$col] = 'T'.(++$cnt);
-                    $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = W1.pid';
-                    $from  .= ' AND '.$tables[$col].".key = " . $sqlite->quote_string($col);
+                if($col == '%pageid%'){
+                    $sortcolumn = 'pages.page';
+                }elseif($col == '%class%'){
+                    $sortcolumn = 'pages.class';
+                }elseif($col == '%title%'){
+                    $sortcolumn = 'pages.title';
+                }elseif($col == '%lastmod%'){
+                    $sortcolumn = 'pages.lastmod';
+                }else{
+                    // sort by hidden column?
+                    if(!$tables[$col]){
+                        $tables[$col] = 'T'.(++$cnt);
+                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = W1.pid';
+                        $from  .= ' AND '.$tables[$col].".key = " . $sqlite->quote_string($col);
+                    }
+
+                    $sortcolumn = $tables[$col].'.value ';
                 }
-
-                $order = 'ORDER BY '.$tables[$col].'.value '.$data['sort'][1];
+                if($type == 'numeric') {
+                    $sortcolumn = 'CAST(' . $sortcolumn . ' AS NUMERIC)';
+                }
+                $orderingterms[] = $sortcolumn . ' ' . $direction;
             }
+            $order = 'ORDER BY ' . implode(', ', $orderingterms);
         }else{
             $order = 'ORDER BY 1 ASC';
         }
@@ -668,12 +676,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      */
     function updateSQLwithQuery(&$data) {
         if($this->hasRequestFilter()){
-            if (isset($_REQUEST['datasrt'])) {
-                if($_REQUEST['datasrt']{0} == '^'){
-                    $data['sort'] = array(substr($_REQUEST['datasrt'],1),'DESC');
-                }else{
-                    $data['sort'] = array($_REQUEST['datasrt'],'ASC');
+            if(isset($_REQUEST['datasrt'])) {
+                @list($sort, $direction, $type) = $this->parseSortParam($_REQUEST['datasrt']);
+                //use stored numeric properties
+                if(isset($data['sort']) && isset($data['sort'][$sort]) && $data['sort'][$sort][2] == 'numeric') {
+                    $type = 'numeric';
                 }
+                $data['sort'] = array($sort => array($sort, $direction, $type));
             }
 
             // add request filters
@@ -695,6 +704,30 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      */
     function hasRequestFilter() {
         return isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt']);
+    }
+
+    /**
+     * Parse a sort option like: [^]column[(num)]
+     *
+     * @param string $col column to sort
+     * @return array(string $sort, string $direction, string $type)
+     */
+    private function parseSortParam($col) {
+        $column = $this->dthlp->_column($col);
+        $sort = $column['key'];
+        $type = '';
+        $direction = 'ASC';
+
+        $pos = strpos($sort, '(num)');
+        if($pos !== false) {
+            $sort = str_replace('(num)', '', $sort);
+            $type = 'numeric';
+        }
+        if(substr($sort, 0, 1) == '^') {
+            $sort = substr($sort, 1);
+            $direction = 'DESC';
+        }
+        return array($sort, $direction, $type);
     }
 }
 
