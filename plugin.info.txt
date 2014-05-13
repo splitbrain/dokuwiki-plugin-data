@@ -1,7 +1,7 @@
 base    data
 author  Andreas Gohr
 email   andi@splitbrain.org
-date    2013-10-09
+date    2014-05-13
 name    Structured Data Plugin
 desc    Add and query structured data in your wiki
 url     http://www.dokuwiki.org/plugin:data
