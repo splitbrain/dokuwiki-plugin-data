@@ -493,7 +493,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
                 // keep url params
                 $params = $this->dthlp->_a2ua('dataflt',$_REQUEST['dataflt']);
-                $params['datasrt'] = $_REQUEST['datasrt'];
+                if(isset($_REQUEST['datasrt'])) $params['datasrt'] = $_REQUEST['datasrt'];
                 $params['dataofs'] = $prev;
 
                 $text .= '<a href="'.wl($ID,$params).
@@ -508,7 +508,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
                 // keep url params
                 $params = $this->dthlp->_a2ua('dataflt',$_REQUEST['dataflt']);
-                $params['datasrt'] = $_REQUEST['datasrt'];
+                if(isset($_REQUEST['datasrt'])) $params['datasrt'] = $_REQUEST['datasrt'];
                 $params['dataofs'] = $next;
 
                 $text .= '<a href="'.wl($ID,$params).
