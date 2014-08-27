@@ -113,7 +113,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
     /**
      * Create output or save the data
      */
-    function render($format, Doku_Renderer &$renderer, $data) {
+    function render($format, Doku_Renderer $renderer, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;

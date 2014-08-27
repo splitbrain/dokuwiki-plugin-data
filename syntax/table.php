@@ -68,7 +68,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @param Doku_Handler  $handler
      * @return array|null instructions for renderer
      */
-    function handle($match, $state, $pos, Doku_Handler &$handler){
+    function handle($match, $state, $pos, Doku_Handler $handler){
         if(!$this->dthlp->ready()) return null;
 
         // get lines and additional class
@@ -237,7 +237,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @param array          $data instructions by handler
      * @return bool
      */
-    function render($format, Doku_Renderer &$R, $data) {
+    function render($format, Doku_Renderer $R, $data) {
         if($format != 'xhtml') return false;
         /** @var Doku_Renderer_xhtml $R */
 

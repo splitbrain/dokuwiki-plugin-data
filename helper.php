@@ -71,7 +71,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
-     * @return helper_plugin_sqlite load the sqlite helper
+     * @return helper_plugin_sqlite|false load the sqlite helper
      */
     function _getDB(){
         if ($this->db === null) {
