@@ -1,0 +1,1 @@
+Editer l'[[doku>plugin:data|entrée]] et cliquer sur "Enregistrer". Veuillez ne modifier les entrées que si vous pouvez les **améliorer**. Vous pouvez également changer la structure des données. On supprime un champ en vidant le titre.

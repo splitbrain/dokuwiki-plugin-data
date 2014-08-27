@@ -1,0 +1,7 @@
+====== Starigi datumbazajn kampotipajn aliasojn ======
+
+Tiu interfaco ebligas al vi difini novajn kampotipajn aliasojn bazitaj je ekzistantaj.
+
+La aliasitaj tipoj uzeblas kiel ajna alia tipo de la kromaĵo, sed ĉiuj datumoj ricevas pre- aŭ postfiksojn laŭ ĉi tie indikitaj aliasoj. Tio kutime uzatas por ligi iujn kampotipojn al specialaj nomspacoj.
+
+Rigardu la [[doku>plugin:data|kromaĵ-priskribon]] por pluaj informoj pri aliasoj.

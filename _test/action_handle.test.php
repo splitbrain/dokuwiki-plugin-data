@@ -1,7 +1,7 @@
 <?php
-
 /**
  * @group plugin_data
+ * @group plugins
  */
 class action_handle_test extends DokuWikiTest {
 

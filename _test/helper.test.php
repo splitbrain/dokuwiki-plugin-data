@@ -10,6 +10,7 @@ class data_dummy_renderer {
 
 /**
  * @group plugin_data
+ * @group plugins
  */
 class helper_plugin_data_test extends DokuWikiTest {
 
@@ -34,6 +35,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('', $helper->_cleanData('this is not a date', 'dt'));
         $this->assertEquals('1234-01-01', $helper->_cleanData('1234-1-1', 'dt'));
         $this->assertEquals('1234-01-01', $helper->_cleanData('1234-01-01', 'dt'));
+        $this->assertEquals('%now%', $helper->_cleanData('%now%', 'dt'));
         $this->assertEquals('', $helper->_cleanData('1234-01-011', 'dt'));
 
         $this->assertEquals('http://bla', $helper->_cleanData('bla', 'url'));
@@ -61,26 +63,29 @@ class helper_plugin_data_test extends DokuWikiTest {
         global $conf;
         $helper = new helper_plugin_data();
 
-        $this->assertEquals($this->createColumnEntry('type', false, 'type', 'type', ''), $helper->_column('type'));
-        $this->assertEquals($this->createColumnEntry('types', true, 'type', 'type', ''), $helper->_column('types'));
-        $this->assertEquals($this->createColumnEntry('', false, '', '', ''), $helper->_column(''));
-        $this->assertEquals($this->createColumnEntry('type_url', false, 'type', 'type', 'url'), $helper->_column('type_url'));
-        $this->assertEquals($this->createColumnEntry('type_urls', true, 'type', 'type', 'url'), $helper->_column('type_urls'));
+        $this->assertEquals($this->createColumnEntry('type', false, 'type',  'type', 'type', ''), $helper->_column('type'));
+        $this->assertEquals($this->createColumnEntry('types', true, 'type',  'type', 'type', ''), $helper->_column('types'));
+        $this->assertEquals($this->createColumnEntry('', false, '', '', '', ''), $helper->_column(''));
+        $this->assertEquals($this->createColumnEntry('type_url', false, 'type', 'type', 'type', 'url'), $helper->_column('type_url'));
+        $this->assertEquals($this->createColumnEntry('type_urls', true, 'type', 'type', 'type', 'url'), $helper->_column('type_urls'));
 
-        $this->assertEquals($this->createColumnEntry('type_hidden', false, 'type', 'type', 'hidden'), $helper->_column('type_hidden'));
-        $this->assertEquals($this->createColumnEntry('type_hiddens', true, 'type', 'type', 'hidden'), $helper->_column('type_hiddens'));
+        $this->assertEquals($this->createColumnEntry('type_hidden', false, 'type', 'type', 'type', 'hidden'), $helper->_column('type_hidden'));
+        $this->assertEquals($this->createColumnEntry('type_hiddens', true, 'type', 'type', 'type', 'hidden'), $helper->_column('type_hiddens'));
 
-        $this->assertEquals($this->createColumnEntry('%title%', false, '%title%', 'Page', 'title'), $helper->_column('%title%'));
-        $this->assertEquals($this->createColumnEntry('%pageid%', false, '%pageid%', 'Title', 'page'), $helper->_column('%pageid%'));
-        $this->assertEquals($this->createColumnEntry('%class%', false, '%class%', 'Page Class', ''), $helper->_column('%class%'));
-        $this->assertEquals($this->createColumnEntry('%lastmod%', false, '%lastmod%', 'Last Modified', 'timestamp'), $helper->_column('%lastmod%'));
+        $this->assertEquals($this->createColumnEntry('%title%', false, '%title%', '%title%', 'Page', 'title'), $helper->_column('%title%'));
+        $this->assertEquals($this->createColumnEntry('%pageid%', false, '%pageid%', '%pageid%','Title', 'page'), $helper->_column('%pageid%'));
+        $this->assertEquals($this->createColumnEntry('%class%', false, '%class%', '%class%', 'Page Class', ''), $helper->_column('%class%'));
+        $this->assertEquals($this->createColumnEntry('%lastmod%', false, '%lastmod%', '%lastmod%', 'Last Modified', 'timestamp'), $helper->_column('%lastmod%'));
+
+        $this->assertEquals($this->createColumnEntry('Type', false, 'type', 'Type', 'Type', ''), $helper->_column('Type'));
+
 
         // test translated key name
-        $this->assertEquals($this->createColumnEntry('trans_urls', true, 'trans', 'Translated Title', 'url'), $helper->_column('trans_urls'));
+        $this->assertEquals($this->createColumnEntry('trans_urls', true, 'trans', 'trans', 'Translated Title', 'url'), $helper->_column('trans_urls'));
         // retry in different language
         $conf['lang'] = 'de';
         $helper = new helper_plugin_data();
-        $this->assertEquals($this->createColumnEntry('trans_urls', true, 'trans', 'Übersetzter Titel', 'url'), $helper->_column('trans_urls'));
+        $this->assertEquals($this->createColumnEntry('trans_urls', true, 'trans', 'trans', 'Übersetzter Titel', 'url'), $helper->_column('trans_urls'));
     }
 
     function testAddPrePostFixes() {
@@ -161,7 +166,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('<a href="' . wl('start', array('dataflt[0]'=>'_=value')) . '" title="Show pages matching \'value\'" class="wikilink1">value</a>',
             $helper->_formatData(array('type' => 'tag'), "value", $renderer));
 
-        $this->assertEquals('1970/01/15 07:56',
+        $this->assertEquals(strftime('%Y/%m/%d %H:%M', 1234567),
             $helper->_formatData(array('type' => 'timestamp'), "1234567", $renderer));
 
         $this->assertEquals('<strong>bla</strong>',
@@ -195,11 +200,12 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('en', $data['sql']);
     }
 
-    protected function createColumnEntry($name, $multi, $key, $title, $type) {
+    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type) {
         return array(
             'colname' => $name,
             'multi' => $multi,
             'key' => $key,
+            'origkey' => $origkey,
             'title' => $title,
             'type' => $type
         );

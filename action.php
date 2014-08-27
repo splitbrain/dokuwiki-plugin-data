@@ -14,6 +14,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
     /**
      * will hold the data helper plugin
+     * @var helper_plugin_data
      */
     var $dthlp = null;
 
@@ -21,13 +22,13 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      * Constructor. Load helper plugin
      */
     function action_plugin_data(){
-        $this->dthlp =& plugin_load('helper', 'data');
+        $this->dthlp = plugin_load('helper', 'data');
     }
 
     /**
      * Registers a callback function for a given event
      */
-    function register(&$controller) {
+    function register(Doku_Event_Handler $controller) {
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'BEFORE', $this, '_handle');
         $controller->register_hook('HTML_SECEDIT_BUTTON', 'BEFORE', $this, '_editbutton');
         $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform');
@@ -104,6 +105,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         if ($event->data !== 'data_page') {
             return;
         }
+
         $event->stopPropagation();
         $event->preventDefault();
 
@@ -171,6 +173,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         }
 
         $json = new JSON();
+        header('Content-Type: application/json');
         echo $json->encode($result);
     }
 }

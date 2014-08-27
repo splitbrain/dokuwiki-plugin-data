@@ -1,0 +1,5 @@
+====== Nettoyage de la base de données ======
+
+Lorsque les pages qui contiennent des données sont détruites, leurs méta données sont également supprimées. Cependant, cela n'est vrai que pour les pages supprimées par une édition normale du wiki. Pour celles supprimées par d'autres moyens (par exemple, par suppression du fichier dans l'arborescence), les méta données restent dans la base de données.
+
+Cet outil supprime les données des pages qui n'existent plus.

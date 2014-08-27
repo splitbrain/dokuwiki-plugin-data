@@ -54,7 +54,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         $R->doc .= '</p></div>';
     }
 
-    function postList($data) {
+    function postList($data, $rowcnt) {
         return '</ul></div>';
     }
 

@@ -30,7 +30,7 @@ jQuery(function () {
         jQuery.each(classes, function (i, cls) {
             //skip base type
             if (cls == 'data_type_page' || cls == 'data_type_pages') {
-                multi = cls.substr(-1) == 's';
+                multi = cls.substr(cls.length-1, 1) == 's';
                 return true;
             }
             //only data types, no other classes
@@ -46,8 +46,9 @@ jQuery(function () {
      * Ajax request for user suggestions
      *
      * @param {Object} request object, with single 'term' property
-     * @param {Function} response(data) callback, argument: the data to suggest to the user.
-     * @param {Function} getTerm(request) callback, argument: the request Object, returns: search term
+     * @param {Function} response callback, argument: the data to suggest to the user.
+     * @param {Function} getTerm callback, argument: the request Object, returns: search term
+     * @param aliastype
      */
     function ajaxsource(request, response, getTerm, aliastype) {
         jQuery.getJSON(
@@ -84,7 +85,7 @@ jQuery(function () {
                 request,
                 response,
                 function (req) {
-                    return req.term
+                    return req.term;
                 },
                 getAliastype(this.element)
             );
@@ -109,7 +110,7 @@ jQuery(function () {
                     request,
                     response,
                     function (req) {
-                        return extractLast(req.term)
+                        return extractLast(req.term);
                     },
                     getAliastype(this.element)
                 );
@@ -120,6 +121,7 @@ jQuery(function () {
                 if (term.length < 2) {
                     return false;
                 }
+                return true;
             },
             focus: function () {
                 // prevent value inserted on focus

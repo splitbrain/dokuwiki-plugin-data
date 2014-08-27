@@ -28,9 +28,9 @@ class syntax_plugin_data_taglist extends syntax_plugin_data_cloud {
     /**
      * Create a weighted tag distribution
      *
-     * @param $tag arrayref The tags to weight ( tag => count)
-     * @param $min int      The lowest count of a single tag
-     * @param $max int      The highest count of a single tag
+     * @param &$tags  array The tags to weight ( tag => count)
+     * @param $min    int   The lowest count of a single tag
+     * @param $max    int   The highest count of a single tag
      * @param $levels int   The number of levels you want. A 5 gives levels 0 to 4.
      */
     function _cloud_weight(&$tags,$min,$max,$levels){

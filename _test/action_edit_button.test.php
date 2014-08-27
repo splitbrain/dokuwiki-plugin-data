@@ -1,7 +1,7 @@
 <?php
-
 /**
  * @group plugin_data
+ * @group plugins
  */
 class data_action_plugin_edit_button_test extends DokuWikiTest {
 

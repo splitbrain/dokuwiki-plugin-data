@@ -21,7 +21,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
     /**
      * Create output
      */
-    function render($format, &$renderer, $data) {
+    function render($format, Doku_Renderer &$renderer, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;

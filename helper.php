@@ -37,21 +37,27 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * Loads custom translations
      */
     public function __construct(){
-        global $conf;
+        $this->loadLocalizedLabels();
+    }
 
+    private function  loadLocalizedLabels() {
         $lang = array();
         $path = DOKU_CONF.'/lang/en/data-plugin.php';
         if(file_exists($path)) include($path);
         $path = DOKU_CONF.'/lang/'.$this->determineLang().'/data-plugin.php';
         if(file_exists($path)) include($path);
+        foreach ($lang as $key => $val) {
+            $lang[utf8_strtolower($key)] = $val;
+        }
         $this->locs = $lang;
     }
 
     protected function  determineLang() {
-        global $ID;
+        /** @var helper_plugin_translation $trans */
         $trans = plugin_load('helper','translation');
         if ($trans) {
-            $values['__trans__'] = $trans->getLangPart($ID);
+            $value = $trans->getLangPart(getID());
+            if ($value) return $value;
         }
         global $conf;
         return $conf['lang'];
@@ -69,13 +75,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _getDB(){
         if ($this->db === null) {
-            $this->db =& plugin_load('helper', 'sqlite');
+            $this->db = plugin_load('helper', 'sqlite');
             if ($this->db === null) {
                 msg('The data plugin needs the sqlite plugin', -1);
                 return false;
             }
             if(!$this->db->init('data',dirname(__FILE__).'/db/')){
-                $db = null;
+                $this->db = null;
                 return false;
             }
             $this->db->create_function('DATARESOLVE',array($this,'_resolveData'),2);
@@ -100,6 +106,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
             case 'dt':
                 if(preg_match('/^(\d\d\d\d)-(\d\d?)-(\d\d?)$/',$value,$m)){
                     return sprintf('%d-%02d-%02d',$m[1],$m[2],$m[3]);
+                }
+                if ($value === '%now%') {
+                    return $value;
                 }
                 return '';
             case 'url':
@@ -258,6 +267,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     /**
      * Split a column name into its parts
      *
+     * @param string $col column name
      * @returns array with key, type, ismulti, title, opt
      */
     function _column($col){
@@ -266,6 +276,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
             'colname' => $col,
             'multi'   => ($matches[3] === 's'),
             'key'     => utf8_strtolower($matches[1]),
+            'origkey' => $matches[1], //similar to key, but stores upper case
             'title'   => $matches[1],
             'type'    => utf8_strtolower($matches[2])
         );
@@ -401,14 +412,24 @@ class helper_plugin_data extends DokuWiki_Plugin {
         global $ID;
 
         $patterns[] = '%lang%';
-        $values[]   = $conf['lang'];
+        if (isset($conf['lang_before_translation'])) {
+            $values[] = $conf['lang_before_translation'];
+        } else {
+            $values[] = $conf['lang'];
+        }
 
         // if translation plugin available, get current translation (empty for default lang)
         $patterns[] = '%trans%';
+        /** @var helper_plugin_translation $trans */
         $trans = plugin_load('helper','translation');
-        if($trans) $values[] = $trans->getLangPart($ID);
+        if($trans) {
+            $local = $trans->getLangPart($ID);
+            if ($local === '') {
+                $local = $conf['lang'];
+            }
+            $values[] = $local;
+        }
         else $values[]   = '';
-
         return str_replace($patterns, $values, $data);
     }
 

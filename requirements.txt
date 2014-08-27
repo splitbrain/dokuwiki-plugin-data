@@ -1,0 +1,4 @@
+# we need two additional plugins for testing
+https://github.com/cosmocode/sqlite.git                         lib/plugins/sqlite
+https://github.com/splitbrain/dokuwiki-plugin-translation.git   lib/plugins/translation
+

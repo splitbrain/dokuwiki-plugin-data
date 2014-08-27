@@ -19,7 +19,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * Constructor. Load helper plugin
      */
     function syntax_plugin_data_entry(){
-        $this->dthlp =& plugin_load('helper', 'data');
+        $this->dthlp = plugin_load('helper', 'data');
         if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
     }
 
@@ -54,7 +54,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     /**
      * Handle the match - parse the data
      */
-    function handle($match, $state, $pos, &$handler){
+    function handle($match, $state, $pos, Doku_Handler &$handler){
         if(!$this->dthlp->ready()) return null;
 
         // get lines
@@ -103,19 +103,22 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     /**
      * Create output or save the data
      */
-    function render($format, &$renderer, $data) {
+    function render($format, Doku_Renderer &$renderer, $data) {
         if(is_null($data)) return false;
         if(!$this->dthlp->ready()) return false;
 
         global $ID;
         switch ($format){
             case 'xhtml':
+                /** @var $renderer Doku_Renderer_xhtml */
                 $this->_showData($data,$renderer);
                 return true;
             case 'metadata':
+                /** @var $renderer Doku_Renderer_metadata */
                 $this->_saveData($data,$ID,$renderer->meta['title']);
                 return true;
             case 'plugin_data_edit':
+                /** @var $renderer Doku_Renderer_plugin_data_edit */
                 $this->_editData($data, $renderer);
                 return true;
             default:
@@ -125,8 +128,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
     /**
      * Output the data in a table
+     *
+     * @param array $data
+     * @param Doku_Renderer_xhtml $R
      */
-    function _showData($data,&$R){
+    function _showData($data, &$R){
         global $ID;
         $ret = '';
 
@@ -192,16 +198,16 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $sqlite->query("BEGIN TRANSACTION");
 
         // store page info
-        $sqlite->query("INSERT OR IGNORE INTO pages (page,title,class) VALUES (?,?,?)",
-                       $id,$title,$class);
+        $this->replaceQuery("INSERT OR IGNORE INTO pages (page,title,class) VALUES (?,?,?)",
+                            $id,$title,$class);
 
         // Update title if insert failed (record already saved before)
         $revision = filemtime(wikiFN($id));
-        $sqlite->query("UPDATE pages SET title = ?, class = ?, lastmod = ? WHERE page = ?",
-                       $title,$class,$revision,$id);
+        $this->replaceQuery("UPDATE pages SET title = ?, class = ?, lastmod = ? WHERE page = ?",
+                            $title,$class,$revision,$id);
 
         // fetch page id
-        $res = $sqlite->query("SELECT pid FROM pages WHERE page = ?",$id);
+        $res = $this->replaceQuery("SELECT pid FROM pages WHERE page = ?",$id);
         $pid = (int) $sqlite->res2single($res);
         $sqlite->res_close($res);
 
@@ -217,11 +223,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         // insert new data
         foreach ($data['data'] as $key => $val){
             if(is_array($val)) foreach($val as $v){
-                $sqlite->query("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
-                               $pid,$key,$v);
+                $this->replaceQuery("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
+                                    $pid,$key,$v);
             }else {
-                $sqlite->query("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
-                               $pid,$key,$val);
+                $this->replaceQuery("INSERT INTO DATA (pid, KEY, VALUE) VALUES (?, ?, ?)",
+                                    $pid,$key,$val);
             }
         }
 
@@ -229,6 +235,25 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         $sqlite->query("COMMIT TRANSACTION");
 
         return true;
+    }
+
+    function replaceQuery() {
+        $args = func_get_args();
+        $argc = func_num_args();
+
+        if ($argc > 1) {
+            for ($i = 1; $i < $argc; $i++) {
+                $data = array();
+                $data['sql'] = $args[$i];
+                $this->dthlp->_replacePlaceholdersInSQL($data);
+                $args[$i] = $data['sql'];
+            }
+        }
+
+        $sqlite = $this->dthlp->_getDB();
+        if(!$sqlite) return false;
+
+        return call_user_func_array(array(&$sqlite, 'query'), $args);
     }
 
     /**
@@ -309,11 +334,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 foreach(array('multi', 'comment', 'type') as $field) {
                     $renderer->form->addHidden($fieldid . "[$field]", $vals[$field]);
                 }
-                $renderer->form->addHidden($fieldid . "[title]", $key); //keep key as key, even if title is translated
+                $renderer->form->addHidden($fieldid . "[title]", $vals['origkey']); //keep key as key, even if title is translated
             } else {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
                 $cells = array(
-                    form_makeField('text', $fieldid . '[title]', $key, $this->getLang('title')), // when editable, alsways use the pure key, not a title
+                    form_makeField('text', $fieldid . '[title]', $vals['origkey'], $this->getLang('title')), // when editable, alsways use the pure key, not a title
                     form_makeMenuField(
                         $fieldid . '[type]',
                         array_merge(
