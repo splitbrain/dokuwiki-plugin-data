@@ -71,7 +71,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
-     * @return helper_plugin_sqlite load the sqlite helper
+     * @return helper_plugin_sqlite|false load the sqlite helper
      */
     function _getDB(){
         if ($this->db === null) {
@@ -354,6 +354,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
             $val = trim($matches[3]);
 
+            if($com == '~~') {
+                $com = 'IN(';
+            }
             if(strpos($com, '~') !== false) {
                 if ($com === '*~') {
                     $val = '*' . $val . '*';
@@ -372,6 +375,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
             $sqlite = $this->_getDB();
             if(!$sqlite) return false;
             $val = $sqlite->escape_string($val); //pre escape
+            if($com == 'IN(') {
+                $val = explode(',',$val);
+                $val = array_map('trim', $val);
+                $val = implode("','", $val);
+            }
 
             return array('key'     => $column['key'],
                          'value'   => $val,
@@ -388,8 +396,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * Replace placeholders in sql
      */
     function _replacePlaceholdersInSQL(&$data){
+        global $USERINFO;
         // allow current user name in filter:
         $data['sql'] = str_replace('%user%', $_SERVER['REMOTE_USER'], $data['sql']);
+        $data['sql'] = str_replace('%groups%', implode("','", (array)$USERINFO['grps']), $data['sql']);
         // allow current date in filter:
         $data['sql'] = str_replace('%now%', dformat(null, '%Y-%m-%d'),$data['sql']);
 

@@ -54,7 +54,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     /**
      * Handle the match - parse the data
      */
-    function handle($match, $state, $pos, Doku_Handler &$handler){
+    function handle($match, $state, $pos, Doku_Handler $handler){
         if(!$this->dthlp->ready()) return null;
 
         // get lines
@@ -103,7 +103,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     /**
      * Create output or save the data
      */
-    function render($format, Doku_Renderer &$renderer, $data) {
+    function render($format, Doku_Renderer $renderer, $data) {
         if(is_null($data)) return false;
         if(!$this->dthlp->ready()) return false;
 

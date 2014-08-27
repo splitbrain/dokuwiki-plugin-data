@@ -21,7 +21,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
     /**
      * Create output
      */
-    function render($format, Doku_Renderer &$renderer, $data) {
+    function render($format, Doku_Renderer $renderer, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;
@@ -124,11 +124,12 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
 
             foreach($data['filter'] as $filter){
                 $col = $filter['key'];
+                $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if($col == '%pageid%'){
-                    $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'";
+                    $where .= " ".$filter['logic']." pages.page ".$filter['compare']." '".$filter['value']."'".$closecompare;
                 }elseif($col == '%title%'){
-                    $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'";
+                    $where .= " ".$filter['logic']." pages.title ".$filter['compare']." '".$filter['value']."'".$closecompare;
                 }else{
                     // filter by hidden column?
                     if(!$tables[$col]){
@@ -138,7 +139,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
                     }
 
                     $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
-                              " '".$filter['value']."'"; //value is already escaped
+                              " '".$filter['value']."'".$closecompare; //value is already escaped
                 }
             }
 

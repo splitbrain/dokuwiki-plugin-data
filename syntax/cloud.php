@@ -72,10 +72,11 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
             foreach($data['filter'] as $filter){
                 $col = $filter['key'];
+                $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if (preg_match('/^%(\w+)%$/', $col, $m) && isset($fields[$m[1]])) {
                     $where .= " ".$filter['logic']." pages." . $fields[$m[1]] .
-                              " " . $filter['compare']." '".$filter['value']."'";
+                              " " . $filter['compare']." '".$filter['value']."'".$closecompare;
                     $pagesjoin = ' LEFT JOIN pages ON pages.pid = data.pid';
                 }else{
                     // filter by hidden column?
@@ -86,7 +87,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
                     }
 
                     $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
-                              " '".$filter['value']."'"; //value is already escaped
+                              " '".$filter['value']."'".$closecompare; //value is already escaped
                 }
             }
         }
@@ -112,7 +113,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
     /**
      * Create output or save the data
      */
-    function render($format, Doku_Renderer &$renderer, $data) {
+    function render($format, Doku_Renderer $renderer, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;
