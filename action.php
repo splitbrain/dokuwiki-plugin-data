@@ -58,7 +58,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     }
 
     function _editbutton(&$event, $param) {
-        if ($event->data['target'] !== 'plugin_data') {
+        if ($event->data['target'] !== 'plugin_data' OR $this->getConf('hide_edit_button')) {
             return;
         }
 
