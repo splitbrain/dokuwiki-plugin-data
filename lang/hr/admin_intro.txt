@@ -1,0 +1,7 @@
+====== Postavljanje pseudonima tipova polja ======
+
+Ovo sučelje omogućava definiranje novih pseudonima tipova podataka temeljene na postojećim.
+
+Pseudonim tipovi se mogu koristiti kao bilo koji drugi tip podatka, ali svi podaci će biti označeni oznakom koju unesete ovdje za pseudonim. Ovo se najčešće koristi za povezivanje određenih tipova polja za specijalne imenske prostore.
+
+Uputite se na [[doku>plugin:data|opis dodatka]] za više informacija o pseudonimima (eng. aliases).
