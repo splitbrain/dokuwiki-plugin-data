@@ -103,7 +103,10 @@ class helper_plugin_data_test extends DokuWikiTest {
 
         $this->assertEquals('value', $helper->_addPrePostFixes(array('prefix' => '%trans%'), 'value'));
 
-        if (plugin_enable('translation')) {
+        $plugininstalled = in_array('translation', plugin_list('helper',$all=true));
+        if (!$plugininstalled) $this->markTestSkipped('Pre-condition not satisfied: translation plugin must be installed');
+
+        if ($plugininstalled && plugin_enable('translation')) {
             global $ID;
             $conf['plugin']['translation']['translations'] = 'de';
             $ID = 'de:somepage';
@@ -175,12 +178,18 @@ class helper_plugin_data_test extends DokuWikiTest {
     }
 
     function testReplacePlaceholdersInSQL() {
+        global $USERINFO;
         $helper = new helper_plugin_data();
 
         $data = array('sql' => '%user%');
         $_SERVER['REMOTE_USER'] = 'test';
         $helper->_replacePlaceholdersInSQL($data);
         $this->assertEquals('test', $data['sql']);
+
+        $data = array('sql' => '%groups%');
+        $USERINFO['grps'] = array('test','admin');
+        $helper->_replacePlaceholdersInSQL($data);
+        $this->assertEquals("test','admin", $data['sql']);
 
         $data = array('sql' => '%now%');
         $helper->_replacePlaceholdersInSQL($data);
@@ -253,6 +262,12 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals($this->createFilterArray('name', '%tom%', 'LIKE', 'name', '')
             , $helper->_parse_filter('name ~ *tom*'));
 
+        $this->assertEquals($this->createFilterArray('name', 'tom', 'IN(', 'name', '')
+            , $helper->_parse_filter('name ~~ tom'));
+
+        $this->assertEquals($this->createFilterArray('name', "t''om','john*", 'IN(', 'name', '')
+            , $helper->_parse_filter("name ~~ t'om,john*"));
+
         $this->assertEquals(false, $helper->_parse_filter('name is *tom*'));
         $this->assertEquals(false, $helper->_parse_filter(''));
     }
@@ -320,7 +335,10 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('en', $helper->makeTranslationReplacement('%lang%'));
         $this->assertEquals('', $helper->makeTranslationReplacement('%trans%'));
 
-        if (plugin_enable('translation')) {
+        $plugininstalled = in_array('translation', plugin_list('helper',$all=true));
+        if (!$plugininstalled) $this->markTestSkipped('Pre-condition not satisfied: translation plugin must be installed');
+
+        if ($plugininstalled && plugin_enable('translation')) {
             global $conf;
             global $ID;
             $conf['plugin']['translation']['translations'] = 'de';
