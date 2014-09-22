@@ -1,0 +1,5 @@
+====== Čišćenje baze ======
+
+Kada stranica s podacima se obriše, brišu se i njeni podaci. No to se događa samo ako se brisanje provodi  kroz Wiki. Ako se stranica ukoni na drugačiji način, npr. brisanjem datoteke direktno, meta podaci ostaju i dalje prisutni u bazi.
+
+Ovaj alat briše podatke iz base s stranica koje više ne postoje.
