@@ -140,17 +140,21 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         foreach ($rows as $row) {
             if(!$max) $max  = $row['cnt'];
             $min  = $row['cnt'];
-            $tags[$row['value']] = $row['cnt'];
+            $tags[$row['value']]['cnt'] = $row['cnt'];
+            $tags[$row['value']]['value'] = $row['value'];
         }
         $this->_cloud_weight($tags,$min,$max,5);
-
+        
         // output cloud
         $renderer->doc .= sprintf($this->before_item,hsc($data['classes']));
-        foreach($tags as $tag => $lvl){
-            $renderer->doc .= sprintf($this->before_val,$lvl);
-            $renderer->doc .= '<a href="'.wl($data['page'], $this->dthlp->_getTagUrlparam($data['cols'][$ckey], $tag)).
+        foreach($tags as $tag){
+        	$output_tag_label = hsc($tag['value']);
+        	if($data['summarize'] == 1){ $output_tag_label .= '<sub>('.$tag['cnt'].')</sub>'; }
+        	
+            $renderer->doc .= sprintf($this->before_val,$tag['lvl']);
+            $renderer->doc .= '<a href="'.wl($data['page'], $this->dthlp->_getTagUrlparam($data['cols'][$ckey], $tag['value'])).
                               '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).
-                              '" class="wikilink1">'.hsc($tag).'</a>';
+                              '" class="wikilink1">'.$output_tag_label.'</a>';
             $renderer->doc .= $this->after_val;
         }
         $renderer->doc .= $this->after_item;
@@ -176,13 +180,13 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         }
 
         // assign weights
-        foreach($tags as $tag => $cnt){
+        foreach($tags as $tag){
             foreach($tresholds as $tresh => $val){
-                if($cnt <= $val){
-                    $tags[$tag] = $tresh;
+                if($tag['cnt'] <= $val){
+                    $tags[$tag['value']]['lvl'] = $tresh;
                     break;
                 }
-                $tags[$tag] = $levels;
+                $tags[$tag['value']]['lvl'] = $levels;
             }
         }
 
