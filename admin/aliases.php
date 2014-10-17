@@ -99,7 +99,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
 
             $form->addElement('<td>');
             $form->addElement(form_makeMenuField('d['.$cur.'][type]',
-                                array('','page','title','mail','url', 'dt', 'wiki','tag'),
+                                array('','page','title','mail','url', 'dt', 'wiki','tag','hidden'),
                               $row['type'],''));
             $form->addElement('</td>');
 
