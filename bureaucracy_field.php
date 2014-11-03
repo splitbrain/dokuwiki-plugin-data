@@ -84,12 +84,13 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
          *
          * @params array     $params Additional HTML specific parameters
          * @params Doku_Form $form   The target Doku_Form object
+         * @params int       $formid unique identifier of the form which contains this field
          */
-        public function renderfield($params, Doku_Form $form) {
+        public function renderfield($params, Doku_Form $form, $formid) {
             $this->prepareColumns($this->args);
 
             if (isset($this->tpl)) {
-                parent::renderfield($params, $form);
+                parent::renderfield($params, $form, $formid);
             } else {
                 // Is an enum type, otherwise $this->tpl would be set in __construct
                 $this->_handlePreload();
@@ -130,14 +131,15 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
          * Accepts and validates a posted value.
          *
          * @param string $value The passed value or array or null if none given
+         * @param int    $formid unique identifier of the form which contains this field
          * @return bool|array Whether the passed value is valid
          */
-        public function handle_post(&$value) {
+        public function handle_post(&$value, $formid) {
             if (is_array($value)) {
                 $value = join(', ', $value);
             }
 
-            return parent::handle_post($value);
+            return parent::handle_post($value, $formid);
         }
 
         /**
