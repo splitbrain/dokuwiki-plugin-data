@@ -6,88 +6,99 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-require_once(dirname(__FILE__).'/table.php');
+require_once(dirname(__FILE__) . '/table.php');
 
+/**
+ * Class syntax_plugin_data_cloud
+ */
 class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
     /**
      * will hold the data helper plugin
      * @var $dthlp helper_plugin_data
      */
-    var $dthlp = null;
+    protected $dthlp = null;
 
     /**
      * Constructor. Load helper plugin
      */
-    function syntax_plugin_data_cloud(){
+    public function syntax_plugin_data_cloud() {
         $this->dthlp = plugin_load('helper', 'data');
-        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.',-1);
+        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.', -1);
     }
 
     /**
      * What kind of syntax are we?
      */
-    function getType(){
+    public function getType() {
         return 'substition';
     }
 
     /**
      * What about paragraphs?
      */
-    function getPType(){
+    public function getPType() {
         return 'block';
     }
 
     /**
      * Where to sort in?
      */
-    function getSort(){
+    public function getSort() {
         return 155;
     }
-
 
     /**
      * Connect pattern to lexer
      */
-    function connectTo($mode) {
-        $this->Lexer->addSpecialPattern('----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',$mode,'plugin_data_cloud');
+    public function connectTo($mode) {
+        $this->Lexer->addSpecialPattern('----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_cloud');
     }
 
-    function _buildSQL(&$data){
+    /**
+     * Builds the SQL query from the given data
+     *
+     * @param array &$data instruction by handler
+     * @return bool|string SQL query or false
+     */
+    public function _buildSQL(&$data) {
         $ckey = array_keys($data['cols']);
         $ckey = $ckey[0];
 
-        $from   = ' ';
-        $where  = ' ';
+        $from      = ' ';
+        $where     = ' ';
         $pagesjoin = '';
-        $tables = array();
+        $tables    = array();
 
         $sqlite = $this->dthlp->_getDB();
         if(!$sqlite) return false;
 
-        $fields = array('pageid' => 'page', 'class' => 'class',
-                       'title' => 'title');
+        $fields = array(
+            'pageid' => 'page', 'class' => 'class',
+            'title' => 'title'
+        );
         // prepare filters (no request filters - we set them ourselves)
-        if(is_array($data['filter']) && count($data['filter'])){
+        if(is_array($data['filter']) && count($data['filter'])) {
+            $cnt = 0;
 
-            foreach($data['filter'] as $filter){
+            foreach($data['filter'] as $filter) {
                 $col = $filter['key'];
                 $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
-                if (preg_match('/^%(\w+)%$/', $col, $m) && isset($fields[$m[1]])) {
-                    $where .= " ".$filter['logic']." pages." . $fields[$m[1]] .
-                              " " . $filter['compare']." '".$filter['value']."'".$closecompare;
+                if(preg_match('/^%(\w+)%$/', $col, $m) && isset($fields[$m[1]])) {
+                    $where .= " " . $filter['logic'] . " pages." . $fields[$m[1]] .
+                        " " . $filter['compare'] . " '" . $filter['value'] . "'" . $closecompare;
                     $pagesjoin = ' LEFT JOIN pages ON pages.pid = data.pid';
-                }else{
+                } else {
                     // filter by hidden column?
-                    if(!$tables[$col]){
-                        $tables[$col] = 'T'.(++$cnt);
-                        $from  .= ' LEFT JOIN data AS '.$tables[$col].' ON '.$tables[$col].'.pid = data.pid';
-                        $from  .= ' AND '.$tables[$col].".key = ".$sqlite->quote_string($col);
+                    if(!$tables[$col]) {
+                        $tables[$col] = 'T' . (++$cnt);
+                        $from .= ' LEFT JOIN data AS ' . $tables[$col] . ' ON ' . $tables[$col] . '.pid = data.pid';
+                        $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->quote_string($col);
                     }
 
-                    $where .= ' '.$filter['logic'].' '.$tables[$col].'.value '.$filter['compare'].
-                              " '".$filter['value']."'".$closecompare; //value is already escaped
+                    $where .= ' ' . $filter['logic'] . ' ' . $tables[$col] . '.value ' . $filter['compare'] .
+                        " '" . $filter['value'] . "'" . $closecompare; //value is already escaped
                 }
             }
         }
@@ -95,29 +106,29 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         // build query
         $sql = "SELECT data.value, COUNT(data.pid) as cnt
                   FROM data $from $pagesjoin
-                 WHERE data.key = ".$sqlite->quote_string($ckey)."
+                 WHERE data.key = " . $sqlite->quote_string($ckey) . "
                  $where
               GROUP BY data.value";
-        if(isset($data['min']))   $sql .= ' HAVING cnt >= '.$data['min'];
+        if(isset($data['min'])) $sql .= ' HAVING cnt >= ' . $data['min'];
         $sql .= ' ORDER BY cnt DESC';
-        if($data['limit']) $sql .= ' LIMIT '.$data['limit'];
+        if($data['limit']) $sql .= ' LIMIT ' . $data['limit'];
 
         return $sql;
     }
 
     protected $before_item = '<ul class="dataplugin_cloud %s">';
-    protected $after_item  = '</ul>';
-    protected $before_val  = '<li class="cl%s">';
-    protected $after_val   = '</li>';
+    protected $after_item = '</ul>';
+    protected $before_val = '<li class="cl%s">';
+    protected $after_val = '</li>';
 
     /**
      * Create output or save the data
      */
-    function render($format, Doku_Renderer $renderer, $data) {
+    public function render($format, Doku_Renderer $renderer, $data) {
         global $ID;
 
         if($format != 'xhtml') return false;
-        if(is_null($data)) return;
+        if(is_null($data)) return false;
         if(!$this->dthlp->ready()) return false;
         $renderer->info['cache'] = false;
 
@@ -137,30 +148,31 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $min = 0;
         $max = 0;
         $tags = array();
-        foreach ($rows as $row) {
-            if(!$max) $max  = $row['cnt'];
-            $min  = $row['cnt'];
+        foreach($rows as $row) {
+            if(!$max) $max = $row['cnt'];
+            $min = $row['cnt'];
             $tags[$row['value']]['cnt'] = $row['cnt'];
             $tags[$row['value']]['value'] = $row['value'];
         }
-        $this->_cloud_weight($tags,$min,$max,5);
-        
+        $this->_cloud_weight($tags, $min, $max, 5);
+
         // output cloud
-        $renderer->doc .= sprintf($this->before_item,hsc($data['classes']));
-        foreach($tags as $tag){
-        	$output_tag_label = hsc($tag['value']);
-        	if($data['summarize'] == 1){ $output_tag_label .= '<sub>('.$tag['cnt'].')</sub>'; }
-        	
-            $renderer->doc .= sprintf($this->before_val,$tag['lvl']);
-            $renderer->doc .= '<a href="'.wl($data['page'], $this->dthlp->_getTagUrlparam($data['cols'][$ckey], $tag['value'])).
-                              '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag['value'])).
-                              '" class="wikilink1">'.$output_tag_label.'</a>';
+        $renderer->doc .= sprintf($this->before_item, hsc($data['classes']));
+        foreach($tags as $tag) {
+            $tagLabelText = hsc($tag['value']);
+            if($data['summarize'] == 1) {
+                $tagLabelText .= '<sub>(' . $tag['cnt'] . ')</sub>';
+            }
+
+            $renderer->doc .= sprintf($this->before_val, $tag['lvl']);
+            $renderer->doc .= '<a href="' . wl($data['page'], $this->dthlp->_getTagUrlparam($data['cols'][$ckey], $tag['value'])) .
+                              '" title="' . sprintf($this->getLang('tagfilter'), hsc($tag['value'])) .
+                              '" class="wikilink1">' . $tagLabelText . '</a>';
             $renderer->doc .= $this->after_val;
         }
         $renderer->doc .= $this->after_item;
         return true;
     }
-
 
     /**
      * Create a weighted tag distribution
@@ -170,19 +182,19 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
      * @param $max int      The highest count of a single tag
      * @param $levels int   The number of levels you want. A 5 gives levels 0 to 4.
      */
-    function _cloud_weight(&$tags,$min,$max,$levels){
+    protected function _cloud_weight(&$tags, $min, $max, $levels) {
         $levels--;
 
         // calculate tresholds
         $tresholds = array();
-        for($i=0; $i<=$levels; $i++){
-            $tresholds[$i] = pow($max - $min + 1, $i/$levels) + $min - 1;
+        for($i = 0; $i <= $levels; $i++) {
+            $tresholds[$i] = pow($max - $min + 1, $i / $levels) + $min - 1;
         }
 
         // assign weights
-        foreach($tags as $tag){
-            foreach($tresholds as $tresh => $val){
-                if($tag['cnt'] <= $val){
+        foreach($tags as $tag) {
+            foreach($tresholds as $tresh => $val) {
+                if($tag['cnt'] <= $val) {
                     $tags[$tag['value']]['lvl'] = $tresh;
                     break;
                 }
