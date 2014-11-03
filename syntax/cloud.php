@@ -153,7 +153,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         	
             $renderer->doc .= sprintf($this->before_val,$tag['lvl']);
             $renderer->doc .= '<a href="'.wl($data['page'], $this->dthlp->_getTagUrlparam($data['cols'][$ckey], $tag['value'])).
-                              '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag)).
+                              '" title="'.sprintf($this->getLang('tagfilter'),hsc($tag['value'])).
                               '" class="wikilink1">'.$output_tag_label.'</a>';
             $renderer->doc .= $this->after_val;
         }
