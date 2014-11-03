@@ -17,7 +17,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
      * will hold the data helper plugin
      * @var $dthlp helper_plugin_data
      */
-    protected $dthlp = null;
+    var $dthlp = null;
 
     /**
      * Constructor. Load helper plugin
