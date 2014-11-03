@@ -104,12 +104,23 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
                 if (count($params['value']) === 0) {
                     $params['value'] = $params['args'][0];
                 }
+                if(!isset($this->opt['optional'])) {
+                    $this->additional['required'] = 'required';
+                }
 
                 $form->addElement(call_user_func_array('form_makeListboxField',
-                                                       $this->_parse_tpl(array('@@NAME@@[]',
-                                                        $params['args'], $params['value'],
-                                                        '@@DISPLAY@@', '', '@@CLASS@@', $this->additional),
-                                                        $params)));
+                                                       $this->_parse_tpl(
+                                                           array(
+                                                               '@@NAME@@[]',
+                                                               $params['args'],
+                                                               $params['value'],
+                                                               '@@DISPLAY@@',
+                                                               '',
+                                                               '@@CLASS@@',
+                                                               $this->additional
+                                                           ),
+                                                           $params
+                                                       )));
             }
         }
 
