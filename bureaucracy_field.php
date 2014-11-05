@@ -4,12 +4,12 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
     require_once DOKU_PLUGIN . 'bureaucracy/fields/field.php';
 
     /**
-     * Class helper_plugin_bureaucracy_field_dataplugin
+     * Class syntax_plugin_bureaucracy_field_dataplugin
      *
      * Create a field with properties defined by given type alias
      * Mostly this is a single line input field, but for enum type a select field.
      */
-    class helper_plugin_bureaucracy_field_dataplugin extends helper_plugin_bureaucracy_field {
+    class syntax_plugin_bureaucracy_field_dataplugin extends syntax_plugin_bureaucracy_field {
 
         private $args;
         private $additional;
@@ -23,7 +23,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
          *
          * @param array $args The tokenized definition, only split at spaces
          */
-        public function initialize($args) {
+        public function __construct($args) {
             $this->init($args);
             $n_args = array();
             $this->args = array();
@@ -132,7 +132,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
          * Accepts and validates a posted value.
          *
          * @param string $value The passed value or array or null if none given
-         * @param helper_plugin_bureaucracy_field[] $fields (reference) form fields (POST handled upto $this field)
+         * @param syntax_plugin_bureaucracy_field[] $fields (reference) form fields (POST handled upto $this field)
          * @param int    $index  index number of field in form
          * @param int    $formid unique identifier of the form which contains this field
          * @return bool Whether the passed value is valid
