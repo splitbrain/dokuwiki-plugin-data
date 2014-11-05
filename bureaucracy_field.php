@@ -67,7 +67,7 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
             } else {
                 $classes = 'data_type_' . $datatype['type'] . ($datatype['multi'] ? 's' : '') .  ' ' .
                            'data_type_' . $datatype['basetype'] . ($datatype['multi'] ? 's' : '');
-                $content = form_makeTextField('@@NAME@@', '@@VALUE@@', '@@DISPLAY@@', '', '@@CLASS@@ ' . $classes);
+                $content = form_makeTextField('@@NAME@@', '@@VALUE@@', '@@DISPLAY@@', '@@ID@@', '@@CLASS@@ ' . $classes);
 
                 $this->tpl = $content;
             }
@@ -131,15 +131,17 @@ if (file_exists(DOKU_PLUGIN . 'bureaucracy/fields/field.php')) {
          * Accepts and validates a posted value.
          *
          * @param string $value The passed value or array or null if none given
+         * @param helper_plugin_bureaucracy_field[] $fields (reference) form fields (POST handled upto $this field)
+         * @param int    $index  index number of field in form
          * @param int    $formid unique identifier of the form which contains this field
-         * @return bool|array Whether the passed value is valid
+         * @return bool Whether the passed value is valid
          */
-        public function handle_post(&$value, $formid) {
+        public function handle_post($value, &$fields, $index, $formid) {
             if (is_array($value)) {
                 $value = join(', ', $value);
             }
 
-            return parent::handle_post($value, $formid);
+            return parent::handle_post($value, $fields, $index, $formid);
         }
 
         /**
