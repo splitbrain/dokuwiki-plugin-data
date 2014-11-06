@@ -1,11 +1,11 @@
 <?php
 /**
- * Class helper_plugin_bureaucracy_aliastextbox
+ * Class helper_plugin_data_aliastextbox
  *
  * Create a field with properties defined by given type alias
  * Mostly this is a single line input field, but for enum type a select field.
  */
-class helper_plugin_bureaucracy_aliastextbox extends helper_plugin_bureaucracy_field {
+class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field {
 
     private $args;
     private $additional;
