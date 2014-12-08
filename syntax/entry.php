@@ -343,28 +343,32 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     if(!$vals['multi']) {
                         array_unshift($values, '');
                     }
-                    $content = form_makeListboxField($fieldid . '[value][]',
-                                                     $values,
-                                                     $data['data'][$key],
-                                                     $vals['title'],
-                                                     '', '',
-                                                     ($vals['multi'] ? array('multiple' => 'multiple') : array()));
+                    $content = form_makeListboxField(
+                        $fieldid . '[value][]',
+                        $values,
+                        $data['data'][$key],
+                        $vals['title'],
+                        '', '',
+                        ($vals['multi'] ? array('multiple' => 'multiple') : array())
+                    );
                 } else {
                     $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') . ' '
-                             . 'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
+                        . 'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
 
                     $attr = array();
                     if($vals['basetype'] == 'date' && !$vals['multi']) {
                         $attr['class'] = 'datepicker';
                     }
 
-                    $content = form_makeField('text',
-                                              $fieldid . '[value]',
-                                              $content,
-                                              $vals['title'],
-                                              '',
-                                              $classes,
-                                              $attr);
+                    $content = form_makeField(
+                        'text',
+                        $fieldid . '[value]',
+                        $content,
+                        $vals['title'],
+                        '',
+                        $classes,
+                        $attr
+                    );
 
                 }
                 $cells = array(

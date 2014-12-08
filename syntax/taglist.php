@@ -8,7 +8,6 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-require_once(dirname(__FILE__) . '/cloud.php');
 
 /**
  * Class syntax_plugin_data_taglist
