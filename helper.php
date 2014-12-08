@@ -128,7 +128,8 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $name .= $part.' ';
                 }while($part);
                 return trim($email.' '.$name);
-            case 'page': case 'nspage':
+            case 'page':
+            case 'nspage':
                 return cleanID($value);
             default:
                 return $value;
@@ -251,11 +252,16 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     break;
                 default:
                     $val = $this->_addPrePostFixes($column['type'], $val);
+                    //type '_img' or '_img<width>'
                     if(substr($type,0,3) == 'img'){
                         $sz = (int) substr($type,3);
-                        if(!$sz) $sz = 40;
+                        if(!$sz) {
+                            $sz = 40;
+                        }
                         $title = $column['key'].': '.basename(str_replace(':','/',$val));
-                        $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox"><img src="'.ml($val,"w=$sz").'" alt="'.hsc($title).'" title="'.hsc($title).'" width="'.$sz.'" /></a>';
+                        $outs[] = '<a href="'.ml($val).'" class="media" rel="lightbox">'
+                                . '<img src="'.ml($val,"w=$sz").'" alt="'.hsc($title).'" title="'.hsc($title).'" width="'.$sz.'" />'
+                                . '</a>';
                     }else{
                         $outs[] = hsc($val);
                     }
