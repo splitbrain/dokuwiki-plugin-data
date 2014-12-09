@@ -6,7 +6,7 @@ div.dataplugin_entry dl {
     margin: 1em;
     font-size: 90%;
     overflow: auto;
-    width: 50%;
+    width: 70%;
 }
 
 /* DO NOT MESS WITH THIS IT IS IE MAGIC */
@@ -90,12 +90,18 @@ dl.datarelated dt {
 #dw__editform fieldset.plugin__data {
     text-align: left;
     width: 99%;
+    margin: 0.5em 0;
 }
 
 #dw__editform fieldset.plugin__data table {
     text-align: center;
+    border: none;
+    margin: 1em 0;
 }
 #dw__editform fieldset.plugin__data table {
+    th {
+        border: none;
+    }
     th.title {
         width: 20%;
     }
@@ -111,20 +117,23 @@ dl.datarelated dt {
     th.comment {
         width: 20%;
     }
+
+
+    td {
+        padding: 0.2em 0.3em;
+        border: none;
+    }
+
+    td.title {
+        font-weight: bold;
+    }
+
+    td select,
+    td input {
+        width: 100%;
+    }
 }
 
-#dw__editform fieldset.plugin__data table td {
-    padding: 0 0.3em;
-}
-
-#dw__editform fieldset.plugin__data table td.title {
-    font-weight: bold;
-}
-
-#dw__editform fieldset.plugin__data table td select,
-#dw__editform fieldset.plugin__data table td input {
-    width: 100%;
-}
 
 #dw__editform fieldset.plugin__data table .data_comment input {
     border: none;

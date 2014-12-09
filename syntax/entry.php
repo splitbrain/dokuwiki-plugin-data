@@ -317,7 +317,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $data['cols'][''] = array('type' => '', 'multi' => false);
         }
 
-        $renderer->form->addElement("<table $class>");
+        $renderer->form->addElement("<table class=\"$class\">");
 
         //header
         $header = '<tr>';
