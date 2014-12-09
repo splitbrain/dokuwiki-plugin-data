@@ -74,7 +74,9 @@ dl.datarelated dd {
 dl.datarelated dt {
     font-weight: bold;
 }
-
+/*
+ * Custom Entry Editor
+ */
 #dw__editform fieldset.plugin__data table tr td label span {
     display: none;
 }
@@ -93,9 +95,30 @@ dl.datarelated dt {
 #dw__editform fieldset.plugin__data table {
     text-align: center;
 }
+#dw__editform fieldset.plugin__data table {
+    th.title {
+        width: 20%;
+    }
+    th.type {
+        width: 15%;
+    }
+    th.multi {
+        width: 5%;
+    }
+    th.value {
+        width: 30%;
+    }
+    th.comment {
+        width: 20%;
+    }
+}
 
 #dw__editform fieldset.plugin__data table td {
     padding: 0 0.3em;
+}
+
+#dw__editform fieldset.plugin__data table td.title {
+    font-weight: bold;
 }
 
 #dw__editform fieldset.plugin__data table td select,

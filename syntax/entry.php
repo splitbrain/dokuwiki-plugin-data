@@ -302,22 +302,32 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
         if($this->getConf('edit_content_only')) {
             $renderer->form->addHidden('data_edit[classes]', $data['classes']);
-            $renderer->form->addElement('<table>');
+
+            $columns = array('title', 'value', 'comment');
+            $class = 'edit_content_only';
+
         } else {
             $renderer->form->addElement(form_makeField('text', 'data_edit[classes]', $data['classes'], $this->getLang('class'), 'data__classes'));
-            $renderer->form->addElement('<table>');
 
-            $text = '<tr>';
-            foreach(array('title', 'type', 'multi', 'value', 'comment') as $val) {
-                $text .= '<th>' . $this->getLang($val) . '</th>';
-            }
-            $renderer->form->addElement($text . '</tr>');
+            $columns = array('title', 'type', 'multi', 'value', 'comment');
+            $class = 'edit_all_content';
 
             // New line
             $data['data'][''] = '';
             $data['cols'][''] = array('type' => '', 'multi' => false);
         }
 
+        $renderer->form->addElement("<table $class>");
+
+        //header
+        $header = '<tr>';
+        foreach($columns as $column) {
+            $header .= '<th class="' . $column . '">' . $this->getLang($column) . '</th>';
+        }
+        $header .= '</tr>';
+        $renderer->form->addElement($header);
+
+        //rows
         $n = 0;
         foreach($data['cols'] as $key => $vals) {
             $fieldid = 'data_edit[data][' . $n++ . ']';
@@ -360,21 +370,13 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                         $attr['class'] = 'datepicker';
                     }
 
-                    $content = form_makeField(
-                        'text',
-                        $fieldid . '[value]',
-                        $content,
-                        $vals['title'],
-                        '',
-                        $classes,
-                        $attr
-                    );
+                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes, $attr);
 
                 }
                 $cells = array(
-                    $vals['title'] . ':',
+                    hsc($vals['title']) . ':',
                     $content,
-                    $vals['comment']
+                    '<span title="' . hsc($vals['comment']) . '">' . hsc($vals['comment']) . '</span>'
                 );
                 foreach(array('multi', 'comment', 'type') as $field) {
                     $renderer->form->addHidden($fieldid . "[$field]", $vals[$field]);
@@ -383,7 +385,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             } else {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
                 $cells = array(
-                    form_makeField('text', $fieldid . '[title]', $vals['origkey'], $this->getLang('title')), // when editable, alsways use the pure key, not a title
+                    form_makeField('text', $fieldid . '[title]', $vals['origkey'], $this->getLang('title')), // when editable, always use the pure key, not a title
                     form_makeMenuField(
                         $fieldid . '[type]',
                         array_merge(
@@ -398,11 +400,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     ),
                     form_makeCheckboxField($fieldid . '[multi]', array('1', ''), $this->getLang('multi'), '', '', $check_data),
                     form_makeField('text', $fieldid . '[value]', $content, $this->getLang('value')),
-                    form_makeField('text', $fieldid . '[comment]', $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1))
+                    form_makeField('text', $fieldid . '[comment]', $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1, 'title' => $vals['comment']))
                 );
             }
-            foreach($cells as $cell) {
-                $renderer->form->addElement('<td>');
+
+            foreach($cells as $index => $cell) {
+                $renderer->form->addElement("<td class=\"{$columns[$index]}\">");
                 $renderer->form->addElement($cell);
                 $renderer->form->addElement('</td>');
             }
