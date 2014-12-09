@@ -121,14 +121,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'head':
                 case 'header':
                 case 'headers':
-                    $cols = explode(',', $line[1]);
-                    foreach($cols as $col) {
-                        $col = trim($col);
-                        if($col[0] == '"' AND substr($col, -1) == '"') {
-                            $col = substr($col, 1, -1);
-                        }
-                        $data['headers'][] = $col;
-                    }
+                    $cols = $this->parseValues($line[1]);
+                    $data['headers'] = array_merge($data['headers'], $cols);
                     break;
                 case 'align':
                     $cols = explode(',', $line[1]);
@@ -217,8 +211,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $cnth = count($data['headers']);
         $cntf = count($data['cols']);
         for($i = $cnth; $i < $cntf; $i++) {
-            $item = array_pop(array_slice($data['cols'], $i, 1));
-            $data['headers'][] = $item['title'];
+            $column = array_slice($data['cols'], $i, 1);
+            $columnprops = array_pop($column);
+            $data['headers'][] = $columnprops['title'];
         }
 
         $data['sql'] = $this->_buildSQL($data);
@@ -668,7 +663,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     SELECT DISTINCT pages.pid AS pid
                     FROM pages $from2
                     WHERE $where2
-                ) AS W1 
+                ) AS W1
                 $from
                 LEFT JOIN pages ON W1.pid=pages.pid
                 GROUP BY W1.pid
@@ -717,6 +712,65 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      */
     function hasRequestFilter() {
         return isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt']);
+    }
+
+    /**
+     * Split values at the commas,
+     * - Wrap with quotes to escape comma, quotes escaped by two quotes
+     * - Within quotes spaces are stored.
+     *
+     * @param string $line
+     * @return array
+     */
+    protected function parseValues($line) {
+        $values = array();
+        $inQuote = false;
+        $escapedQuote = false;
+        $value = '';
+
+        $len = strlen($line);
+        for($i = 0; $i < $len; $i++) {
+            if($line{$i} == '"') {
+                if($inQuote) {
+                    if($escapedQuote) {
+                        $value .= '"';
+                        $escapedQuote = false;
+                        continue;
+                    }
+                    if($line{$i + 1} == '"') {
+                        $escapedQuote = true;
+                        continue;
+                    }
+                    array_push($values, $value);
+                    $inQuote = false;
+                    $value = '';
+                    continue;
+
+                } else {
+                    $inQuote = true;
+                    $value = ''; //don't store stuff before the opening quote
+                    continue;
+                }
+            } else if($line{$i} == ',') {
+                if($inQuote) {
+                    $value .= ',';
+                    continue;
+                } else {
+                    if(strlen($value) < 1) {
+                        continue;
+                    }
+                    array_push($values, trim($value));
+                    $value = '';
+                    continue;
+                }
+            }
+
+            $value .= $line{$i};
+        }
+        if(strlen($value) > 0) {
+            array_push($values, trim($value));
+        }
+        return $values;
     }
 }
 
