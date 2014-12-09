@@ -79,7 +79,6 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
             // Clean enum
             $arr = preg_split('/\s*,\s*/', $row['enum']);
             $arr = array_unique($arr);
-            asort($arr);
             $row['enum'] = implode(', ', $arr);
 
             if (!$sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
