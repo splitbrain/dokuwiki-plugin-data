@@ -579,9 +579,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 }
                 switch($type) {
                     case 'pageid':
-                        $select[] = "pages.page || '|' || group_concat(" . $tables[$key] . ".value,'\n')";
-                        break;
                     case 'wiki':
+                        //note in multivalued case: adds pageid only to first value
                         $select[] = "pages.page || '|' || group_concat(" . $tables[$key] . ".value,'\n')";
                         break;
                     default:

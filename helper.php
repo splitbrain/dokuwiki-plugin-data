@@ -217,6 +217,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
         global $conf;
         $vals = explode("\n", $value);
         $outs = array();
+
+        //multivalued line from db result for pageid and wiki has only in first value the ID
+        $storedID = '';
+
         foreach($vals as $val) {
             $val = trim($val);
             if($val == '') continue;
@@ -233,6 +237,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 case 'title':
                 case 'pageid':
                     list($id, $title) = explode('|', $val, 2);
+                    if($title == null) {
+                        //use ID from first value of the multivalued line
+                        $title = $id;
+                        $id = $storedID;
+                    } else {
+                        $storedID = $id;
+                    }
                     $id = $this->_addPrePostFixes($column['type'], $id);
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
@@ -279,6 +290,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     global $ID;
                     $oldid = $ID;
                     list($ID, $data) = explode('|', $val, 2);
+                    if($data == null) {
+                        //use ID from first value of the multivalued line
+                        $data = $ID;
+                        $ID = $storedID;
+                    } else {
+                        $storedID = $ID;
+                    }
                     $data = $this->_addPrePostFixes($column['type'], $data);
                     // Trim document_{start,end}, p_{open,close}
                     $ins = array_slice(p_get_instructions($data), 2, -2);
