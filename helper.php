@@ -317,14 +317,23 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $val = $this->_addPrePostFixes($column['type'], $val);
                     //type '_img' or '_img<width>'
                     if(substr($type, 0, 3) == 'img') {
-                        $sz = (int) substr($type, 3);
-                        if(!$sz) {
-                            $sz = 40;
+                        $width = (int) substr($type, 3);
+                        if(!$width) {
+                            $width = 40;
                         }
+
                         $title = $column['key'] . ': ' . basename(str_replace(':', '/', $val));
-                        $outs[] = '<a href="' . ml($val) . '" class="media" rel="lightbox">'
-                                . '<img src="' . ml($val, "w=$sz") . '" alt="' . hsc($title) . '" title="' . hsc($title) . '" width="' . $sz . '" />'
-                                . '</a>';
+
+                        if(media_isexternal($val)) {
+                            $html = $R->externalmedia($val, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                        } else {
+                            $html = $R->internalmedia($val, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                        }
+                        if(strpos($html, 'mediafile') === false) {
+                            $html = str_replace('href', 'rel="lightbox" href', $html);
+                        }
+
+                        $outs[] = $html;
                     } else {
                         $outs[] = hsc($val);
                     }
