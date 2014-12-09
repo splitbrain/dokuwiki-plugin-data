@@ -74,7 +74,8 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         if(!$sqlite) return false;
 
         $fields = array(
-            'pageid' => 'page', 'class' => 'class',
+            'pageid' => 'page',
+            'class' => 'class',
             'title' => 'title'
         );
         // prepare filters (no request filters - we set them ourselves)
@@ -109,9 +110,13 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
                  WHERE data.key = " . $sqlite->quote_string($ckey) . "
                  $where
               GROUP BY data.value";
-        if(isset($data['min'])) $sql .= ' HAVING cnt >= ' . $data['min'];
+        if(isset($data['min'])) {
+            $sql .= ' HAVING cnt >= ' . $data['min'];
+        }
         $sql .= ' ORDER BY cnt DESC';
-        if($data['limit']) $sql .= ' LIMIT ' . $data['limit'];
+        if($data['limit']) {
+            $sql .= ' LIMIT ' . $data['limit'];
+        }
 
         return $sql;
     }
@@ -138,7 +143,9 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $ckey = array_keys($data['cols']);
         $ckey = $ckey[0];
 
-        if(!isset($data['page'])) $data['page'] = $ID;
+        if(!isset($data['page'])) {
+            $data['page'] = $ID;
+        }
 
         $this->dthlp->_replacePlaceholdersInSQL($data);
 
@@ -149,7 +156,9 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         $max = 0;
         $tags = array();
         foreach($rows as $row) {
-            if(!$max) $max = $row['cnt'];
+            if(!$max) {
+                $max = $row['cnt'];
+            }
             $min = $row['cnt'];
             $tags[$row['value']]['cnt'] = $row['cnt'];
             $tags[$row['value']]['value'] = $row['value'];
