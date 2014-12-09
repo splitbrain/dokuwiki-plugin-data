@@ -237,13 +237,15 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 case 'title':
                 case 'pageid':
                     list($id, $title) = explode('|', $val, 2);
+
+                    //use ID from first value of the multivalued line
                     if($title == null) {
-                        //use ID from first value of the multivalued line
                         $title = $id;
                         $id = $storedID;
                     } else {
                         $storedID = $id;
                     }
+
                     $id = $this->_addPrePostFixes($column['type'], $id);
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
@@ -290,17 +292,25 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     global $ID;
                     $oldid = $ID;
                     list($ID, $data) = explode('|', $val, 2);
+
+                    //use ID from first value of the multivalued line
                     if($data == null) {
-                        //use ID from first value of the multivalued line
                         $data = $ID;
                         $ID = $storedID;
                     } else {
                         $storedID = $ID;
                     }
                     $data = $this->_addPrePostFixes($column['type'], $data);
-                    // Trim document_{start,end}, p_{open,close}
-                    $ins = array_slice(p_get_instructions($data), 2, -2);
-                    $outs[] = p_render('xhtml', $ins, $byref_ignore);
+
+                    // Trim document_{start,end}, p_{open,close} from instructions
+                    $allinstructions = p_get_instructions($data);
+                    $wraps = 1;
+                    if(isset($allinstructions[1]) && $allinstructions[1][0] == 'p_open') {
+                        $wraps ++;
+                    }
+                    $instructions = array_slice($allinstructions, $wraps, -$wraps);
+
+                    $outs[] = p_render('xhtml', $instructions, $byref_ignore);
                     $ID = $oldid;
                     break;
                 default:
