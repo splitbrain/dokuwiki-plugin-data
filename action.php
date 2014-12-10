@@ -64,7 +64,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      * @param null       $param
      */
-    function _editbutton(Doku_Event $event, $param) {
+    function _editbutton($event, $param) {
         if ($event->data['target'] !== 'plugin_data') {
             return;
         }

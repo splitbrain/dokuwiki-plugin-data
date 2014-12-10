@@ -467,9 +467,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      *
      * @param array         $data  instruction by handler()
      * @param array         $clist keys of the columns
-     * @param Doku_Renderer &$R
+     * @param Doku_Renderer $R
      */
-    function nullList($data, $clist, &$R) {
+    function nullList($data, $clist, $R) {
         $R->doc .= $this->preList($clist, $data);
         $R->tablerow_open();
         $R->tablecell_open(count($clist), 'center');
