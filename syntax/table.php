@@ -271,20 +271,37 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $rows = array_slice($rows, 0, $data['limit']);
         }
 
+        //build classnames per column
+        $classes = array();
+        $class_names_cache = array();
+        $offset = 0;
+        if($data['rownumbers']) {
+            $offset = 1; //rownumbers are in first column
+            $classes[] = $data['align'][0] . 'align rownumbers';
+        }
+        foreach($clist as $index => $col) {
+            $class = $data['align'][$index + $offset] . 'align';
+            $class .= ' ' . hsc(sectionID($col, $class_names_cache));
+            $classes[] = $class;
+        }
+
+        //start table/list
         $R->doc .= $this->preList($clist, $data);
+
         foreach($rows as $rownum => $row) {
             // build data rows
             $R->doc .= $this->before_item;
+
             if($data['rownumbers']) {
-                $R->doc .= sprintf($this->before_val, 'class="' . $data['align'][0] . 'align"');
+                $R->doc .= sprintf($this->before_val, 'class="' . $classes[0] . '"');
                 $R->doc .= $rownum + 1;
                 $R->doc .= $this->after_val;
             }
 
             foreach(array_values($row) as $num => $cval) {
-                $num_rn = ($data['rownumbers'] ? $num + 1 : $num);
+                $num_rn = $num + $offset;
 
-                $R->doc .= sprintf($this->beforeVal($data, $num_rn), 'class="' . $data['align'][$num_rn] . 'align"');
+                $R->doc .= sprintf($this->beforeVal($data, $num_rn), 'class="' . $classes[$num_rn] . '"');
                 $R->doc .= $this->dthlp->_formatData(
                     $data['cols'][$clist[$num]],
                     $cval, $R
