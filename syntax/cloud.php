@@ -105,7 +105,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
         }
 
         // build query
-        $sql = "SELECT data.value, COUNT(data.pid) as cnt
+        $sql = "SELECT data.value AS value, COUNT(data.pid) AS cnt
                   FROM data $from $pagesjoin
                  WHERE data.key = " . $sqlite->quote_string($ckey) . "
                  $where
