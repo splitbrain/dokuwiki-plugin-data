@@ -3,6 +3,7 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * 
+ * @author Gerrit Uitslag <klapinklapin@gmail.com>
  */
 $lang['menu_alias']            = 'Data Plugin: Veldaliases';
 $lang['menu_clean']            = 'Data Plugin: Schoon de database op';
@@ -26,6 +27,7 @@ $lang['submit']                = 'Aliases Opslaan';
 $lang['dataentry']             = 'Datablok';
 $lang['multi']                 = 'Meerdere?';
 $lang['value']                 = 'Waarde';
+$lang['comment']               = 'Opmerking';
 $lang['none']                  = 'Niets gevonden';
 $lang['tablefilteredby']       = 'Gefilterd op %s';
 $lang['tableresetfilter']      = 'Geef alles weer(Verwijder filter/sortering)';
