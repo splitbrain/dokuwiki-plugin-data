@@ -31,5 +31,5 @@ $lang['multi']                 = 'Множ. знач.?';
 $lang['value']                 = 'Значение';
 $lang['comment']               = 'Пояснение';
 $lang['none']                  = 'Ничего не найдено';
-$lang['tablefilteredby']       = 'Отфильтровано по %s';
-$lang['tableresetfilter']      = 'Показать все (удалить фильтр/сортировку)';
+$lang['tablefilteredby']       = 'Отфильтровано по «%s»';
+$lang['tableresetfilter']      = 'Показать всё (удалить фильтр, сортировку)';
