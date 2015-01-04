@@ -322,12 +322,17 @@ class helper_plugin_data extends DokuWiki_Plugin {
                             $width = 40;
                         }
 
-                        $title = $column['key'] . ': ' . basename(str_replace(':', '/', $val));
+                        list($mediaid, $title) = explode('|', $val, 2);
+                        if($title === null) {
+                            $title = $column['key'] . ': ' . basename(str_replace(':', '/', $mediaid));
+                        } else {
+                            $title = trim($title);
+                        }
 
                         if(media_isexternal($val)) {
-                            $html = $R->externalmedia($val, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                            $html = $R->externalmedia($mediaid, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
                         } else {
-                            $html = $R->internalmedia($val, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                            $html = $R->internalmedia($mediaid, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
                         }
                         if(strpos($html, 'mediafile') === false) {
                             $html = str_replace('href', 'rel="lightbox" href', $html);
