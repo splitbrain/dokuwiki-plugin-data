@@ -27,6 +27,7 @@ $lang['submit']                = 'Snimi pseudonime';
 $lang['dataentry']             = 'Unos podatka';
 $lang['multi']                 = 'Multi?';
 $lang['value']                 = 'Vrijednost';
+$lang['comment']               = 'Komentar';
 $lang['none']                  = 'Nije nađeno';
 $lang['tablefilteredby']       = 'Filtrirano po %s';
 $lang['tableresetfilter']      = 'Prikaži sve (makni filtriranje i sortiranje)';
