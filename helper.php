@@ -319,7 +319,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     if(substr($type, 0, 3) == 'img') {
                         $width = (int) substr($type, 3);
                         if(!$width) {
-                            $width = 40;
+                            $width = $this->getConf('image_width');
                         }
 
                         list($mediaid, $title) = explode('|', $val, 2);
