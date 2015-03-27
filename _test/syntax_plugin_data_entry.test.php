@@ -214,6 +214,35 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals(1, pq('dl dt.tests')->length);
         $this->assertEquals(1, pq('dl dd.tests')->length);
     }
+
+    function testComments() {
+        $entry = "---- dataentry projects ----\n"
+            . "volume        : 1 Mrd # how much do they pay?\n"
+            . "server        : http://www.microsoft.com      # Comment\n"
+            . "Website_url   : http://www.microsoft.com\#test # Comment\n"
+            . "Site_url      : https://www.microsoft.com/page\#test\n"
+            . "tests_        : \\#5 done\n"
+            . "----\n";
+
+        $plugin = new syntax_plugin_data_entry();
+
+        $handler = new Doku_Handler();
+        $result = $plugin->handle($entry, 0, 10, $handler);
+
+        $this->assertEquals(10,         $result['pos'],     'Position has changed');
+        $this->assertEquals('projects', $result['classes'], 'wrong class name detected');
+
+        $data = array(
+            'volume'   => '1 Mrd',
+            'server'   => 'http://www.microsoft.com',
+            'website'  => 'http://www.microsoft.com#test',
+            'site'     => 'https://www.microsoft.com/page#test',
+            'tests'    => '#5 done',
+            '----'     => ''
+        );
+        $this->assertEquals($data, $result['data'], 'Data array corrupted');
+
+    }
 }
 
 

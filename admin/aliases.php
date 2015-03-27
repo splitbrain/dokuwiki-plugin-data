@@ -8,34 +8,62 @@
 
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
-require_once(DOKU_PLUGIN.'admin.php');
 
+/**
+ * Administration form for configuring the type aliases
+ */
 class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
 
     /**
      * will hold the data helper plugin
+     * @var helper_plugin_data
      */
-    var $dthlp = null;
+    protected $dthlp = null;
 
     /**
      * Constructor. Load helper plugin
      */
-    function admin_plugin_data_aliases(){
+    public function admin_plugin_data_aliases(){
         $this->dthlp = plugin_load('helper', 'data');
     }
 
-    function getMenuSort() { return 501; }
-    function forAdminOnly() { return true; }
+    /**
+     * Determine position in list in admin window
+     * Lower values are sorted up
+     *
+     * @return int
+     */
+    public function getMenuSort() {
+        return 501;
+    }
 
-    function getMenuText($language) {
+    /**
+     * Return true for access only by admins (config:superuser) or false if managers are allowed as well
+     *
+     * @return bool
+     */
+    public function forAdminOnly() {
+        return true;
+    }
+
+    /**
+     * Return the text that is displayed at the main admin menu
+     *
+     * @param string $language lang code
+     * @return string menu string
+     */
+    public function getMenuText($language) {
         return $this->getLang('menu_alias');
     }
 
-    function handle() {
+    /**
+     * Carry out required processing
+     */
+    public function handle() {
         if(!is_array($_REQUEST['d']) || !checkSecurityToken()) return;
 
         $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
+        if(!$sqlite) return;
 
         $sqlite->query("BEGIN TRANSACTION");
         if (!$sqlite->query("DELETE FROM aliases")) {
@@ -51,7 +79,6 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
             // Clean enum
             $arr = preg_split('/\s*,\s*/', $row['enum']);
             $arr = array_unique($arr);
-            asort($arr);
             $row['enum'] = implode(', ', $arr);
 
             if (!$sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
@@ -63,9 +90,12 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
         $sqlite->query("COMMIT TRANSACTION");
     }
 
-    function html() {
+    /**
+     * Output html of the admin page
+     */
+    public function html() {
         $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
+        if(!$sqlite) return;
 
         echo $this->locale_xhtml('admin_intro');
 
@@ -98,9 +128,11 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
             $form->addElement('</td>');
 
             $form->addElement('<td>');
-            $form->addElement(form_makeMenuField('d['.$cur.'][type]',
-                                array('','page','title','mail','url', 'dt', 'wiki','tag'),
-                              $row['type'],''));
+            $form->addElement(form_makeMenuField(
+                                  'd['.$cur.'][type]',
+                                  array('','page','title','mail','url', 'dt', 'wiki','tag', 'hidden', 'img'),//'nspage' don't support post/prefixes
+                                  $row['type'],''
+                              ));
             $form->addElement('</td>');
 
             $form->addElement('<td>');

@@ -1,8 +1,8 @@
 <?php
 
-class data_dummy_renderer {
+class data_dummy_renderer extends Doku_Renderer_xhtml{
 
-    function internallink($id, $title = '', $ignored=null, $ignored2=false) {
+    function internallink($id, $title = '', $ignored=null, $ignored2=false, $linktype = 'content') {
         return "link: $id $title";
     }
 
@@ -127,6 +127,8 @@ class helper_plugin_data_test extends DokuWikiTest {
 
     function testFormatData() {
         global $conf;
+        global $ID;
+        $ID = '';
 
         $helper = new helper_plugin_data();
         $renderer = new data_dummy_renderer();
@@ -173,7 +175,7 @@ class helper_plugin_data_test extends DokuWikiTest {
             $helper->_formatData(array('type' => 'wiki'), '|**bla**', $renderer));
 
 
-        $this->assertEquals('<a href="'.ml('wiki:dokuwiki-128.png').'" class="media" rel="lightbox"><img src="'.ml('wiki:dokuwiki-128.png', array('w'=>300)).'" alt=": dokuwiki-128.png" title=": dokuwiki-128.png" width="300" /></a>',
+        $this->assertEquals('<a rel="lightbox" href="'.ml('wiki:dokuwiki-128.png', array('cache' => null)).'" class="media" title="wiki:dokuwiki-128.png"><img src="'.ml('wiki:dokuwiki-128.png', array('w' => 300, 'cache' => null)).'" class="media" title=": dokuwiki-128.png" alt=": dokuwiki-128.png" width="300" /></a>',
             $helper->_formatData(array('type' => 'img300'), 'wiki:dokuwiki-128.png', $renderer));
     }
 

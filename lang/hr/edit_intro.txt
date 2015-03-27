@@ -1,0 +1,3 @@
+Uredite [[doku>plugin:data|unos]] i pritisnite ''Snimi''. Molim uredite unos samo ako ga možete **unaprijediti**.
+  * Također možete izmijeniti strukturu unosa.
+  * Polja se brišu uklanjanjem njihovog naziva.

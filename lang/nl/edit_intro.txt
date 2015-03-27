@@ -1,1 +1,3 @@
-Bewerk het [[doku>plugin:data|datablok]] en klik op ''Opslaan''. Alsjeblieft alleen bewerken als je de informatie kunt **verbeteren**. Je kunt ook de structuur van het datablok aanpassen. Velden worden weggegooid door de titel te verwijderen.
+Bewerk het [[doku>plugin:data|datablok]] en klik op ''Opslaan''. Alsjeblieft alleen bewerken als je de informatie kunt **verbeteren**.
+  * Je kunt ook de structuur van het datablok aanpassen.
+  * Velden worden weggegooid door de titel te verwijderen.

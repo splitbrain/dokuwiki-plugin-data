@@ -6,10 +6,10 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-require_once(DOKU_PLUGIN.'action.php');
 
-require_once DOKU_PLUGIN.'data/bureaucracy_field.php';
-
+/**
+ * Class action_plugin_data
+ */
 class action_plugin_data extends DokuWiki_Action_Plugin {
 
     /**
@@ -39,8 +39,11 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     /**
      * Handles the page write event and removes the database info
      * when the plugin code is no longer in the source
+     *
+     * @param Doku_Event $event
+     * @param null       $param
      */
-    function _handle(&$event, $param){
+    function _handle(Doku_Event $event, $param){
         $data = $event->data;
         if(strpos($data[0][1],'dataentry') !== false) return; // plugin seems still to be there
 
@@ -57,7 +60,11 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $sqlite->query('DELETE FROM pages WHERE pid = ?',$pid);
     }
 
-    function _editbutton(&$event, $param) {
+    /**
+     * @param Doku_Event $event
+     * @param null       $param
+     */
+    function _editbutton($event, $param) {
         if ($event->data['target'] !== 'plugin_data') {
             return;
         }
@@ -65,7 +72,11 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $event->data['name'] = $this->getLang('dataentry');
     }
 
-    function _editform(&$event, $param) {
+    /**
+     * @param Doku_Event $event
+     * @param null       $param
+     */
+    function _editform(Doku_Event $event, $param) {
         global $TEXT;
         if ($event->data['target'] !== 'plugin_data') {
             // Not a data edit
@@ -87,11 +98,14 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $instructions = p_get_instructions($TEXT);
         foreach ( $instructions as $instruction ) {
             // Execute the callback against the Renderer
-            call_user_func_array(array(&$Renderer, $instruction[0]),$instruction[1]);
+            call_user_func_array(array($Renderer, $instruction[0]),$instruction[1]);
         }
     }
 
-    function _handle_edit_post($event) {
+    /**
+     * @param Doku_Event $event
+     */
+    function _handle_edit_post(Doku_Event $event) {
         if (!isset($_POST['data_edit'])) {
             return;
         }
@@ -101,7 +115,10 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
         $TEXT = syntax_plugin_data_entry::editToWiki($_POST['data_edit']);
     }
 
-    function _handle_ajax($event) {
+    /**
+     * @param Doku_Event $event
+     */
+    function _handle_ajax(Doku_Event $event) {
         if ($event->data !== 'data_page') {
             return;
         }

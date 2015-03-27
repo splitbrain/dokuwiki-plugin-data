@@ -8,34 +8,62 @@
 
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
-require_once(DOKU_PLUGIN.'admin.php');
 
+/**
+ * Let admin remove non-existing pages from sqlite db
+ */
 class admin_plugin_data_clean extends DokuWiki_Admin_Plugin {
 
     /**
      * will hold the data helper plugin
+     * @var helper_plugin_data
      */
-    var $dthlp = null;
+    protected $dthlp = null;
 
     /**
      * Constructor. Load helper plugin
      */
-    function admin_plugin_data_clean(){
+    public function admin_plugin_data_clean(){
         $this->dthlp = plugin_load('helper', 'data');
     }
 
-    function getMenuSort() { return 502; }
-    function forAdminOnly() { return true; }
+    /**
+     * Determine position in list in admin window
+     * Lower values are sorted up
+     *
+     * @return int
+     */
+    public function getMenuSort() {
+        return 502;
+    }
 
-    function getMenuText($language) {
+    /**
+     * Return true for access only by admins (config:superuser) or false if managers are allowed as well
+     *
+     * @return bool
+     */
+    public function forAdminOnly() {
+        return true;
+    }
+
+    /**
+     * Return the text that is displayed at the main admin menu
+     *
+     * @param string $language lang code
+     * @return string menu string
+     */
+    public function getMenuText($language) {
         return $this->getLang('menu_clean');
     }
 
-    function handle() {
+    /**
+     * Carry out required processing
+     */
+    public function handle() {
         if(!isset($_REQUEST['data_go']) || !checkSecurityToken()) return;
 
         $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return false;
+        if(!$sqlite) return;
 
         $res  = $sqlite->query("SELECT pid, page FROM pages");
         $rows = $sqlite->res2arr($res);
@@ -52,7 +80,10 @@ class admin_plugin_data_clean extends DokuWiki_Admin_Plugin {
         msg(sprintf($this->getLang('pages_del'),$count),1);
     }
 
-    function html() {
+    /**
+     * Render HTML output
+     */
+    public function html() {
 
         echo $this->locale_xhtml('intro_clean');
 
