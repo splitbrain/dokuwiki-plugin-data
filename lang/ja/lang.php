@@ -27,6 +27,7 @@ $lang['submit']                = 'Type Alias の保存';
 $lang['dataentry']             = 'Data entry';
 $lang['multi']                 = '複数？';
 $lang['value']                 = '値';
+$lang['comment']               = 'コメント';
 $lang['none']                  = '存在しない';
 $lang['tablefilteredby']       = '%s で抽出';
 $lang['tableresetfilter']      = '元に戻す（抽出条件・ソート条件を解除）';
