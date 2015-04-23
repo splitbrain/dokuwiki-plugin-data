@@ -65,6 +65,38 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals($cols, $result['cols'], 'Cols array corrupted');
     }
 
+    function test_titleEntry_noTitle() {
+        $test_entry = '---- dataentry ----
+        test_title: bar
+        ----';
+        $plugin = new syntax_plugin_data_entry();
+
+        $handler = new Doku_Handler();
+        $data = $plugin->handle($test_entry, 0, 10, $handler);
+        $renderer = new Doku_Renderer_xhtml();
+        $plugin->render('xhtml',$renderer,$data);
+        $result = $renderer->doc;
+        $result = substr($result,0,strpos($result,'</a>')+4);
+        $result = substr($result,strpos($result,'<a'));
+        $this->assertSame('<a href="/./doku.php?id=bar" class="wikilink2" title="bar" rel="nofollow">bar</a>',$result);
+    }
+
+    function test_titleEntry_withTitle() {
+        $test_entry = '---- dataentry ----
+        test_title: link:to:page|TitleOfPage
+        ----';
+        $plugin = new syntax_plugin_data_entry();
+
+        $handler = new Doku_Handler();
+        $data = $plugin->handle($test_entry, 0, 10, $handler);
+        $renderer = new Doku_Renderer_xhtml();
+        $plugin->render('xhtml',$renderer,$data);
+        $result = $renderer->doc;
+        $result = substr($result,0,strpos($result,'</a>')+4);
+        $result = substr($result,strpos($result,'<a'));
+        $this->assertSame('<a href="/./doku.php?id=link:to:page" class="wikilink2" title="link:to:page" rel="nofollow">TitleOfPage</a>',$result);
+    }
+
     function test_editToWiki() {
         $data = array(
             'classes' => 'projects',

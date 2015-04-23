@@ -241,7 +241,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     //use ID from first value of the multivalued line
                     if($title == null) {
                         $title = $id;
-                        $id = $storedID;
+                        if(!empty($storedID)) {
+                            $id = $storedID;
+                        }
                     } else {
                         $storedID = $id;
                     }
