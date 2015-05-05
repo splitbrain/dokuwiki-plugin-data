@@ -143,6 +143,14 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
                 return trim($email . ' ' . $name);
             case 'page':
+                list($id, $title) = explode('|', $value, 2);
+                $id = cleanID($id);
+                if ($title !== null) {
+                    $value = $id . "|" . $title;
+                } else {
+                    $value = $id;
+                }
+                return $value;
             case 'nspage':
                 return cleanID($value);
             default:
@@ -230,11 +238,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 $type = $type['type'];
             }
             switch($type) {
-                case 'page':
-                    $val = $this->_addPrePostFixes($column['type'], $val);
-                    $outs[] = $R->internallink($val, null, null, true);
-                    break;
                 case 'title':
+                    list($id, $title) = explode('|', $val, 2);
+                    $val = $this->_addPrePostFixes($column['type'], $id);
+                    $outs[] = $R->internallink($val, $title, null, true);
+                    break;
+                case 'page':
                 case 'pageid':
                     list($id, $title) = explode('|', $val, 2);
 

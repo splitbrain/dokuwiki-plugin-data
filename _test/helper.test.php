@@ -136,8 +136,11 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('value1, value2, val',
             $helper->_formatData(array('type' => ''), "value1\n value2\n val", $renderer));
 
-        $this->assertEquals('link: page ',
+        $this->assertEquals('link: page page',
             $helper->_formatData(array('type' => 'page'), "page", $renderer));
+
+        $this->assertEquals('link: page ',
+            $helper->_formatData(array('type' => 'title'), "page", $renderer));
 
         $this->assertEquals('link: page title',
             $helper->_formatData(array('type' => 'title'), "page|title", $renderer));
