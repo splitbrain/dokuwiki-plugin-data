@@ -145,7 +145,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
             case 'page':
                 list($id, $title) = explode('|', $value, 2);
                 $id = cleanID($id);
-                return $id . " | " . $title;
+                if ($title !== null) {
+                    $value = $id . "|" . $title;
+                } else {
+                    $value = $id;
+                }
+                return $value;
             case 'nspage':
                 return cleanID($value);
             default:
