@@ -100,7 +100,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $result = substr($result,strpos($result,'<internallink>')+14);
         $result = unserialize($result);
 
-        $this->assertSame('foo',$result['id']);
+        $this->assertSame(':foo',$result['id']);
         $this->assertSame(null,$result['name'], 'page does not accept a title. useheading decides');
     }
 
@@ -121,7 +121,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $result = substr($result,strpos($result,'<internallink>')+14);
         $result = unserialize($result);
 
-        $this->assertSame('foo_bar',$result['id'], 'for type page a title becomes part of the id');
+        $this->assertSame(':foo_bar',$result['id'], 'for type page a title becomes part of the id');
         $this->assertSame(null,$result['name'], 'page never accepts a title. useheading decides');
     }
 
@@ -184,7 +184,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $result = substr($result,strpos($result,'<internallink>')+14);
         $result = unserialize($result);
 
-        $this->assertSame('foo',$result['id']);
+        $this->assertSame(':foo',$result['id']);
         $this->assertSame(null,$result['name'], 'no title should be given to internal link. Let useheading decide.');
     }
 
@@ -206,7 +206,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $result = substr($result,strpos($result,'<internallink>')+14);
         $result = unserialize($result);
 
-        $this->assertSame('link:to:page',$result['id']);
+        $this->assertSame(':link:to:page',$result['id']);
         $this->assertSame('TitleOfPage',$result['name'], 'The Title provided should be the title shown.');
     }
 
