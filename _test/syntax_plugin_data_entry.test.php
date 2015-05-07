@@ -205,7 +205,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $result = substr($result,0,strpos($result,'</internallink>'));
         $result = substr($result,strpos($result,'<internallink>')+14);
         $result = unserialize($result);
-        
+
         $this->assertSame('link:to:page',$result['id']);
         $this->assertSame('TitleOfPage',$result['name'], 'The Title provided should be the title shown.');
     }
