@@ -2,6 +2,20 @@
 
 require_once DOKU_INC . 'inc/parser/xhtml.php';
 
+class Doku_Renderer_xhtml_mock extends Doku_Renderer_xhtml {
+
+    function internallink($id, $name = null, $search = null, $returnonly = false, $linktype = 'content') {
+        $inputvalues = array(
+            'id' => $id,
+            'name' => $name,
+            'search' => $search,
+            'returnonly' => $returnonly,
+            'linktype' => $linktype
+        );
+        return "<internallink>" . serialize($inputvalues) . "</internallink>";
+    }
+}
+
 /**
  * @group plugin_data
  * @group plugins
@@ -11,6 +25,10 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
     protected $pluginsEnabled = array('data', 'sqlite');
 
     private $exampleEntry;
+
+    public function setUp() {
+        parent::setUp();
+    }
 
     function __construct() {
         $this->exampleEntry = "---- dataentry projects ----\n"
@@ -65,36 +83,131 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals($cols, $result['cols'], 'Cols array corrupted');
     }
 
-    function test_titleEntry_noTitle() {
+    function test_pageEntry_noTitle() {
         $test_entry = '---- dataentry ----
-        test_title: bar
+        test1_page: foo
         ----';
-        $plugin = new syntax_plugin_data_entry();
+
+        /** @var syntax_plugin_data_entry $plugin */
+        $plugin = plugin_load('syntax','data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
-        $renderer = new Doku_Renderer_xhtml();
+        $renderer = new Doku_Renderer_xhtml_mock();
         $plugin->render('xhtml',$renderer,$data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</a>')+4);
-        $result = substr($result,strpos($result,'<a'));
-        $this->assertSame('<a href="/./doku.php?id=bar" class="wikilink2" title="bar" rel="nofollow">bar</a>',$result);
+        $result = substr($result,0,strpos($result,'</internallink>'));
+        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = unserialize($result);
+
+        $this->assertSame(':foo',$result['id']);
+        $this->assertSame(null,$result['name'], 'page does not accept a title. useheading decides');
     }
+
+    function test_pageEntry_withTitle() {
+        $test_entry = '---- dataentry ----
+        test1_page: foo|bar
+        ----';
+
+        /** @var syntax_plugin_data_entry $plugin */
+        $plugin = plugin_load('syntax','data_entry');
+
+        $handler = new Doku_Handler();
+        $data = $plugin->handle($test_entry, 0, 10, $handler);
+        $renderer = new Doku_Renderer_xhtml_mock();
+        $plugin->render('xhtml',$renderer,$data);
+        $result = $renderer->doc;
+        $result = substr($result,0,strpos($result,'</internallink>'));
+        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = unserialize($result);
+
+        $this->assertSame(':foo_bar',$result['id'], 'for type page a title becomes part of the id');
+        $this->assertSame(null,$result['name'], 'page never accepts a title. useheading decides');
+    }
+
+    function test_pageidEntry_noTitle() {
+        $test_entry = '---- dataentry ----
+        test1_pageid: foo
+        ----';
+
+        /** @var syntax_plugin_data_entry $plugin */
+        $plugin = plugin_load('syntax','data_entry');
+
+        $handler = new Doku_Handler();
+        $data = $plugin->handle($test_entry, 0, 10, $handler);
+        $renderer = new Doku_Renderer_xhtml_mock();
+        $plugin->render('xhtml',$renderer,$data);
+        $result = $renderer->doc;
+        $result = substr($result,0,strpos($result,'</internallink>'));
+        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = unserialize($result);
+
+        $this->assertSame('foo',$result['id']);
+        $this->assertSame('foo',$result['name'], 'pageid: use the pageid as title if no title is provided.');
+    }
+
+    function test_pageidEntry_withTitle() {
+        $test_entry = '---- dataentry ----
+        test1_pageid: foo|bar
+        ----';
+
+        /** @var syntax_plugin_data_entry $plugin */
+        $plugin = plugin_load('syntax','data_entry');
+
+        $handler = new Doku_Handler();
+        $data = $plugin->handle($test_entry, 0, 10, $handler);
+        $renderer = new Doku_Renderer_xhtml_mock();
+        $plugin->render('xhtml',$renderer,$data);
+        $result = $renderer->doc;
+        $result = substr($result,0,strpos($result,'</internallink>'));
+        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = unserialize($result);
+
+        $this->assertSame('foo',$result['id'], "wrong id handed to internal link");
+        $this->assertSame('bar',$result['name'], 'pageid: use the provided title');
+    }
+
+    function test_titleEntry_noTitle() {
+        $test_entry = '---- dataentry ----
+        test1_title: foo
+        ----';
+
+        /** @var syntax_plugin_data_entry $plugin */
+        $plugin = plugin_load('syntax','data_entry');
+
+        $handler = new Doku_Handler();
+        $data = $plugin->handle($test_entry, 0, 10, $handler);
+        $renderer = new Doku_Renderer_xhtml_mock();
+        $plugin->render('xhtml',$renderer,$data);
+        $result = $renderer->doc;
+        $result = substr($result,0,strpos($result,'</internallink>'));
+        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = unserialize($result);
+
+        $this->assertSame(':foo',$result['id']);
+        $this->assertSame(null,$result['name'], 'no title should be given to internal link. Let useheading decide.');
+    }
+
 
     function test_titleEntry_withTitle() {
         $test_entry = '---- dataentry ----
-        test_title: link:to:page|TitleOfPage
+        test3_title: link:to:page|TitleOfPage
         ----';
-        $plugin = new syntax_plugin_data_entry();
+
+        /** @var syntax_plugin_data_entry $plugin */
+        $plugin = plugin_load('syntax','data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
-        $renderer = new Doku_Renderer_xhtml();
+        $renderer = new Doku_Renderer_xhtml_mock();
         $plugin->render('xhtml',$renderer,$data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</a>')+4);
-        $result = substr($result,strpos($result,'<a'));
-        $this->assertSame('<a href="/./doku.php?id=link:to:page" class="wikilink2" title="link:to:page" rel="nofollow">TitleOfPage</a>',$result);
+        $result = substr($result,0,strpos($result,'</internallink>'));
+        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = unserialize($result);
+
+        $this->assertSame(':link:to:page',$result['id']);
+        $this->assertSame('TitleOfPage',$result['name'], 'The Title provided should be the title shown.');
     }
 
     function test_editToWiki() {

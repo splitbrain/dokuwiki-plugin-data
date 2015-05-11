@@ -205,6 +205,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
         return $value;
     }
 
+    public function ensureAbsoluteId($id) {
+        if (substr($id,0,1) !== ':') {
+            $id = ':' . $id;
+        }
+        return $id;
+    }
+
     /**
      * Return XHTML formated data, depending on column type
      *
@@ -232,9 +239,15 @@ class helper_plugin_data extends DokuWiki_Plugin {
             switch($type) {
                 case 'page':
                     $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->ensureAbsoluteId($val);
                     $outs[] = $R->internallink($val, null, null, true);
                     break;
                 case 'title':
+                    list($id, $title) = explode('|', $val, 2);
+                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    $id = $this->ensureAbsoluteId($id);
+                    $outs[] = $R->internallink($id, $title, null, true);
+                    break;
                 case 'pageid':
                     list($id, $title) = explode('|', $val, 2);
 
@@ -249,6 +262,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     }
 
                     $id = $this->_addPrePostFixes($column['type'], $id);
+
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
                 case 'nspage':
