@@ -23,7 +23,7 @@ class admin_plugin_data_clean extends DokuWiki_Admin_Plugin {
     /**
      * Constructor. Load helper plugin
      */
-    public function admin_plugin_data_clean(){
+    public function __construct(){
         $this->dthlp = plugin_load('helper', 'data');
     }
 

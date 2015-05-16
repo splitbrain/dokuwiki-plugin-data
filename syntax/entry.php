@@ -20,7 +20,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
     /**
      * Constructor. Load helper plugin
      */
-    function syntax_plugin_data_entry() {
+    function __construct() {
         $this->dthlp = plugin_load('helper', 'data');
         if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.', -1);
     }

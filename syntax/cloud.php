@@ -22,7 +22,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
     /**
      * Constructor. Load helper plugin
      */
-    public function syntax_plugin_data_cloud() {
+    public function __construct() {
         $this->dthlp = plugin_load('helper', 'data');
         if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.', -1);
     }

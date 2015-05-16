@@ -21,7 +21,7 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     /**
      * Constructor. Load helper plugin
      */
-    function action_plugin_data(){
+    function __construct(){
         $this->dthlp = plugin_load('helper', 'data');
     }
 
