@@ -554,7 +554,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $R->cdata($this->getLang('none'));
         $R->tablecell_close();
         $R->tablerow_close();
-        $this->postList($R);
+        $this->postList($data, 0, $R);
         return true;
     }
 
