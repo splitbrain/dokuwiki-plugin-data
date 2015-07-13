@@ -223,10 +223,63 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         return $data;
     }
 
-    protected $before_item = '<tr>';
-    protected $after_item  = '</tr>';
-    protected $before_val  = '<td %s>';
-    protected $after_val   = '</td>';
+    protected function before_item(Doku_Renderer $R)
+    {
+        switch($R->getFormat())
+        {
+            case 'xhtml':
+                $R->doc .= '<tr>';
+                break;
+            case 'odt':
+                $R->tablerow_open();
+                break;
+        }
+        return true;
+    }
+
+    protected function after_item(Doku_Renderer $R)
+    {
+        switch($R->getFormat())
+        {
+            case 'xhtml':
+                $R->doc .= '</tr>';
+                break;
+            case 'odt':
+                $R->tablerow_close();
+                break;
+        }
+        return true;
+    }
+
+    protected function before_val($class, Doku_Renderer $R)
+    {
+        switch($R->getFormat())
+        {
+            case 'xhtml':
+                $R->doc .= sprintf("<td %s>", $class);
+                break;
+            case 'odt':
+                $R->tablecell_open();
+                $R->p_open();
+                break;
+        }
+        return true;
+    }
+
+    protected function after_val(Doku_Renderer $R)
+    {
+        switch($R->getFormat())
+        {
+            case 'xhtml':
+                $R->doc .= '</td>';
+                break;
+            case 'odt':
+                $R->p_close();
+                $R->tablecell_close();
+                break;
+        }
+        return true;
+    }
 
     /**
      * Handles the actual output creation.
@@ -237,7 +290,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @return  boolean               rendered correctly? (however, returned value is not used at the moment)
      */
     function render($format, Doku_Renderer $R, $data) {
-        if($format != 'xhtml') return false;
+        if(($format != 'xhtml') && ($format != 'odt')) return false;
         /** @var Doku_Renderer_xhtml $R */
 
         if(is_null($data)) return false;
@@ -286,28 +339,27 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         //start table/list
-        $R->doc .= $this->preList($clist, $data);
+        $this->preList($clist, $data, $R);
 
         foreach($rows as $rownum => $row) {
             // build data rows
-            $R->doc .= $this->before_item;
+            $this->before_item($R);
 
             if($data['rownumbers']) {
-                $R->doc .= sprintf($this->before_val, 'class="' . $classes[0] . '"');
+                $this->before_val('class="' . $classes[0] . '"', $R);
                 $R->doc .= $rownum + 1;
-                $R->doc .= $this->after_val;
+                $this->after_val($R);
             }
 
             foreach(array_values($row) as $num => $cval) {
                 $num_rn = $num + $offset;
 
-                $R->doc .= sprintf($this->beforeVal($data, $num_rn), 'class="' . $classes[$num_rn] . '"');
+                $this->beforeVal($data, $num_rn, 'class="' . $classes[$num_rn] . '"', $R);
                 $R->doc .= $this->dthlp->_formatData(
                     $data['cols'][$clist[$num]],
                     $cval, $R
                 );
-                $R->doc .= $this->afterVal($data, $num_rn);
-
+                $this->afterVal($data, $num_rn, $R);
                 // clean currency symbols
                 $nval = str_replace('$€₤', '', $cval);
                 $nval = str_replace('/ [A-Z]{0,3}$/', '', $nval);
@@ -323,9 +375,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 }
 
             }
-            $R->doc .= $this->after_item;
+            $this->after_item($R);
         }
-        $R->doc .= $this->postList($data, $cnt);
+        $this->postList($data, $cnt, $R);
 
         return true;
     }
@@ -337,8 +389,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @param int   $colno column number
      * @return string
      */
-    protected function beforeVal(&$data, $colno) {
-        return $this->before_val;
+    protected function beforeVal(&$data, $colno, $class, Doku_Renderer $R) {
+        return $this->before_val($class, $R);
     }
 
     /**
@@ -348,8 +400,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @param int   $colno
      * @return string
      */
-    protected function afterVal(&$data, $colno) {
-        return $this->after_val;
+    protected function afterVal(&$data, $colno, Doku_Renderer $R) {
+        return $this->after_val($R);
     }
 
     /**
@@ -359,7 +411,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @param array $data  instruction by handler
      * @return string html of table header
      */
-    function preList($clist, $data) {
+    function preList($clist, $data, Doku_Renderer $R) {
         global $ID;
         global $conf;
 
@@ -459,7 +511,33 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $text .= '</tr>';
         }
 
-        return $text;
+        switch($R->getFormat())
+        {
+            case 'xhtml':
+                $R->doc .= $text;
+                break;
+            case 'odt':
+                $R->p_close();
+                $ncols = count($data['headers']);
+                if($data['rownumbers'])
+                    $ncols += 1;
+                $R->table_open($ncols);
+                $R->tablerow_open();
+                if($data['rownumbers'])
+                {
+                    $R->tableheader_open();
+                    $R->tableheader_close();
+                }
+                foreach($data['headers'] as $num => $head)
+                {
+                    $R->tableheader_open();
+                    $R->doc .= $head;
+                    $R->tableheader_close();
+                }
+                $R->tablerow_close();
+                break;
+        }
+        return true;
     }
 
     /**
@@ -469,14 +547,15 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @param array         $clist keys of the columns
      * @param Doku_Renderer $R
      */
-    function nullList($data, $clist, $R) {
-        $R->doc .= $this->preList($clist, $data);
+    function nullList($data, $clist, Doku_Renderer $R) {
+        $this->preList($clist, $data, $R);
         $R->tablerow_open();
         $R->tablecell_open(count($clist), 'center');
         $R->cdata($this->getLang('none'));
         $R->tablecell_close();
         $R->tablerow_close();
-        $R->doc .= '</table></div>';
+        $this->postList($R);
+        return true;
     }
 
     /**
@@ -486,7 +565,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * @param int   $rowcnt number of rows
      * @return string html of table footer
      */
-    function postList($data, $rowcnt) {
+    function postList($data, $rowcnt, Doku_Renderer $R) {
         global $ID;
         $text = '';
         // if summarize was set, add sums
@@ -550,7 +629,17 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         }
 
         $text .= '</table></div>';
-        return $text;
+
+        switch($R->getFormat())
+        {
+            case 'xhtml':
+                $R->doc .= $text;
+                break;
+            case 'odt':
+                $R->table_close();
+                break;
+        }
+        return true;
     }
 
     /**

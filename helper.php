@@ -220,7 +220,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * @param Doku_Renderer_xhtml $R
      * @return string
      */
-    function _formatData($column, $value, Doku_Renderer_xhtml $R) {
+    function _formatData($column, $value, Doku_Renderer $R) {
         global $conf;
         $vals = explode("\n", $value);
         $outs = array();
@@ -274,16 +274,25 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 case 'mail':
                     list($id, $title) = explode(' ', $val, 2);
                     $id = $this->_addPrePostFixes($column['type'], $id);
-                    $id = obfuscate(hsc($id));
+                    if($R->getFormat() == 'xhtml') // Don't obfuscate for ODT export
+                        $id = obfuscate(hsc($id));
                     if(!$title) {
                         $title = $id;
                     } else {
                         $title = hsc($title);
                     }
-                    if($conf['mailguard'] == 'visible') {
+                    if(($conf['mailguard'] == 'visible') && ($R->getFormat() == 'xhtml')) {
                         $id = rawurlencode($id);
                     }
-                    $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $id . '">' . $title . '</a>';
+                    switch($R->getFormat())
+                    {
+                        case 'xhtml':
+                            $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $id . '">' . $title . '</a>';
+                            break;
+                        case 'odt':
+                            $R->emaillink($id, $title);
+                            break;
+                    }
                     break;
                 case 'url':
                     $val = $this->_addPrePostFixes($column['type'], $val);
