@@ -274,29 +274,16 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 case 'mail':
                     list($id, $title) = explode(' ', $val, 2);
                     $id = $this->_addPrePostFixes($column['type'], $id);
-                    if($R->getFormat() == 'xhtml') // Don't obfuscate for ODT export
-                        $id = obfuscate(hsc($id));
                     if(!$title) {
                         $title = $id;
                     } else {
                         $title = hsc($title);
                     }
-                    if(($conf['mailguard'] == 'visible') && ($R->getFormat() == 'xhtml')) {
-                        $id = rawurlencode($id);
-                    }
-                    switch($R->getFormat())
-                    {
-                        case 'xhtml':
-                            $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $id . '">' . $title . '</a>';
-                            break;
-                        case 'odt':
-                            $R->emaillink($id, $title);
-                            break;
-                    }
+                    $outs[] = $R->emaillink($id, $title);
                     break;
                 case 'url':
                     $val = $this->_addPrePostFixes($column['type'], $val);
-                    $outs[] = $this->external_link($val, false, 'urlextern');
+                    $outs[] = $R->externallink($val);
                     break;
                 case 'tag':
                     // per default use keyname as target page, but prefix on aliases
@@ -306,9 +293,12 @@ class helper_plugin_data extends DokuWiki_Plugin {
                         $target = $this->_addPrePostFixes($column['type'], '');
                     }
 
-                    $outs[] = '<a href="' . wl(str_replace('/', ':', cleanID($target)), $this->_getTagUrlparam($column, $val))
-                        . '" title="' . sprintf($this->getLang('tagfilter'), hsc($val))
-                        . '" class="wikilink1">' . hsc($val) . '</a>';
+                    $params = buildURLparams($this->_getTagUrlparam($column, $val));
+                    $url = str_replace('/', ':', cleanID($target)) . '?' . $params;
+                    // FIXME: The title is lost when moving to $R->internallink,
+                    //        but this syntax is required to support different renderers.
+                    // $title = sprintf($this->getLang('tagfilter'), hsc($val));
+                    $R->internallink($url, hsc($val));
                     break;
                 case 'timestamp':
                     $outs[] = dformat($val);
@@ -335,7 +325,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     }
                     $instructions = array_slice($allinstructions, $wraps, -$wraps);
 
-                    $outs[] = p_render('xhtml', $instructions, $byref_ignore);
+                    $outs[] = p_render($R->getFormat(), $instructions, $byref_ignore);
                     $ID = $oldid;
                     break;
                 default:
