@@ -279,11 +279,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     } else {
                         $title = hsc($title);
                     }
-                    $outs[] = $R->emaillink($id, $title);
+                    $outs[] = $R->emaillink($id, $title, true);
                     break;
                 case 'url':
                     $val = $this->_addPrePostFixes($column['type'], $val);
-                    $outs[] = $R->externallink($val);
+                    $outs[] = $R->externallink($val, null, true);
                     break;
                 case 'tag':
                     // per default use keyname as target page, but prefix on aliases
@@ -298,7 +298,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     // FIXME: The title is lost when moving to $R->internallink,
                     //        but this syntax is required to support different renderers.
                     // $title = sprintf($this->getLang('tagfilter'), hsc($val));
-                    $R->internallink($url, hsc($val));
+                    $outs[] = $R->internallink($url, hsc($val), true);
                     break;
                 case 'timestamp':
                     $outs[] = dformat($val);
