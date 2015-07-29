@@ -213,11 +213,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
-     * Return XHTML formated data, depending on column type
+     * Return formated data, depending on column type
      *
      * @param array               $column
      * @param string              $value
-     * @param Doku_Renderer_xhtml $R
+     * @param Doku_Renderer       $R
      * @return string
      */
     function _formatData($column, $value, Doku_Renderer $R) {

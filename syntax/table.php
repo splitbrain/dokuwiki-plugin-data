@@ -223,6 +223,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         return $data;
     }
 
+    /**
+     * Before item in list
+     *
+     * @param Doku_Renderer $R
+     */
     protected function before_item(Doku_Renderer $R)
     {
         switch($R->getFormat())
@@ -234,9 +239,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->tablerow_open();
                 break;
         }
-        return true;
     }
 
+    /**
+     * After item in list
+     *
+     * @param Doku_Renderer $R
+     */
     protected function after_item(Doku_Renderer $R)
     {
         switch($R->getFormat())
@@ -248,9 +257,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->tablerow_close();
                 break;
         }
-        return true;
     }
 
+    /**
+     * Before value in listitem
+     *
+     * @param string        $class The CSS class
+     * @param Doku_Renderer $R
+     */
     protected function before_val($class, Doku_Renderer $R)
     {
         switch($R->getFormat())
@@ -263,9 +277,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->p_open();
                 break;
         }
-        return true;
     }
 
+    /**
+     * After value in listitem
+     *
+     * @param Doku_Renderer $R
+     */
     protected function after_val(Doku_Renderer $R)
     {
         switch($R->getFormat())
@@ -278,7 +296,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->tablecell_close();
                 break;
         }
-        return true;
     }
 
     /**
@@ -385,31 +402,32 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     /**
      * Before value in table cell
      *
-     * @param array $data  instructions by handler
-     * @param int   $colno column number
-     * @return string
+     * @param array         $data  instructions by handler
+     * @param int           $colno column number
+     * @param string        $class the xhtml class
+     * @param Doku_Renderer $R     the current DokuWiki renderer
      */
     protected function beforeVal(&$data, $colno, $class, Doku_Renderer $R) {
-        return $this->before_val($class, $R);
+        $this->before_val($class, $R);
     }
 
     /**
      * After value in table cell
      *
-     * @param array $data
-     * @param int   $colno
-     * @return string
+     * @param array         $data
+     * @param int           $colno
+     * @param Doku_Renderer $R
      */
     protected function afterVal(&$data, $colno, Doku_Renderer $R) {
-        return $this->after_val($R);
+        $this->after_val($R);
     }
 
     /**
      * Create table header
      *
-     * @param array $clist keys of the columns
-     * @param array $data  instruction by handler
-     * @return string html of table header
+     * @param array         $clist keys of the columns
+     * @param array         $data  instruction by handler
+     * @param Doku_Renderer $R     the current DokuWiki renderer
      */
     function preList($clist, $data, Doku_Renderer $R) {
         global $ID;
@@ -537,7 +555,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->tablerow_close();
                 break;
         }
-        return true;
     }
 
     /**
@@ -555,15 +572,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $R->tablecell_close();
         $R->tablerow_close();
         $this->postList($data, 0, $R);
-        return true;
     }
 
     /**
      * Create table footer
      *
-     * @param array $data   instruction by handler()
-     * @param int   $rowcnt number of rows
-     * @return string html of table footer
+     * @param array         $data   instruction by handler()
+     * @param int           $rowcnt number of rows
+     * @param Doku_Renderer $R      the current DokuWiki renderer
      */
     function postList($data, $rowcnt, Doku_Renderer $R) {
         global $ID;
@@ -639,7 +655,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->table_close();
                 break;
         }
-        return true;
     }
 
     /**

@@ -20,6 +20,11 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
         $this->Lexer->addSpecialPattern('----+ *datalist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_list');
     }
 
+    /**
+     * Before item in list
+     *
+     * @param Doku_Renderer $R
+     */
     protected function before_item(Doku_Renderer $R)
     {
         switch($R->getFormat())
@@ -32,9 +37,13 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
                 $R->listcontent_open();
                 break;
         }
-        return true;
     }
 
+    /**
+     * After item in list
+     *
+     * @param Doku_Renderer $R
+     */
     protected function after_item(Doku_Renderer $R)
     {
         switch($R->getFormat())
@@ -47,14 +56,24 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
                 $R->listitem_close();
                 break;
         }
-        return true;
     }
 
+    /**
+     * Before value in listitem
+     *
+     * @param string        $class The CSS class
+     * @param Doku_Renderer $R
+     */
     protected function before_val($class, Doku_Renderer $R)
     {
-        return true;
+        return;
     }
 
+    /**
+     * After value in listitem
+     *
+     * @param Doku_Renderer $R
+     */
     protected function after_val(Doku_Renderer $R)
     {
         switch($R->getFormat())
@@ -66,15 +85,15 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
                 $R->doc .= ' ';
                 break;
         }
-        return true;
     }
 
     /**
      * Before value in listitem
      *
-     * @param array $data  instructions by handler
-     * @param int   $colno column number
-     * @return string
+     * @param array         $data  instructions by handler
+     * @param int           $colno column number
+     * @param string        $class the xhtml class
+     * @param Doku_Renderer $R     the current DokuWiki renderer
      */
     protected function beforeVal(&$data, $colno, $class, Doku_Renderer $R) {
         if($data['sepbyheaders'] AND $colno === 0) {
@@ -87,9 +106,9 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
     /**
      * After value in listitem
      *
-     * @param array $data
-     * @param int   $colno
-     * @return string
+     * @param array         $data
+     * @param int           $colno
+     * @param Doku_Renderer $R
      */
     protected function afterVal(&$data, $colno, Doku_Renderer $R) {
         if($data['sepbyheaders']) {
@@ -102,9 +121,9 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
     /**
      * Create list header
      *
-     * @param array $clist keys of the columns
-     * @param array $data  instruction by handler
-     * @return string html of table header
+     * @param array         $clist keys of the columns
+     * @param array         $data  instruction by handler
+     * @param Doku_Renderer $R     the current DokuWiki renderer
      */
     function preList($clist, $data, Doku_Renderer $R) {
         switch($R->getFormat())
@@ -116,7 +135,6 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
                 $R->listu_open();
                 break;
         }
-        return true;
     }
 
     /**
@@ -145,9 +163,9 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
     /**
      * Create list footer
      *
-     * @param array $data   instruction by handler()
-     * @param int   $rowcnt number of rows
-     * @return string html of table footer
+     * @param array         $data   instruction by handler()
+     * @param int           $rowcnt number of rows
+     * @param Doku_Renderer $R      the current DokuWiki renderer
      */
     function postList($data, $rowcnt, Doku_Renderer $R) {
         switch($R->getFormat())
@@ -159,7 +177,6 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
                 $R->listu_close();
                 break;
         }
-        return true;
     }
 
 }
