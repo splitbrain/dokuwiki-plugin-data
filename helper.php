@@ -226,7 +226,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
         if(isset($dwVersion['date']))
         {
             preg_match('/(\d+)-(\d+)-(\d+)/',$dwVersion['date'],$dwDate);
-            if(mktime(0, 0, 0, $dwDate[2], $dwDate[3], $dwDate[1]) > mktime(0, 0, 0, 07, 19, 2015))
+            if(mktime(0, 0, 0, $dwDate[2], $dwDate[3], $dwDate[1]) > mktime(0, 0, 0, 7, 30, 2015))
             {
                 return $this->_formatDataNew($column, $value, $R);
             }

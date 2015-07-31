@@ -139,7 +139,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         if(isset($dwVersion['date']))
         {
             preg_match('/(\d+)-(\d+)-(\d+)/',$dwVersion['date'],$dwDate);
-            if(mktime(0, 0, 0, $dwDate[2], $dwDate[3], $dwDate[1]) > mktime(0, 0, 0, 07, 19, 2015))
+            if(mktime(0, 0, 0, $dwDate[2], $dwDate[3], $dwDate[1]) > mktime(0, 0, 0, 7, 30, 2015))
             {
                 $matchString = '<a href="http://www.dokuwiki.org" class="urlextern" title="http://www.dokuwiki.org"  rel="nofollow">http://www.dokuwiki.org</a>';
             }
