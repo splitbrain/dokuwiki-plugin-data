@@ -297,6 +297,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     list($id, $title) = explode(' ', $val, 2);
                     $id = $this->_addPrePostFixes($column['type'], $id);
                     $id = obfuscate(hsc($id));
+                    $titleId = $id;
                     if(!$title) {
                         $title = $id;
                     } else {
@@ -305,11 +306,21 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     if($conf['mailguard'] == 'visible') {
                         $id = rawurlencode($id);
                     }
-                    $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $id . '">' . $title . '</a>';
+                    $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $titleId . '">' . $title . '</a>';
                     break;
                 case 'url':
                     $val = $this->_addPrePostFixes($column['type'], $val);
-                    $outs[] = $this->external_link($val, false, 'urlextern');
+                    $url = $val;
+                    $schemes = getSchemes();
+                    list($scheme) = explode('://', $url);
+                    if(!in_array($scheme, $schemes)) $url = '';
+
+                    // is there still an URL?
+                    if(!$url) {
+                        $outs[] = $val;
+                    } else {
+                        $outs[] = $this->external_link($val, false, 'urlextern');
+                    }
                     break;
                 case 'tag':
                     // per default use keyname as target page, but prefix on aliases
@@ -318,10 +329,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     } else {
                         $target = $this->_addPrePostFixes($column['type'], '');
                     }
-
-                    $outs[] = '<a href="' . wl(str_replace('/', ':', cleanID($target)), $this->_getTagUrlparam($column, $val))
-                        . '" title="' . sprintf($this->getLang('tagfilter'), hsc($val))
-                        . '" class="wikilink1">' . hsc($val) . '</a>';
+                    $params = buildURLparams($this->_getTagUrlparam($column, $val));
+                    $url = str_replace('/', ':', cleanID($target)) . '?' . $params;
+                    $outs[] = $R->internallink($url, hsc($val), true);
                     break;
                 case 'timestamp':
                     $outs[] = dformat($val);
