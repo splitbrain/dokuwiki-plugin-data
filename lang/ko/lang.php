@@ -27,6 +27,7 @@ $lang['submit']                = '별칭 저장';
 $lang['dataentry']             = '데이터 항목';
 $lang['multi']                 = '다중입니까?';
 $lang['value']                 = '값';
+$lang['comment']               = '댓글';
 $lang['none']                  = '아무것도 찾을 수 없습니다';
 $lang['tablefilteredby']       = '%s별로 필터됨';
 $lang['tableresetfilter']      = '모두 보기 (필터/정렬 제거)';
