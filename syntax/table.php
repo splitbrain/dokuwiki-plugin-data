@@ -53,8 +53,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * Connect pattern to lexer
      */
     function connectTo($mode) {
-        $this->Lexer->addSpecialPattern('----+ *datatable(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_table');
         $this->Lexer->addSpecialPattern('< *datatable(?: [ a-zA-Z0-9_]*)?>\n.*?\n</ *datatable *>', $mode, 'plugin_data_table');
+        $this->Lexer->addSpecialPattern('----+ *datatable(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_table');
     }
 
     /**
@@ -311,7 +311,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 $R->doc .= $this->afterVal($data, $num_rn);
 
                 // clean currency symbols
-                $nval = str_replace('$â¬â¤', '', $cval);
+                $nval = str_replace('$€₤', '', $cval);
                 $nval = str_replace('/ [A-Z]{0,3}$/', '', $nval);
                 $nval = str_replace(',', '.', $nval);
                 $nval = trim($nval);
@@ -501,7 +501,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             for($i = 0; $i < $len; $i++) {
                 $text .= '<td class="' . $data['align'][$i] . 'align">';
                 if(!empty($this->sums[$i])) {
-                    $text .= 'â ' . $this->sums[$i];
+                    $text .= '∑ ' . $this->sums[$i];
                 } else {
                     $text .= '&nbsp;';
                 }
