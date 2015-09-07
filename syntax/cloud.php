@@ -53,6 +53,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
      */
     public function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_cloud');
+        $this->Lexer->addSpecialPattern('< *datacloud(?: [ a-zA-Z0-9_]*)?>\n.*?\n</ *datacloud *>', $mode, 'plugin_data_cloud');
     }
 
     /**
