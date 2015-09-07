@@ -18,6 +18,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table {
      */
     function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *datarelated(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_related');
+        $this->Lexer->addSpecialPattern('< *datarelated(?: [ a-zA-Z0-9_]*)?>\n.*?\n</ *datarelated *>', $mode, 'plugin_data_related');
     }
 
     /**
