@@ -145,7 +145,8 @@ div.dokuwiki div.editbutton_plugin_data {
     float: none;
 }
 
-div.dokuwiki div.editbutton_plugin_data form input.button {
+div.dokuwiki div.editbutton_plugin_data form input.button,
+div.dokuwiki div.editbutton_plugin_data form button {
     float: none;
     margin-left: 1.6em;
     padding: 0 0.3em;
