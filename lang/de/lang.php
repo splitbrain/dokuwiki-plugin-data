@@ -4,6 +4,7 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * 
  * @author Andreas Gohr <andi@splitbrain.org>
+ * @author Dana <dannax3@gmx.de>
  */
 $lang['menu_alias']            = 'Data Plugin: Feld-Aliasse';
 $lang['menu_clean']            = 'Data Plugin: Datenbank aufräumen';
@@ -27,6 +28,7 @@ $lang['submit']                = 'Aliasse speichern';
 $lang['dataentry']             = 'Data-Entry';
 $lang['multi']                 = 'Multi?';
 $lang['value']                 = 'Wert';
+$lang['comment']               = 'Kommentar';
 $lang['none']                  = 'Nichts gefunden';
 $lang['tablefilteredby']       = 'Gefiltert nach %s';
 $lang['tableresetfilter']      = 'Zeige alle (Filter/Sortierung entfernen)';
