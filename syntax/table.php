@@ -24,7 +24,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     /**
      * Constructor. Load helper plugin
      */
-    function syntax_plugin_data_table() {
+    function __construct() {
         $this->dthlp = plugin_load('helper', 'data');
     }
 
