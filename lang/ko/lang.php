@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Myeongjin <aranet100@gmail.com>
  */
 $lang['menu_alias']            = '데이터 플러그인: 필드 별칭';
@@ -12,7 +12,7 @@ $lang['submit_clean']          = '데이터베이스 정리!';
 $lang['sort']                  = '이 열을 기준으로 정렬';
 $lang['next']                  = '다음 문서';
 $lang['prev']                  = '이전 문서';
-$lang['tagfilter']             = '\'%s\'(와)과 일치하는 문서 보기';
+$lang['tagfilter']             = '\'%s\'와(과) 일치하는 문서 보기';
 $lang['related']               = '관련된 문서:';
 $lang['page']                  = '문서';
 $lang['title']                 = '제목';
