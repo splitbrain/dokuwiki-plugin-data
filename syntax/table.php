@@ -195,6 +195,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 case 'sepbyheaders':
                     $data['sepbyheaders'] = (bool) $line[1];
                     break;
+                case 'classes':
+                    $data['classes'] .= ' '.$line[1] ;
+                    break;
                 default:
                     msg("data plugin: unknown option '" . hsc($line[0]) . "'", -1);
             }
