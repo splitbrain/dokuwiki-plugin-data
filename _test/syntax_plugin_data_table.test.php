@@ -18,7 +18,7 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
             . 'headers : Details, "Assigned Employees \#no", stuff outside quotes """Deadline, ",  Personal website, $$$'."\n"
             . "max     : 10\n"
             . "filter  : type=web development\n"
-            . "sort    : ^volume\n"
+            . "sort    : ^(num)volume,%pageid%\n"
             . "dynfilters: 1\n"
             . "summarize : 1\n"
             . "align   : c\n"
@@ -112,7 +112,8 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
 
             ),
             'sort' => array(
-                'volume' => array('volume', 'DESC', '')
+                'volume' => array('volume', 'DESC', 'numeric'),
+                '%pageid%' => array('%pageid%', 'ASC', '')
             ),
             'align' => array(
                 '0' => 'center'
@@ -130,7 +131,7 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
                  LEFT JOIN data AS T1 ON T1.pid = W1.pid AND T1.key = 'employee' LEFT JOIN data AS T2 ON T2.pid = W1.pid AND T2.key = 'deadline' LEFT JOIN data AS T3 ON T3.pid = W1.pid AND T3.key = 'website' LEFT JOIN data AS T4 ON T4.pid = W1.pid AND T4.key = 'volume'
                 LEFT JOIN pages ON W1.pid=pages.pid
                 GROUP BY W1.pid
-                ORDER BY T4.value DESC LIMIT 11",
+                ORDER BY CAST(T4.value AS NUMERIC) DESC, pages.page ASC LIMIT 11",
             'cur_param' => array()
 
 );
