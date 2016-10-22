@@ -632,7 +632,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->quote_string($col);
                     }
 
-                    $sortcolumn = $tables[$col] . '.value ';
+                    $sortcolumn = $tables[$col] . '.value';
                 }
                 if($type == 'numeric') {
                     $sortcolumn = 'CAST(' . $sortcolumn . ' AS NUMERIC)';

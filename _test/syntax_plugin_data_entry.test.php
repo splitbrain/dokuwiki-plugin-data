@@ -318,14 +318,15 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals($cols, $result['cols'], 'Cols array corrupted');
     }
 
-    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type) {
+    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type, $datatype = '') {
         return array(
             'colname' => $name,
             'multi' => $multi,
             'key' => $key,
             'origkey' => $origkey,
             'title' => $title,
-            'type' => $type
+            'type' => $type,
+            'datatype' => $datatype
         );
     }
 

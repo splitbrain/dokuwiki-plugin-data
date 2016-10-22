@@ -36,10 +36,10 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
         $data = array(
             'classes' => 'employees',
             'limit' => 10,
-            'dynfilters' => 1,
-            'summarize' => 1,
-            'rownumbers' => 1,
-            'sepbyheaders' => '',
+            'dynfilters' => true,
+            'summarize' => true,
+            'rownumbers' => true,
+            'sepbyheaders' => false,
             'headers' => array(
                 '0' => 'Details',
                 '1' => 'Assigned Employees #no',
@@ -71,6 +71,7 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
                     'origkey' => '%pageid%',
                     'title' => 'Title',
                     'type' => 'page',
+                    'datatype' => ''
                 ),
                 'employee' => array(
                     'colname' => 'employees',
@@ -78,7 +79,8 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
                     'key' => 'employee',
                     'origkey' => 'employee',
                     'title' => 'employee',
-                    'type' => ''
+                    'type' => '',
+                    'datatype' => ''
                 ),
                 'deadline' => array(
                     'colname' => 'deadline_dt',
@@ -86,7 +88,8 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
                     'key' => 'deadline',
                     'origkey' => 'deadline',
                     'title' => 'deadline',
-                    'type' => 'dt'
+                    'type' => 'dt',
+                    'datatype' => ''
                 ),
                 'website' => array(
                     'colname' => 'website_url',
@@ -94,7 +97,8 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
                     'key' => 'website',
                     'origkey' => 'website',
                     'title' => 'website',
-                    'type' => 'url'
+                    'type' => 'url',
+                    'datatype' => ''
                 ),
                 'volume' => array(
                     'colname' => 'volume',
@@ -102,13 +106,13 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
                     'key' => 'volume',
                     'origkey' => 'volume',
                     'title' => 'volume',
-                    'type' => ''
+                    'type' => '',
+                    'datatype' => ''
                 ),
 
             ),
             'sort' => array(
-                '0' => 'volume',
-                '1' => 'DESC'
+                'volume' => array('volume', 'DESC', '')
             ),
             'align' => array(
                 '0' => 'center'
