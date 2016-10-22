@@ -369,15 +369,16 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * @param string $col column name
      * @returns array with key, type, ismulti, title, opt
      */
-    function _column($col) {
-        preg_match('/^([^_]*)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
+    function _column($col){
+        preg_match('/^([^_]*)(\(num\))?(?:_(.*))?((?<!s)|s)$/', $col, $matches);
         $column = array(
             'colname' => $col,
-            'multi'   => ($matches[3] === 's'),
+            'multi'   => ($matches[4] === 's'),
             'key'     => utf8_strtolower($matches[1]),
             'origkey' => $matches[1], //similar to key, but stores upper case
             'title'   => $matches[1],
-            'type'    => utf8_strtolower($matches[2])
+            'type'    => utf8_strtolower($matches[3]),
+            'datatype'=> $matches[2] == '(num)' ? 'numeric' : ''
         );
 
         // fix title for special columns
