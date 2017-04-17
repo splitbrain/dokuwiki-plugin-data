@@ -19,6 +19,7 @@ class syntax_plugin_data_taglist extends syntax_plugin_data_cloud {
      */
     function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *datataglist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_taglist');
+        $this->Lexer->addSpecialPattern('< *datataglist(?: [ a-zA-Z0-9_]*)?>\n.*?\n</ *datataglist *>', $mode, 'plugin_data_taglist');
     }
 
     protected $before_item = '<ul class="dataplugin_taglist %s">';

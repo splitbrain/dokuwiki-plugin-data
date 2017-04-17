@@ -53,6 +53,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
      * Connect pattern to lexer
      */
     function connectTo($mode) {
+        $this->Lexer->addSpecialPattern('< *datatable(?: [ a-zA-Z0-9_]*)?>\n.*?\n</ *datatable *>', $mode, 'plugin_data_table');
         $this->Lexer->addSpecialPattern('----+ *datatable(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_table');
     }
 
@@ -75,8 +76,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
         $lines = explode("\n", $match);
         array_pop($lines);
         $class = array_shift($lines);
-        $class = preg_replace('/^----+ *data[a-z]+/', '', $class);
-        $class = trim($class, '- ');
+        // Also remove <> from alternate syntax.
+        $class = preg_replace('/^(----+|<) *data[a-z]+/', '', $class);
+        $class = trim($class, '<- >');
 
         $data = array(
             'classes'       => $class,

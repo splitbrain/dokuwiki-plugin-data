@@ -51,6 +51,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      */
     function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *dataentry(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_entry');
+        $this->Lexer->addSpecialPattern('< *dataentry(?: [ a-zA-Z0-9_]*)?>\n.*?\n</ *dataentry *>', $mode, 'plugin_data_entry');
     }
 
     /**
@@ -70,7 +71,16 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         array_pop($lines);
         $class = array_shift($lines);
         $class = str_replace('dataentry', '', $class);
-        $class = trim($class, '- ');
+        
+        // Determine the syntax type (---- or <>)
+        if($class[0] == '<') {
+	    $altsyntax = true;
+        } else {
+	    $altsyntax = false;
+        }
+        
+        // Now we can trim useless characters, including < > from the alternate syntax.
+        $class = trim($class, '<- >');
 
         // parse info
         $data = array();
@@ -110,7 +120,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         }
         return array(
             'data' => $data, 'cols' => $columns, 'classes' => $class,
-            'pos' => $pos, 'len' => strlen($match)
+            'pos' => $pos, 'len' => strlen($match), 'altsyntax' => $altsyntax
         ); // not utf8_strlen
     }
 
@@ -316,6 +326,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $data['data'][''] = '';
             $data['cols'][''] = array('type' => '', 'multi' => false);
         }
+        
+        // Add hidden alternate syntax selector.
+        $renderer->form->addHidden('data_edit[altsyntax]', $data['altsyntax']);
 
         $renderer->form->addElement("<table class=\"$class\">");
 
@@ -434,6 +447,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * @return string
      */
     public static function editToWiki($data) {
+	$altsyntax = $data['altsyntax'];
         $nudata = array();
 
         $len = 0; // we check the maximum lenght for nice alignment later
@@ -460,7 +474,11 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $len = max($len, utf8_strlen($nudata[count($nudata) - 1][0]));
         }
 
-        $ret = '---- dataentry ' . trim($data['classes']) . ' ----' . DOKU_LF;
+        if($altsyntax) {
+	    $ret = '<dataentry ' . trim($data['classes']) . ' >' . DOKU_LF . DOKU_LF;
+        } else {
+	    $ret = '---- dataentry ' . trim($data['classes']) . ' ----' . DOKU_LF;
+        }
         foreach($nudata as $field) {
             $ret .= $field[0] . str_repeat(' ', $len + 1 - utf8_strlen($field[0])) . ': ';
             $ret .= $field[1];
@@ -468,8 +486,15 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $ret .= ' # ' . $field[2];
             }
             $ret .= DOKU_LF;
+            if($altsyntax) {
+		$ret .= DOKU_LF; // add an extra line break to force new paragraph in WYSIWYG editors.
+            }
         }
-        $ret .= "----\n";
+        if($altsyntax) {
+	    $ret .= "</dataentry>" . DOKU_LF . DOKU_LF;
+        } else {
+	    $ret .= "----" . DOKU_LF;
+        }
         return $ret;
     }
 }

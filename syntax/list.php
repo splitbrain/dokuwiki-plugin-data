@@ -18,6 +18,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table {
      */
     function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *datalist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_list');
+        $this->Lexer->addSpecialPattern('< *datalist(?: [ a-zA-Z0-9_]*)?>\n.*?\n</ *datalist *>', $mode, 'plugin_data_list');
     }
 
     protected $before_item = '<li><div class="li">';
