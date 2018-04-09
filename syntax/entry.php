@@ -155,9 +155,13 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         global $ID;
         $ret = '';
 
-        if(method_exists($R, 'startSectionEdit')) {
-            $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
+        $sectionEditData = ['target' => 'plugin_data'];
+        if (!defined('SEC_EDIT_PATTERN')) {
+            // backwards-compatibility for Frusterick Manners (2017-02-19)
+            $sectionEditData = 'plugin_data';
         }
+        $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], $sectionEditData);
+
         $ret .= '<div class="inline dataplugin_entry ' . $data['classes'] . '"><dl>';
         $class_names = array();
         foreach($data['data'] as $key => $val) {
@@ -196,9 +200,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         }
         $ret .= '</dl></div>';
         $R->doc .= $ret;
-        if(method_exists($R, 'finishSectionEdit')) {
-            $R->finishSectionEdit($data['len'] + $data['pos']);
-        }
+        $R->finishSectionEdit($data['len'] + $data['pos']);
     }
 
     /**
