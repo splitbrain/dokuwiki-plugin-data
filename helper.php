@@ -170,7 +170,11 @@ class helper_plugin_data extends DokuWiki_Plugin {
                 $post = $type['postfix'];
             }
         }
-        $val = $pre . $val . $post;
+		if($val != "")
+		{
+			$val = $pre . $val . $post;
+		}
+
         $val = $this->replacePlaceholders($val);
         return $val;
     }
@@ -311,7 +315,14 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
                     //use ID from first value of the multivalued line
                     if($data == null) {
-                        $data = $ID;
+                        
+						//but only if is multivalued line
+						if($val!=$ID."|"){ 
+							$data = $ID;
+						}
+						else { //line is simply empty
+							$data = "";
+						}
                         $ID = $storedID;
                     } else {
                         $storedID = $ID;
