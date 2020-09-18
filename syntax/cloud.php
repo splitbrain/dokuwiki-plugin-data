@@ -4,9 +4,6 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
-// must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
-require_once(dirname(__FILE__) . '/table.php');
 
 /**
  * Class syntax_plugin_data_cloud
@@ -24,7 +21,9 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
      */
     public function __construct() {
         $this->dthlp = plugin_load('helper', 'data');
-        if(!$this->dthlp) msg('Loading the data helper failed. Make sure the data plugin is installed.', -1);
+        if(!$this->dthlp) {
+            msg('Loading the data helper failed. Make sure the data plugin is installed.', -1);
+        }
     }
 
     /**
@@ -50,6 +49,8 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
     /**
      * Connect pattern to lexer
+     *
+     * @param $mode
      */
     public function connectTo($mode) {
         $this->Lexer->addSpecialPattern('----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_cloud');
@@ -128,6 +129,11 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table {
 
     /**
      * Create output or save the data
+     *
+     * @param $format
+     * @param Doku_Renderer $renderer
+     * @param $data
+     * @return bool
      */
     public function render($format, Doku_Renderer $renderer, $data) {
         global $ID;
