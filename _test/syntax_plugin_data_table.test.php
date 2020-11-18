@@ -1,7 +1,5 @@
 <?php
 
-require_once DOKU_INC . 'inc/parser/xhtml.php';
-
 /**
  * @group plugin_data
  * @group plugins
@@ -10,10 +8,7 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
-    private $exampleEntry;
-
-    function __construct() {
-        $this->exampleEntry = "---- datatable employees----\n"
+    private $exampleEntry = "---- datatable employees----\n"
             . "cols    : %pageid%, employees, deadline_dt, website_url, volume\n"
             . 'headers : Details, "Assigned Employees \#no", stuff outside quotes """Deadline, ",  Personal website, $$$'."\n"
             . "max     : 10\n"
@@ -25,7 +20,6 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
             . "rownumbers: 1\n"
             . "widths  : 50px, 20em, - , 10%\n"
             . "----";
-    }
 
     function testHandle() {
         $plugin = new syntax_plugin_data_table();
