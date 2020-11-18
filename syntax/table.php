@@ -700,7 +700,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
     function updateSQLwithQuery(&$data) {
         if($this->hasRequestFilter()) {
             if(isset($_REQUEST['datasrt'])) {
-                if($_REQUEST['datasrt']{0} == '^') {
+                if($_REQUEST['datasrt'][0] == '^') {
                     $data['sort'] = array(substr($_REQUEST['datasrt'], 1), 'DESC');
                 } else {
                     $data['sort'] = array($_REQUEST['datasrt'], 'ASC');
@@ -744,14 +744,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
         $len = strlen($line);
         for($i = 0; $i < $len; $i++) {
-            if($line{$i} == '"') {
+            if($line[$i] == '"') {
                 if($inQuote) {
                     if($escapedQuote) {
                         $value .= '"';
                         $escapedQuote = false;
                         continue;
                     }
-                    if($line{$i + 1} == '"') {
+                    if($line[$i + 1] == '"') {
                         $escapedQuote = true;
                         continue;
                     }
@@ -765,7 +765,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                     $value = ''; //don't store stuff before the opening quote
                     continue;
                 }
-            } else if($line{$i} == ',') {
+            } else if($line[$i] == ',') {
                 if($inQuote) {
                     $value .= ',';
                     continue;
@@ -779,7 +779,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                 }
             }
 
-            $value .= $line{$i};
+            $value .= $line[$i];
         }
         if(strlen($value) > 0) {
             array_push($values, trim($value));
