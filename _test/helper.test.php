@@ -133,6 +133,18 @@ class helper_plugin_data_test extends DokuWikiTest {
         $helper = new helper_plugin_data();
         $renderer = new data_dummy_renderer();
 
+        $dwVersion = getVersionData();
+
+        $matchString = '<a href=\'http://www.dokuwiki.org\' class=\'urlextern\' rel="nofollow">http://www.dokuwiki.org</a>';
+        if(isset($dwVersion['date']))
+        {
+            preg_match('/(\d+)-(\d+)-(\d+)/',$dwVersion['date'],$dwDate);
+            if(mktime(0, 0, 0, $dwDate[2], $dwDate[3], $dwDate[1]) > mktime(0, 0, 0, 7, 30, 2015))
+            {
+                $matchString = '<a href="http://www.dokuwiki.org" class="urlextern" title="http://www.dokuwiki.org"  rel="nofollow">http://www.dokuwiki.org</a>';
+            }
+        }
+
         $this->assertEquals('value1, value2, val',
             $helper->_formatData(array('type' => ''), "value1\n value2\n val", $renderer));
 
@@ -156,16 +168,20 @@ class helper_plugin_data_test extends DokuWikiTest {
             $helper->_formatData(array('type' => 'mail'), "pa:ge some user", $renderer));
 
         $conf['mailguard'] = 'visible';
-        $this->assertEquals('<a href="mailto:pa%3Age" class="mail" title="pa%3Age">pa:ge</a>',
+        $this->assertEquals('<a href="mailto:pa%3Age" class="mail" title="pa:ge">pa:ge</a>',
             $helper->_formatData(array('type' => 'mail'), "pa:ge", $renderer));
 
-        $this->assertEquals('<a href="mailto:pa%3Age" class="mail" title="pa%3Age">some user</a>',
+        $this->assertEquals('<a href="mailto:pa%3Age" class="mail" title="pa:ge">some user</a>',
             $helper->_formatData(array('type' => 'mail'), "pa:ge some user", $renderer));
 
-        $this->assertEquals('<a href=\'url\' class=\'urlextern\' rel="nofollow">url</a>',
+        $this->assertEquals('url',
             $helper->_formatData(array('type' => 'url'), "url", $renderer));
 
-        $this->assertEquals('<a href="' . wl('start', array('dataflt[0]'=>'_=value')) . '" title="Show pages matching \'value\'" class="wikilink1">value</a>',
+        // This test's output is different across dokuwiki versions (order of arguments)
+        $this->assertEquals($matchString,
+            $helper->_formatData(array('type' => 'url'), "http://www.dokuwiki.org", $renderer));
+
+        $this->assertEquals('link: ?dataflt%5B0%5D=_%3Dvalue value',
             $helper->_formatData(array('type' => 'tag'), "value", $renderer));
 
         $this->assertEquals(strftime('%Y/%m/%d %H:%M', 1234567),

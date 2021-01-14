@@ -208,14 +208,36 @@ class helper_plugin_data extends DokuWiki_Plugin {
     }
 
     /**
-     * Return XHTML formated data, depending on column type
+     * Return formated data, depending on column type and DokuWiki version
      *
-     * @param array               $column
-     * @param string              $value
-     * @param Doku_Renderer_xhtml $R
+     * @param array         $column
+     * @param string        $value
+     * @param Doku_Renderer $R
      * @return string
      */
-    function _formatData($column, $value, Doku_Renderer_xhtml $R) {
+    function _formatData($column, $value, Doku_Renderer $R)
+    {
+        $dwVersion = getVersionData();
+        if(isset($dwVersion['date']))
+        {
+            preg_match('/(\d+)-(\d+)-(\d+)/',$dwVersion['date'],$dwDate);
+            if(mktime(0, 0, 0, $dwDate[2], $dwDate[3], $dwDate[1]) > mktime(0, 0, 0, 7, 30, 2015))
+            {
+                return $this->_formatDataNew($column, $value, $R);
+            }
+        }
+        return $this->_formatDataOld($column, $value, $R);
+    }
+
+    /**
+     * Return XHTML formated data, depending on column type
+     *
+     * @param array         $column
+     * @param string        $value
+     * @param Doku_Renderer $R
+     * @return string
+     */
+    function _formatDataOld($column, $value, Doku_Renderer $R) {
         global $conf;
         $vals = explode("\n", $value);
         $outs = array();
@@ -270,6 +292,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     list($id, $title) = explode(' ', $val, 2);
                     $id = $this->_addPrePostFixes($column['type'], $id);
                     $id = obfuscate(hsc($id));
+                    $titleId = $id;
                     if(!$title) {
                         $title = $id;
                     } else {
@@ -278,11 +301,21 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     if($conf['mailguard'] == 'visible') {
                         $id = rawurlencode($id);
                     }
-                    $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $id . '">' . $title . '</a>';
+                    $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $titleId . '">' . $title . '</a>';
                     break;
                 case 'url':
                     $val = $this->_addPrePostFixes($column['type'], $val);
-                    $outs[] = $this->external_link($val, false, 'urlextern');
+                    $url = $val;
+                    $schemes = getSchemes();
+                    list($scheme) = explode('://', $url);
+                    if(!in_array($scheme, $schemes)) $url = '';
+
+                    // is there still an URL?
+                    if(!$url) {
+                        $outs[] = $val;
+                    } else {
+                        $outs[] = $this->external_link($val, false, 'urlextern');
+                    }
                     break;
                 case 'tag':
                     // per default use keyname as target page, but prefix on aliases
@@ -291,10 +324,9 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     } else {
                         $target = $this->_addPrePostFixes($column['type'], '');
                     }
-
-                    $outs[] = '<a href="' . wl(str_replace('/', ':', cleanID($target)), $this->_getTagUrlparam($column, $val))
-                        . '" title="' . sprintf($this->getLang('tagfilter'), hsc($val))
-                        . '" class="wikilink1">' . hsc($val) . '</a>';
+                    $params = buildURLparams($this->_getTagUrlparam($column, $val));
+                    $url = str_replace('/', ':', cleanID($target)) . '?' . $params;
+                    $outs[] = $R->internallink($url, hsc($val), true);
                     break;
                 case 'timestamp':
                     $outs[] = dformat($val);
@@ -322,6 +354,156 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $instructions = array_slice($allinstructions, $wraps, -$wraps);
 
                     $outs[] = p_render('xhtml', $instructions, $byref_ignore);
+                    $ID = $oldid;
+                    break;
+                default:
+                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    //type '_img' or '_img<width>'
+                    if(substr($type, 0, 3) == 'img') {
+                        $width = (int) substr($type, 3);
+                        if(!$width) {
+                            $width = $this->getConf('image_width');
+                        }
+
+                        list($mediaid, $title) = explode('|', $val, 2);
+                        if($title === null) {
+                            $title = $column['key'] . ': ' . basename(str_replace(':', '/', $mediaid));
+                        } else {
+                            $title = trim($title);
+                        }
+
+                        if(media_isexternal($val)) {
+                            $html = $R->externalmedia($mediaid, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                        } else {
+                            $html = $R->internalmedia($mediaid, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                        }
+                        if(strpos($html, 'mediafile') === false) {
+                            $html = str_replace('href', 'rel="lightbox" href', $html);
+                        }
+
+                        $outs[] = $html;
+                    } else {
+                        $outs[] = hsc($val);
+                    }
+            }
+        }
+        return join(', ', $outs);
+    }
+
+    /**
+     * Return formated data, depending on column type
+     *
+     * @param array               $column
+     * @param string              $value
+     * @param Doku_Renderer       $R
+     * @return string
+     */
+    function _formatDataNew($column, $value, Doku_Renderer $R) {
+        global $conf;
+        $vals = explode("\n", $value);
+        $outs = array();
+
+        //multivalued line from db result for pageid and wiki has only in first value the ID
+        $storedID = '';
+
+        foreach($vals as $val) {
+            $val = trim($val);
+            if($val == '') continue;
+
+            $type = $column['type'];
+            if(is_array($type)) {
+                $type = $type['type'];
+            }
+            switch($type) {
+                case 'page':
+                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->ensureAbsoluteId($val);
+                    $outs[] = $R->internallink($val, null, null, true);
+                    break;
+                case 'title':
+                    list($id, $title) = explode('|', $val, 2);
+                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    $id = $this->ensureAbsoluteId($id);
+                    $outs[] = $R->internallink($id, $title, null, true);
+                    break;
+                case 'pageid':
+                    list($id, $title) = explode('|', $val, 2);
+
+                    //use ID from first value of the multivalued line
+                    if($title == null) {
+                        $title = $id;
+                        if(!empty($storedID)) {
+                            $id = $storedID;
+                        }
+                    } else {
+                        $storedID = $id;
+                    }
+
+                    $id = $this->_addPrePostFixes($column['type'], $id);
+
+                    $outs[] = $R->internallink($id, $title, null, true);
+                    break;
+                case 'nspage':
+                    // no prefix/postfix here
+                    $val = ':' . $column['key'] . ":$val";
+
+                    $outs[] = $R->internallink($val, null, null, true);
+                    break;
+                case 'mail':
+                    list($id, $title) = explode(' ', $val, 2);
+                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    if(!$title) {
+                        $title = $id;
+                    } else {
+                        $title = hsc($title);
+                    }
+                    $outs[] = $R->emaillink($id, $title, true);
+                    break;
+                case 'url':
+                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $outs[] = $R->externallink($val, null, true);
+                    break;
+                case 'tag':
+                    // per default use keyname as target page, but prefix on aliases
+                    if(!is_array($column['type'])) {
+                        $target = $column['key'] . ':';
+                    } else {
+                        $target = $this->_addPrePostFixes($column['type'], '');
+                    }
+
+                    $params = buildURLparams($this->_getTagUrlparam($column, $val));
+                    $url = str_replace('/', ':', cleanID($target)) . '?' . $params;
+                    // FIXME: The title is lost when moving to $R->internallink,
+                    //        but this syntax is required to support different renderers.
+                    // $title = sprintf($this->getLang('tagfilter'), hsc($val));
+                    $outs[] = $R->internallink($url, hsc($val), true);
+                    break;
+                case 'timestamp':
+                    $outs[] = dformat($val);
+                    break;
+                case 'wiki':
+                    global $ID;
+                    $oldid = $ID;
+                    list($ID, $data) = explode('|', $val, 2);
+
+                    //use ID from first value of the multivalued line
+                    if($data == null) {
+                        $data = $ID;
+                        $ID = $storedID;
+                    } else {
+                        $storedID = $ID;
+                    }
+                    $data = $this->_addPrePostFixes($column['type'], $data);
+
+                    // Trim document_{start,end}, p_{open,close} from instructions
+                    $allinstructions = p_get_instructions($data);
+                    $wraps = 1;
+                    if(isset($allinstructions[1]) && $allinstructions[1][0] == 'p_open') {
+                        $wraps ++;
+                    }
+                    $instructions = array_slice($allinstructions, $wraps, -$wraps);
+
+                    $outs[] = p_render($R->getFormat(), $instructions, $byref_ignore);
                     $ID = $oldid;
                     break;
                 default:
