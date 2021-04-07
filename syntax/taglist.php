@@ -6,8 +6,6 @@
  *
  * based on cloud.php. Build a list of tags ordered by their counts.
  */
-// must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
 
 /**
  * Class syntax_plugin_data_taglist

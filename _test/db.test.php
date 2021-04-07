@@ -56,7 +56,7 @@ class db_data_entry_test extends DokuWikiTest {
         $actual_link = substr($actual_link,strpos($actual_link,'doku.php'));
         $actual_link = substr($actual_link,0,strpos($actual_link,'</a>'));
 
-        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage">testpage',$actual_link);
+        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage" data-wiki-id="testpage">testpage',$actual_link);
 
     }
 
@@ -85,7 +85,7 @@ class db_data_entry_test extends DokuWikiTest {
         $actual_link = substr($actual_link,strpos($actual_link,'doku.php'));
         $actual_link = substr($actual_link,0,strpos($actual_link,'</a>'));
 
-        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage">testpage',$actual_link);
+        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage" data-wiki-id="testpage">testpage',$actual_link);
     }
 
     function test_title_input_Heading () {
@@ -113,7 +113,7 @@ class db_data_entry_test extends DokuWikiTest {
         $actual_link = substr($actual_link,strpos($actual_link,'doku.php'));
         $actual_link = substr($actual_link,0,strpos($actual_link,'</a>'));
 
-        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage">testpage',$actual_link);
+        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage" data-wiki-id="testpage">testpage',$actual_link);
     }
 
     function test_title_input_stackns () {
@@ -143,7 +143,7 @@ class db_data_entry_test extends DokuWikiTest {
         $actual_link = substr($actual_link,strpos($actual_link,'doku.php'));
         $actual_link = substr($actual_link,0,strpos($actual_link,'</a>'));
 
-        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage">testpage',$actual_link);
+        $this->assertSame('doku.php?id=testpage" class="wikilink1" title="testpage" data-wiki-id="testpage">testpage',$actual_link);
     }
 
 }

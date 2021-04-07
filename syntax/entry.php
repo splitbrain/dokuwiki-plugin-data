@@ -4,8 +4,6 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
-// must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
 
 /**
  * Class syntax_plugin_data_entry
@@ -155,13 +153,17 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         global $ID;
         $ret = '';
 
-        if(method_exists($R, 'startSectionEdit')) {
-            $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], 'plugin_data');
+        $sectionEditData = ['target' => 'plugin_data'];
+        if (!defined('SEC_EDIT_PATTERN')) {
+            // backwards-compatibility for Frusterick Manners (2017-02-19)
+            $sectionEditData = 'plugin_data';
         }
+        $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], $sectionEditData);
+
         $ret .= '<div class="inline dataplugin_entry ' . $data['classes'] . '"><dl>';
         $class_names = array();
         foreach($data['data'] as $key => $val) {
-            if($val == '' || !count($val)) continue;
+            if($val == '' || is_null($val) || (is_array($val) && count($val) == 0)) continue;
             $type = $data['cols'][$key]['type'];
             if(is_array($type)) {
                 $type = $type['type'];
@@ -196,9 +198,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         }
         $ret .= '</dl></div>';
         $R->doc .= $ret;
-        if(method_exists($R, 'finishSectionEdit')) {
-            $R->finishSectionEdit($data['len'] + $data['pos']);
-        }
+        $R->finishSectionEdit($data['len'] + $data['pos']);
     }
 
     /**

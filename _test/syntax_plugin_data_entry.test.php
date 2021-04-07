@@ -1,7 +1,5 @@
 <?php
 
-require_once DOKU_INC . 'inc/parser/xhtml.php';
-
 class Doku_Renderer_xhtml_mock extends Doku_Renderer_xhtml {
 
     function internallink($id, $name = null, $search = null, $returnonly = false, $linktype = 'content') {
@@ -24,25 +22,17 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
-    private $exampleEntry;
-
-    public function setUp() {
-        parent::setUp();
-    }
-
-    function __construct() {
-        $this->exampleEntry = "---- dataentry projects ----\n"
-            . "type          : web development\n"
-            . "volume        : 1 Mrd # how much do they pay?\n"
-            . "employees     : Joe, Jane, Jim\n"
-            . "customer_page : customers:microsoft\n"
-            . "deadline_dt   : 2009-08-17\n"
-            . "server_pages  : servers:devel01, extern:microsoft\n"
-            . "Website_url   : http://www.microsoft.com\n"
-            . "task_tags     : programming, coding, design, html\n"
-            . "tests_        : \\#5 done\n"
-            . "----\n";
-    }
+    private $exampleEntry = "---- dataentry projects ----\n"
+    . "type          : web development\n"
+    . "volume        : 1 Mrd # how much do they pay?\n"
+    . "employees     : Joe, Jane, Jim\n"
+    . "customer_page : customers:microsoft\n"
+    . "deadline_dt   : 2009-08-17\n"
+    . "server_pages  : servers:devel01, extern:microsoft\n"
+    . "Website_url   : http://www.microsoft.com\n"
+    . "task_tags     : programming, coding, design, html\n"
+    . "tests_        : \\#5 done\n"
+    . "----\n";
 
     function testHandle() {
         $plugin = new syntax_plugin_data_entry();
@@ -50,20 +40,20 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $handler = new Doku_Handler();
         $result = $plugin->handle($this->exampleEntry, 0, 10, $handler);
 
-        $this->assertEquals(10,         $result['pos'],     'Position has changed');
+        $this->assertEquals(10, $result['pos'], 'Position has changed');
         $this->assertEquals('projects', $result['classes'], 'wrong class name detected');
 
         $data = array(
-            'type'     => 'web development',
-            'volume'   => '1 Mrd',
+            'type' => 'web development',
+            'volume' => '1 Mrd',
             'employee' => array('Joe', 'Jane', 'Jim'),
             'customer' => 'customers:microsoft',
             'deadline' => '2009-08-17',
-            'server'   => array('servers:devel01', 'extern:microsoft'),
-            'website'  => 'http://www.microsoft.com',
-            'task'     => array('programming', 'coding', 'design', 'html'),
-            'tests'    => '#5 done',
-            '----'     => ''
+            'server' => array('servers:devel01', 'extern:microsoft'),
+            'website' => 'http://www.microsoft.com',
+            'task' => array('programming', 'coding', 'design', 'html'),
+            'tests' => '#5 done',
+            '----' => ''
         );
         $this->assertEquals($data, $result['data'], 'Data array corrupted');
 
@@ -71,7 +61,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
             'type' => $this->createColumnEntry('type', false, 'type', 'type', 'type', false),
             'volume' => $this->createColumnEntry('volume', false, 'volume', 'volume', 'volume', false),
             'employee' => $this->createColumnEntry('employees', 1, 'employee', 'employee', 'employee', false),
-            'customer' => $this->createColumnEntry('customer_page', false, 'customer', 'customer', 'customer', 'page'),
+            'customer' => $this->createColumnEntry('customer_page', false, 'customer', 'customer', 'customer',
+                'page'),
             'deadline' => $this->createColumnEntry('deadline_dt', false, 'deadline', 'deadline', 'deadline', 'dt'),
             'server' => $this->createColumnEntry('server_pages', 1, 'server', 'server', 'server', 'page'),
             'website' => $this->createColumnEntry('Website_url', false, 'website', 'Website', 'Website', 'url'),

@@ -3,11 +3,6 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
-// must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
-
-require_once(DOKU_PLUGIN . 'syntax.php');
-require_once(DOKU_INC . 'inc/infoutils.php');
 
 /**
  * This is the base class for all syntax classes, providing some general stuff
@@ -367,7 +362,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
      * Split a column name into its parts
      *
      * @param string $col column name
-     * @returns array with key, type, ismulti, title, opt
+     * @return array with key, type, ismulti, title, opt
      */
     function _column($col){
         preg_match('/^([^_]*)(\(num\))?(?:_(.*))?((?<!s)|s)$/', $col, $matches);
@@ -503,6 +498,8 @@ class helper_plugin_data extends DokuWiki_Plugin {
 
     /**
      * Replace placeholders in sql
+     *
+     * @param $data
      */
     function _replacePlaceholdersInSQL(&$data) {
         global $USERINFO;

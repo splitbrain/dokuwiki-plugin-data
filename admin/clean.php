@@ -6,9 +6,6 @@
  * @author  Andreas Gohr <gohr@cosmocode.de>
  */
 
-// must be run within Dokuwiki
-if (!defined('DOKU_INC')) die();
-
 /**
  * Let admin remove non-existing pages from sqlite db
  */
