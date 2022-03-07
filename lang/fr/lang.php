@@ -2,8 +2,8 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
- * @author Schplurtz le Déboulonné <schplurtz@laposte.net>
+ *
+ * @author Schplurtz+le+Déboulonné <schplurtz@laposte.net>
  * @author Ner0lph <forums@ner0lph.tk>
  */
 $lang['menu_alias']            = 'Extension Data : Alias de champs';
@@ -29,6 +29,6 @@ $lang['dataentry']             = 'Bloc de données';
 $lang['multi']                 = 'Multiple ?';
 $lang['value']                 = 'valeur';
 $lang['comment']               = 'Commentaire';
-$lang['none']                  = 'Aucun résulat';
+$lang['none']                  = 'Aucun résultat';
 $lang['tablefilteredby']       = 'Filtrer par %s';
 $lang['tableresetfilter']      = 'Tout montrer (retirer les tris et filtres)';
