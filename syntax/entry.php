@@ -5,6 +5,8 @@
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
 
+use dokuwiki\Form\Element;
+
 /**
  * Class syntax_plugin_data_entry
  */
@@ -296,18 +298,23 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * @param Doku_Renderer_plugin_data_edit $renderer
      */
     function _editData($data, &$renderer) {
-        $renderer->form->startFieldset($this->getLang('dataentry'));
-        $renderer->form->_content[count($renderer->form->_content) - 1]['class'] = 'plugin__data';
-        $renderer->form->addHidden('range', '0-0'); // Adora Belle bugfix
+        $renderer->form->addFieldsetOpen($this->getLang('dataentry'));
+        $renderer->form->getElementAt($renderer->form->elementCount() - 1)->attr('class', 'plugin__data');
+        $renderer->form->setHiddenField('range', '0-0'); // Adora Belle bugfix
 
         if($this->getConf('edit_content_only')) {
-            $renderer->form->addHidden('data_edit[classes]', $data['classes']);
+            $renderer->form->setHiddenField('data_edit[classes]', $data['classes']);
 
             $columns = array('title', 'value', 'comment');
             $class = 'edit_content_only';
 
         } else {
-            $renderer->form->addElement(form_makeField('text', 'data_edit[classes]', $data['classes'], $this->getLang('class'), 'data__classes'));
+
+            $el = new \dokuwiki\Form\InputElement('text', 'data_edit[classes]', $this->getLang('class'));
+            $el->id('data__classes');
+            $el->val($data['classes']);
+
+            $renderer->form->addElement($el);
 
             $columns = array('title', 'type', 'multi', 'value', 'comment');
             $class = 'edit_all_content';
@@ -317,7 +324,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $data['cols'][''] = array('type' => '', 'multi' => false);
         }
 
-        $renderer->form->addElement("<table class=\"$class\">");
+        $renderer->form->addHTML("<table class=\"$class\">");
 
         //header
         $header = '<tr>';
@@ -325,7 +332,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             $header .= '<th class="' . $column . '">' . $this->getLang($column) . '</th>';
         }
         $header .= '</tr>';
-        $renderer->form->addElement($header);
+        $renderer->form->addHTML($header);
 
         //rows
         $n = 0;
@@ -343,9 +350,9 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
             }
 
             if($vals['type'] === 'hidden') {
-                $renderer->form->addElement('<tr class="hidden">');
+                $renderer->form->addHTML('<tr class="hidden">');
             } else {
-                $renderer->form->addElement('<tr>');
+                $renderer->form->addHTML('<tr>');
             }
             if($this->getConf('edit_content_only')) {
                 if(isset($vals['enum'])) {
@@ -353,14 +360,16 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     if(!$vals['multi']) {
                         array_unshift($values, '');
                     }
-                    $content = form_makeListboxField(
+
+                    $content = new \dokuwiki\Form\DropdownElement(
                         $fieldid . '[value][]',
                         $values,
-                        $data['data'][$key],
-                        $vals['title'],
-                        '', '',
-                        ($vals['multi'] ? array('multiple' => 'multiple') : array())
+                        $vals['title']
                     );
+                    $content->attrs(($vals['multi'] ? array('multiple' => 'multiple') : array()));
+                    $content->attr('selected', $data['data'][$key]);
+
+
                 } else {
                     $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') . ' '
                         . 'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
@@ -370,50 +379,72 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                         $attr['class'] = 'datepicker';
                     }
 
-                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes, $attr);
+                    $el = new \dokuwiki\Form\InputElement('text', $fieldid . '[value]', $vals['title']);
+                    $el->val($content);
+                    $el->addClass($classes);
+                    $el->attrs($attr);
 
                 }
                 $cells = array(
                     hsc($vals['title']) . ':',
-                    $content,
-                    '<span title="' . hsc($vals['comment']) . '">' . hsc($vals['comment']) . '</span>'
+                    $el,
+                    '<span title="' . hsc($vals['comment'] ?? '') . '">' . hsc($vals['comment'] ?? '') . '</span>'
                 );
                 foreach(array('multi', 'comment', 'type') as $field) {
-                    $renderer->form->addHidden($fieldid . "[$field]", $vals[$field]);
+                    $renderer->form->setHiddenField($fieldid . "[$field]", $vals[$field] ?? '');
                 }
-                $renderer->form->addHidden($fieldid . "[title]", $vals['origkey']); //keep key as key, even if title is translated
+                $renderer->form->setHiddenField($fieldid . "[title]", $vals['origkey'] ?? ''); //keep key as key, even if title is translated
             } else {
                 $check_data = $vals['multi'] ? array('checked' => 'checked') : array();
-                $cells = array(
-                    form_makeField('text', $fieldid . '[title]', $vals['origkey'], $this->getLang('title')), // when editable, always use the pure key, not a title
-                    form_makeMenuField(
-                        $fieldid . '[type]',
-                        array_merge(
-                            array(
-                                '', 'page', 'nspage', 'title',
-                                'img', 'mail', 'url', 'tag', 'wiki', 'dt', 'hidden'
-                            ),
-                            array_keys($this->dthlp->_aliases())
+                $cells = array();
+
+                $el = new \dokuwiki\Form\InputElement('text', $fieldid . '[title]', $this->getLang('title'));
+                $el->val($vals['origkey'] ?? '');
+                $cells[] = $el;
+
+                $el = new \dokuwiki\Form\DropdownElement(
+                    $fieldid . '[type]',
+                    array_merge(
+                        array(
+                            '', 'page', 'nspage', 'title',
+                            'img', 'mail', 'url', 'tag', 'wiki', 'dt', 'hidden'
                         ),
-                        $vals['type'],
-                        $this->getLang('type')
+                        array_keys($this->dthlp->_aliases())
                     ),
-                    form_makeCheckboxField($fieldid . '[multi]', array('1', ''), $this->getLang('multi'), '', '', $check_data),
-                    form_makeField('text', $fieldid . '[value]', $content, $this->getLang('value')),
-                    form_makeField('text', $fieldid . '[comment]', $vals['comment'], $this->getLang('comment'), '', 'data_comment', array('readonly' => 1, 'title' => $vals['comment']))
+                    $this->getLang('type')
                 );
+                $el->val($vals['type']);
+                $cells[] = $el;
+
+                $el = new \dokuwiki\Form\CheckableElement('checkbox', $fieldid . '[multi]', $this->getLang('multi'));
+                $el->attrs($check_data);
+                $cells[] = $el;
+
+                $el = new \dokuwiki\Form\InputElement('text', $fieldid . '[value]', $this->getLang('value'));
+                $el->val($content);
+                $cells[] = $el;
+
+                $el = new \dokuwiki\Form\InputElement('text', $fieldid . '[comment]', $this->getLang('comment'));
+                $el->addClass('data_comment');
+                $el->attrs(['readonly' => '1', 'title' => $vals['comment'] ?? '']);
+                $el->val($vals['comment'] ?? '');
+                $cells[] = $el;
             }
 
             foreach($cells as $index => $cell) {
-                $renderer->form->addElement("<td class=\"{$columns[$index]}\">");
-                $renderer->form->addElement($cell);
-                $renderer->form->addElement('</td>');
+                $renderer->form->addHTML("<td class=\"{$columns[$index]}\">");
+                if (is_a($cell,Element::class)) {
+                    $renderer->form->addElement($cell);
+                } else {
+                    $renderer->form->addHTML($cell);
+                }
+                $renderer->form->addHTML('</td>');
             }
-            $renderer->form->addElement('</tr>');
+            $renderer->form->addHTML('</tr>');
         }
 
-        $renderer->form->addElement('</table>');
-        $renderer->form->endFieldset();
+        $renderer->form->addHTML('</table>');
+        $renderer->form->addFieldsetClose();
     }
 
     /**

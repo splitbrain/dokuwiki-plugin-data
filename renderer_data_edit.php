@@ -10,7 +10,7 @@ require_once DOKU_INC . 'inc/parser/renderer.php';
 
 class Doku_Renderer_plugin_data_edit extends Doku_Renderer {
     /**
-     * @var Doku_Form
+     * @var \dokuwiki\Form\Form
      */
     public $form;
 
