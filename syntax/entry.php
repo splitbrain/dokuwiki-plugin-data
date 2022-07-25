@@ -298,23 +298,18 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
      * @param Doku_Renderer_plugin_data_edit $renderer
      */
     function _editData($data, &$renderer) {
-        $renderer->form->addFieldsetOpen($this->getLang('dataentry'));
-        $renderer->form->getElementAt($renderer->form->elementCount() - 1)->attr('class', 'plugin__data');
-        $renderer->form->setHiddenField('range', '0-0'); // Adora Belle bugfix
+        $renderer->form->addFieldsetOpen($this->getLang('dataentry'))->attr('class', 'plugin__data');
 
-        if($this->getConf('edit_content_only')) {
+        if ($this->getConf('edit_content_only')) {
             $renderer->form->setHiddenField('data_edit[classes]', $data['classes']);
 
             $columns = array('title', 'value', 'comment');
             $class = 'edit_content_only';
 
         } else {
-
-            $el = new \dokuwiki\Form\InputElement('text', 'data_edit[classes]', $this->getLang('class'));
-            $el->id('data__classes');
-            $el->val($data['classes']);
-
-            $renderer->form->addElement($el);
+            $renderer->form->addTextInput('data_edit[classes]', $this->getLang('class'))
+                ->id('data__classes')
+                ->val($data['classes']);
 
             $columns = array('title', 'type', 'multi', 'value', 'comment');
             $class = 'edit_all_content';
@@ -328,7 +323,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
         //header
         $header = '<tr>';
-        foreach($columns as $column) {
+        foreach ($columns as $column) {
             $header .= '<th class="' . $column . '">' . $this->getLang($column) . '</th>';
         }
         $header .= '</tr>';
@@ -336,12 +331,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
 
         //rows
         $n = 0;
-        foreach($data['cols'] as $key => $vals) {
+        foreach ($data['cols'] as $key => $vals) {
             $fieldid = 'data_edit[data][' . $n++ . ']';
             $content = $vals['multi'] ? implode(', ', $data['data'][$key]) : $data['data'][$key];
-            if(is_array($vals['type'])) {
+            if (is_array($vals['type'])) {
                 $vals['basetype'] = $vals['type']['type'];
-                if(isset($vals['type']['enum'])) {
+                if (isset($vals['type']['enum'])) {
                     $vals['enum'] = $vals['type']['enum'];
                 }
                 $vals['type'] = $vals['origtype'];
@@ -349,15 +344,15 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 $vals['basetype'] = $vals['type'];
             }
 
-            if($vals['type'] === 'hidden') {
+            if ($vals['type'] === 'hidden') {
                 $renderer->form->addHTML('<tr class="hidden">');
             } else {
                 $renderer->form->addHTML('<tr>');
             }
-            if($this->getConf('edit_content_only')) {
-                if(isset($vals['enum'])) {
+            if ($this->getConf('edit_content_only')) {
+                if (isset($vals['enum'])) {
                     $values = preg_split('/\s*,\s*/', $vals['enum']);
-                    if(!$vals['multi']) {
+                    if (!$vals['multi']) {
                         array_unshift($values, '');
                     }
 
@@ -368,14 +363,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     );
                     $content->attrs(($vals['multi'] ? array('multiple' => 'multiple') : array()));
                     $content->attr('selected', $data['data'][$key]);
-
-
                 } else {
                     $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') . ' '
                         . 'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
 
                     $attr = array();
-                    if($vals['basetype'] == 'date' && !$vals['multi']) {
+                    if ($vals['basetype'] == 'date' && !$vals['multi']) {
                         $attr['class'] = 'datepicker';
                     }
 
@@ -390,7 +383,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     $el,
                     '<span title="' . hsc($vals['comment'] ?? '') . '">' . hsc($vals['comment'] ?? '') . '</span>'
                 );
-                foreach(array('multi', 'comment', 'type') as $field) {
+                foreach (array('multi', 'comment', 'type') as $field) {
                     $renderer->form->setHiddenField($fieldid . "[$field]", $vals[$field] ?? '');
                 }
                 $renderer->form->setHiddenField($fieldid . "[title]", $vals['origkey'] ?? ''); //keep key as key, even if title is translated
