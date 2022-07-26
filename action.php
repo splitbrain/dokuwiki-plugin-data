@@ -29,7 +29,8 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     function register(Doku_Event_Handler $controller) {
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'BEFORE', $this, '_handle');
         $controller->register_hook('HTML_SECEDIT_BUTTON', 'BEFORE', $this, '_editbutton');
-        $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform');
+        $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform'); // deprecated
+        $controller->register_hook('EDIT_FORM_ADDTEXTAREA', 'BEFORE', $this, '_editform'); // replacement
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, '_handle_edit_post');
         $controller->register_hook('AJAX_CALL_UNKNOWN', 'BEFORE', $this, '_handle_ajax');
     }
