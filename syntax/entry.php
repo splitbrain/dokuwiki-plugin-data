@@ -492,13 +492,15 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                         array_unshift($values, '');
                     }
 
-                    $content = new \dokuwiki\Form\DropdownElement(
-                        $fieldid . '[value][]',
+                    $el = new \dokuwiki\plugin\data\Form\DropdownElement(
+                        $fieldid . '[value]',
                         $values,
                         $vals['title']
                     );
-                    $content->attrs(($vals['multi'] ? array('multiple' => 'multiple') : array()));
-                    $content->attr('selected', $data['data'][$key]);
+                    $el->useInput(false);
+                    $el->attrs(($vals['multi'] ? array('multiple' => 'multiple') : array()));
+                    $el->attr('selected', $data['data'][$key]);
+                    $el->val($data['data'][$key]);
                 } else {
                     $classes = 'data_type_' . $vals['type'] . ($vals['multi'] ? 's' : '') . ' '
                         . 'data_type_' . $vals['basetype'] . ($vals['multi'] ? 's' : '');
@@ -509,6 +511,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     }
 
                     $el = new \dokuwiki\Form\InputElement('text', $fieldid . '[value]', $vals['title']);
+                    $el->useInput(false);
                     $el->val($content);
                     $el->addClass($classes);
                     $el->attrs($attr);
