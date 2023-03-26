@@ -505,9 +505,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
         // allow current user name in filter:
         $data['sql'] = str_replace('%user%', $_SERVER['REMOTE_USER'], $data['sql']);
         $data['sql'] = str_replace('%groups%', implode("','", (array) $USERINFO['grps']), $data['sql']);
-        // allow current date in filter:
+        // allow current date, month and year in filter:
         $data['sql'] = str_replace('%now%', dformat(null, '%Y-%m-%d'), $data['sql']);
-
+        $data['sql'] = str_replace('%month%', dformat(null, '%m'),$data['sql']);
+		$data['sql'] = str_replace('%year%', dformat(null, '%Y'),$data['sql']);
         // language filter
         $data['sql'] = $this->makeTranslationReplacement($data['sql']);
     }
