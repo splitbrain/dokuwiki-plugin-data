@@ -16,7 +16,8 @@ class helper_plugin_data_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
-    public static function setUpBeforeClass(){
+    public static function setUpBeforeClass() :void
+    {
         parent::setUpBeforeClass();
         // copy our own config files to the test directory
         TestUtils::rcopy(dirname(DOKU_CONF), dirname(__FILE__).'/conf');
@@ -166,7 +167,7 @@ class helper_plugin_data_test extends DokuWikiTest {
             $helper->_formatData(array('type' => 'url'), "url", $renderer));
 
         $this->assertEquals('<a href="' . wl('start', array('dataflt[0]'=>'_=value')) . '" title="Show pages matching \'value\'" class="wikilink1">value</a>',
-            $helper->_formatData(array('type' => 'tag'), "value", $renderer));
+            $helper->_formatData(array('type' => 'tag', 'key' => ''), "value", $renderer));
 
         $this->assertEquals(strftime('%Y/%m/%d %H:%M', 1234567),
             $helper->_formatData(array('type' => 'timestamp'), "1234567", $renderer));
@@ -175,16 +176,17 @@ class helper_plugin_data_test extends DokuWikiTest {
             $helper->_formatData(array('type' => 'wiki'), '|**bla**', $renderer));
 
 
-        $this->assertEquals('<a rel="lightbox" href="'.ml('wiki:dokuwiki-128.png', array('cache' => null)).'" class="media" title="wiki:dokuwiki-128.png"><img src="'.ml('wiki:dokuwiki-128.png', array('w' => 300, 'cache' => null)).'" class="media" title=": dokuwiki-128.png" alt=": dokuwiki-128.png" width="300" /></a>',
-            $helper->_formatData(array('type' => 'img300'), 'wiki:dokuwiki-128.png', $renderer));
+        $this->assertEquals('<a rel="lightbox" href="'.ml('wiki:dokuwiki-128.png', array('cache' => null)).'" class="media" title="wiki:dokuwiki-128.png"><img src="'.ml('wiki:dokuwiki-128.png', array('w' => 300, 'cache' => null)).'" class="media" loading="lazy" title=": dokuwiki-128.png" alt=": dokuwiki-128.png" width="300" /></a>',
+            $helper->_formatData(array('type' => 'img300', 'key' => ''), 'wiki:dokuwiki-128.png', $renderer));
     }
 
     function testReplacePlaceholdersInSQL() {
         global $USERINFO;
+        global $INPUT;
         $helper = new helper_plugin_data();
 
         $data = array('sql' => '%user%');
-        $_SERVER['REMOTE_USER'] = 'test';
+        $INPUT->server->set('REMOTE_USER', 'test');
         $helper->_replacePlaceholdersInSQL($data);
         $this->assertEquals('test', $data['sql']);
 

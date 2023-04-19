@@ -102,7 +102,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                     }
                 }
             } else {
-                $data[$column['key']] = $this->dthlp->_cleanData($line[1], $column['type']);
+                $data[$column['key']] = $this->dthlp->_cleanData($line[1] ?? '', $column['type']);
             }
             $columns[$column['key']] = $column;
         }
@@ -132,7 +132,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
                 return true;
             case 'metadata':
                 /** @var $renderer Doku_Renderer_metadata */
-                $this->_saveData($data, $ID, $renderer->meta['title']);
+                $this->_saveData($data, $ID, $renderer->meta['title'] ?? '');
                 return true;
             case 'plugin_data_edit':
                 /** @var $renderer Doku_Renderer_plugin_data_edit */
@@ -153,11 +153,7 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin {
         global $ID;
         $ret = '';
 
-        $sectionEditData = ['target' => 'plugin_data'];
-        if (!defined('SEC_EDIT_PATTERN')) {
-            // backwards-compatibility for Frusterick Manners (2017-02-19)
-            $sectionEditData = 'plugin_data';
-        }
+        $sectionEditData = ['target' => 'plugin_data', 'hid' => 'data_entry'];
         $data['classes'] .= ' ' . $R->startSectionEdit($data['pos'], $sectionEditData);
 
         $ret .= '<div class="inline dataplugin_entry ' . $data['classes'] . '"><dl>';

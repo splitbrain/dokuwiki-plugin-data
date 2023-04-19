@@ -13,13 +13,15 @@ class action_handle_test extends DokuWikiTest {
     /** @var helper_plugin_sqlite */
     protected $db;
 
-    public function tearDown() {
+    public function tearDown() :void
+    {
         parent::tearDown();
 
         $this->db->query('DELETE FROM pages WHERE page = ?','test');
     }
 
-    public function setUp() {
+    public function setUp() :void
+    {
         parent::setUp();
 
         $this->action = new action_plugin_data();
