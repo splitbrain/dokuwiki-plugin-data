@@ -10,17 +10,14 @@ class db_data_entry_test extends DokuWikiTest {
 
     protected $pluginsEnabled = array('data', 'sqlite',);
 
-    public static function setUpBeforeClass() {
-        parent::setUpBeforeClass();
-    }
 
-
-    public function setUp() {
+    public function setUp() :void
+    {
         parent::setUp();
 
         saveWikiText('foo',"====== Page-Heading ======",'summary');
         $req = new TestRequest();
-        $req->get(array(),'/doku.php?id=foo');
+        $req->get(array('id' => 'foo'));
 
 
         saveWikiText('testpage',"---- dataentry Testentry ----\n"

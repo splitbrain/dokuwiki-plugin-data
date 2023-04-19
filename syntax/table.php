@@ -278,8 +278,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             $classes[] = $data['align'][0] . 'align rownumbers';
         }
         foreach($clist as $index => $col) {
-            $class = $data['align'][$index + $offset] . 'align';
-            $class .= ' ' . hsc(sectionID($col, $class_names_cache));
+            $class = '';
+            if (isset($data['align'])) {
+                $class .= $data['align'][$index + $offset];
+            }
+            $class .= 'align ' . hsc(sectionID($col, $class_names_cache));
             $classes[] = $class;
         }
 

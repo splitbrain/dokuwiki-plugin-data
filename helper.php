@@ -238,13 +238,13 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = $R->internallink($val, null, null, true);
                     break;
                 case 'title':
-                    list($id, $title) = explode('|', $val, 2);
+                    list($id, $title) = array_pad(explode('|', $val, 2), 2, null);
                     $id = $this->_addPrePostFixes($column['type'], $id);
                     $id = $this->ensureAbsoluteId($id);
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
                 case 'pageid':
-                    list($id, $title) = explode('|', $val, 2);
+                    list($id, $title) = array_pad(explode('|', $val, 2), 2, null);
 
                     //use ID from first value of the multivalued line
                     if($title == null) {
@@ -267,7 +267,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                     $outs[] = $R->internallink($val, null, null, true);
                     break;
                 case 'mail':
-                    list($id, $title) = explode(' ', $val, 2);
+                    list($id, $title) = array_pad(explode(' ', $val, 2), 2, null);
                     $id = $this->_addPrePostFixes($column['type'], $id);
                     $id = obfuscate(hsc($id));
                     if(!$title) {
@@ -333,7 +333,7 @@ class helper_plugin_data extends DokuWiki_Plugin {
                             $width = $this->getConf('image_width');
                         }
 
-                        list($mediaid, $title) = explode('|', $val, 2);
+                        list($mediaid, $title) = array_pad(explode('|', $val, 2), 2, null);
                         if($title === null) {
                             $title = $column['key'] . ': ' . basename(str_replace(':', '/', $mediaid));
                         } else {
@@ -502,9 +502,10 @@ class helper_plugin_data extends DokuWiki_Plugin {
      */
     function _replacePlaceholdersInSQL(&$data) {
         global $USERINFO;
+        global $INPUT;
         // allow current user name in filter:
-        $data['sql'] = str_replace('%user%', $_SERVER['REMOTE_USER'], $data['sql']);
-        $data['sql'] = str_replace('%groups%', implode("','", (array) $USERINFO['grps']), $data['sql']);
+        $data['sql'] = str_replace('%user%', $INPUT->server->str('REMOTE_USER'), $data['sql']);
+        $data['sql'] = str_replace('%groups%', implode("','", $USERINFO['grps'] ?? []), $data['sql']);
         // allow current date in filter:
         $data['sql'] = str_replace('%now%', dformat(null, '%Y-%m-%d'), $data['sql']);
 
