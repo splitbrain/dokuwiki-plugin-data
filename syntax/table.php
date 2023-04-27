@@ -85,6 +85,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
             'sepbyheaders'  => false,
             'headers'       => array(),
             'widths'        => array(),
+            'format' => array(),             
             'filter'        => array()
         );
 
@@ -136,6 +137,13 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
                         $data['align'][] = $col;
                     }
                     break;
+                case 'format': 
+			$cols = explode(',', $line[1]);
+                        foreach($cols as $col) {
+	                        $col = trim($col);
+	                        $data['format'][] = $col;
+	                 }
+			break;
                 case 'widths':
                     $cols = explode(',', $line[1]);
                     foreach($cols as $col) {
@@ -301,6 +309,12 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin {
 
             foreach(array_values($row) as $num => $cval) {
                 $num_rn = $num + $offset;
+
+		$sformat = $data['format'][$num];
+		if ($sformat != ""){
+			# format a numeric column
+			$cval = number_format($cval,$sformat);
+                }
 
                 $R->doc .= sprintf($this->beforeVal($data, $num_rn), 'class="' . $classes[$num_rn] . '"');
                 $R->doc .= $this->dthlp->_formatData(
