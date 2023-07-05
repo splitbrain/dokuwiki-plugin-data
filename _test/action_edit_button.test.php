@@ -1,13 +1,16 @@
 <?php
+
 /**
  * @group plugin_data
  * @group plugins
  */
-class data_action_plugin_edit_button_test extends DokuWikiTest {
+class data_action_plugin_edit_button_test extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
-    function testSetName() {
+    function testSetName()
+    {
         $action = new action_plugin_data();
         $data = array(
             'target' => 'plugin_data'
@@ -18,7 +21,8 @@ class data_action_plugin_edit_button_test extends DokuWikiTest {
         $this->assertTrue(isset($data['name']));
     }
 
-    function testWrongTarget() {
+    function testWrongTarget()
+    {
         $action = new action_plugin_data();
         $data = array(
             'target' => 'default target'

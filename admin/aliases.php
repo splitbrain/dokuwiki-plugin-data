@@ -9,7 +9,8 @@
 /**
  * Administration form for configuring the type aliases
  */
-class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
+class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
+{
 
     /**
      * will hold the data helper plugin
@@ -20,7 +21,8 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
     /**
      * Constructor. Load helper plugin
      */
-    public function __construct(){
+    public function __construct()
+    {
         $this->dthlp = plugin_load('helper', 'data');
     }
 
@@ -30,7 +32,8 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
      *
      * @return int
      */
-    public function getMenuSort() {
+    public function getMenuSort()
+    {
         return 501;
     }
 
@@ -39,7 +42,8 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
      *
      * @return bool
      */
-    public function forAdminOnly() {
+    public function forAdminOnly()
+    {
         return true;
     }
 
@@ -49,29 +53,31 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
      * @param string $language lang code
      * @return string menu string
      */
-    public function getMenuText($language) {
+    public function getMenuText($language)
+    {
         return $this->getLang('menu_alias');
     }
 
     /**
      * Carry out required processing
      */
-    public function handle() {
-        if(!is_array($_REQUEST['d']) || !checkSecurityToken()) return;
+    public function handle()
+    {
+        if (!is_array($_REQUEST['d']) || !checkSecurityToken()) return;
 
         $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return;
+        if (!$sqlite) return;
 
         $sqlite->query("BEGIN TRANSACTION");
         if (!$sqlite->query("DELETE FROM aliases")) {
             $sqlite->query('ROLLBACK TRANSACTION');
             return;
         }
-        foreach($_REQUEST['d'] as $row){
-            $row = array_map('trim',$row);
+        foreach ($_REQUEST['d'] as $row) {
+            $row = array_map('trim', $row);
             $row['name'] = utf8_strtolower($row['name']);
-            $row['name'] = rtrim($row['name'],'s');
-            if(!$row['name']) continue;
+            $row['name'] = rtrim($row['name'], 's');
+            if (!$row['name']) continue;
 
             // Clean enum
             $arr = preg_split('/\s*,\s*/', $row['enum']);
@@ -79,7 +85,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
             $row['enum'] = implode(', ', $arr);
 
             if (!$sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
-                                 VALUES (?,?,?,?,?)",$row)) {
+                                 VALUES (?,?,?,?,?)", $row)) {
                 $sqlite->query('ROLLBACK TRANSACTION');
                 return;
             }
@@ -90,9 +96,10 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
     /**
      * Output html of the admin page
      */
-    public function html() {
+    public function html()
+    {
         $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return;
+        if (!$sqlite) return;
 
         echo $this->locale_xhtml('admin_intro');
 
@@ -100,48 +107,48 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
         $res = $sqlite->query($sql);
         $rows = $sqlite->res2arr($res);
 
-        $form = new Doku_Form(array('method'=>'post'));
-        $form->addHidden('page','data_aliases');
+        $form = new Doku_Form(array('method' => 'post'));
+        $form->addHidden('page', 'data_aliases');
         $form->addElement(
-            '<table class="inline">'.
-            '<tr>'.
-            '<th>'.$this->getLang('name').'</th>'.
-            '<th>'.$this->getLang('type').'</th>'.
-            '<th>'.$this->getLang('prefix').'</th>'.
-            '<th>'.$this->getLang('postfix').'</th>'.
-            '<th>'.$this->getLang('enum').'</th>'.
+            '<table class="inline">' .
+            '<tr>' .
+            '<th>' . $this->getLang('name') . '</th>' .
+            '<th>' . $this->getLang('type') . '</th>' .
+            '<th>' . $this->getLang('prefix') . '</th>' .
+            '<th>' . $this->getLang('postfix') . '</th>' .
+            '<th>' . $this->getLang('enum') . '</th>' .
             '</tr>'
         );
 
         // add empty row for adding a new entry
-        $rows[] = array('name'=>'','type'=>'','prefix'=>'','postfix'=>'','enum'=>'');
+        $rows[] = array('name' => '', 'type' => '', 'prefix' => '', 'postfix' => '', 'enum' => '');
 
         $cur = 0;
-        foreach($rows as $row){
+        foreach ($rows as $row) {
             $form->addElement('<tr>');
 
             $form->addElement('<td>');
-            $form->addElement(form_makeTextField('d['.$cur.'][name]',$row['name'],''));
+            $form->addElement(form_makeTextField('d[' . $cur . '][name]', $row['name'], ''));
             $form->addElement('</td>');
 
             $form->addElement('<td>');
             $form->addElement(form_makeMenuField(
-                                  'd['.$cur.'][type]',
-                                  array('','page','title','mail','url', 'dt', 'wiki','tag', 'hidden', 'img'),//'nspage' don't support post/prefixes
-                                  $row['type'],''
-                              ));
+                'd[' . $cur . '][type]',
+                array('', 'page', 'title', 'mail', 'url', 'dt', 'wiki', 'tag', 'hidden', 'img'),//'nspage' don't support post/prefixes
+                $row['type'], ''
+            ));
             $form->addElement('</td>');
 
             $form->addElement('<td>');
-            $form->addElement(form_makeTextField('d['.$cur.'][prefix]',$row['prefix'],''));
+            $form->addElement(form_makeTextField('d[' . $cur . '][prefix]', $row['prefix'], ''));
             $form->addElement('</td>');
 
             $form->addElement('<td>');
-            $form->addElement(form_makeTextField('d['.$cur.'][postfix]',$row['postfix'],''));
+            $form->addElement(form_makeTextField('d[' . $cur . '][postfix]', $row['postfix'], ''));
             $form->addElement('</td>');
 
             $form->addElement('<td>');
-            $form->addElement(form_makeTextField('d['.$cur.'][enum]',$row['enum'],''));
+            $form->addElement(form_makeTextField('d[' . $cur . '][enum]', $row['enum'], ''));
             $form->addElement('</td>');
 
             $form->addElement('</tr>');
@@ -150,7 +157,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin {
         }
 
         $form->addElement('</table>');
-        $form->addElement(form_makeButton('submit','admin',$this->getLang('submit')));
+        $form->addElement(form_makeButton('submit', 'admin', $this->getLang('submit')));
         $form->printForm();
     }
 

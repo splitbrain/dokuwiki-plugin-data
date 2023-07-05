@@ -4,24 +4,26 @@
  * @group plugin_data
  * @group plugins
  */
-class syntax_plugin_data_table_test extends DokuWikiTest {
+class syntax_plugin_data_table_test extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
     private $exampleEntry = "---- datatable employees----\n"
-            . "cols    : %pageid%, employees, deadline_dt, website_url, volume\n"
-            . 'headers : Details, "Assigned Employees \#no", stuff outside quotes """Deadline, ",  Personal website, $$$'."\n"
-            . "max     : 10\n"
-            . "filter  : type=web development\n"
-            . "sort    : ^volume\n"
-            . "dynfilters: 1\n"
-            . "summarize : 1\n"
-            . "align   : c\n"
-            . "rownumbers: 1\n"
-            . "widths  : 50px, 20em, - , 10%\n"
-            . "----";
+    . "cols    : %pageid%, employees, deadline_dt, website_url, volume\n"
+    . 'headers : Details, "Assigned Employees \#no", stuff outside quotes """Deadline, ",  Personal website, $$$' . "\n"
+    . "max     : 10\n"
+    . "filter  : type=web development\n"
+    . "sort    : ^volume\n"
+    . "dynfilters: 1\n"
+    . "summarize : 1\n"
+    . "align   : c\n"
+    . "rownumbers: 1\n"
+    . "widths  : 50px, 20em, - , 10%\n"
+    . "----";
 
-    function testHandle() {
+    function testHandle()
+    {
         $plugin = new syntax_plugin_data_table();
 
         $handler = new Doku_Handler();
@@ -123,7 +125,7 @@ class syntax_plugin_data_table_test extends DokuWikiTest {
                 ORDER BY T4.value DESC LIMIT 11",
             'cur_param' => array()
 
-);
+        );
         $this->assertEquals($data, $result, 'Data array corrupted');
     }
 

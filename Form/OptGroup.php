@@ -19,7 +19,7 @@ class OptGroup extends \dokuwiki\Form\OptGroup
     {
         $this->values = [];
         foreach ($values as $value) {
-            if(isset($this->options[$value])) {
+            if (isset($this->options[$value])) {
                 $this->values[] = $value;
             }
         }

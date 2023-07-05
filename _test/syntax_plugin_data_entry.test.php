@@ -1,8 +1,10 @@
 <?php
 
-class Doku_Renderer_xhtml_mock extends Doku_Renderer_xhtml {
+class Doku_Renderer_xhtml_mock extends Doku_Renderer_xhtml
+{
 
-    function internallink($id, $name = null, $search = null, $returnonly = false, $linktype = 'content') {
+    function internallink($id, $name = null, $search = null, $returnonly = false, $linktype = 'content')
+    {
         $inputvalues = array(
             'id' => $id,
             'name' => $name,
@@ -18,7 +20,8 @@ class Doku_Renderer_xhtml_mock extends Doku_Renderer_xhtml {
  * @group plugin_data
  * @group plugins
  */
-class syntax_plugin_data_entry_test extends DokuWikiTest {
+class syntax_plugin_data_entry_test extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
@@ -34,7 +37,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
     . "tests_        : \\#5 done\n"
     . "----\n";
 
-    function testHandle() {
+    function testHandle()
+    {
         $plugin = new syntax_plugin_data_entry();
 
         $handler = new Doku_Handler();
@@ -74,206 +78,213 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals($cols, $result['cols'], 'Cols array corrupted');
     }
 
-    function test_pageEntry_noTitle() {
+    function test_pageEntry_noTitle()
+    {
         $test_entry = '---- dataentry ----
         test1_page: foo
         ----';
 
         /** @var syntax_plugin_data_entry $plugin */
-        $plugin = plugin_load('syntax','data_entry');
+        $plugin = plugin_load('syntax', 'data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
         $renderer = new Doku_Renderer_xhtml_mock();
-        $plugin->render('xhtml',$renderer,$data);
+        $plugin->render('xhtml', $renderer, $data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</internallink>'));
-        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = substr($result, 0, strpos($result, '</internallink>'));
+        $result = substr($result, strpos($result, '<internallink>') + 14);
         $result = unserialize($result);
 
-        $this->assertSame(':foo',$result['id']);
-        $this->assertSame(null,$result['name'], 'page does not accept a title. useheading decides');
+        $this->assertSame(':foo', $result['id']);
+        $this->assertSame(null, $result['name'], 'page does not accept a title. useheading decides');
     }
 
-    function test_pageEntry_withTitle() {
+    function test_pageEntry_withTitle()
+    {
         $test_entry = '---- dataentry ----
         test1_page: foo|bar
         ----';
 
         /** @var syntax_plugin_data_entry $plugin */
-        $plugin = plugin_load('syntax','data_entry');
+        $plugin = plugin_load('syntax', 'data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
         $renderer = new Doku_Renderer_xhtml_mock();
-        $plugin->render('xhtml',$renderer,$data);
+        $plugin->render('xhtml', $renderer, $data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</internallink>'));
-        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = substr($result, 0, strpos($result, '</internallink>'));
+        $result = substr($result, strpos($result, '<internallink>') + 14);
         $result = unserialize($result);
 
-        $this->assertSame(':foo_bar',$result['id'], 'for type page a title becomes part of the id');
-        $this->assertSame(null,$result['name'], 'page never accepts a title. useheading decides');
+        $this->assertSame(':foo_bar', $result['id'], 'for type page a title becomes part of the id');
+        $this->assertSame(null, $result['name'], 'page never accepts a title. useheading decides');
     }
 
-    function test_pageidEntry_noTitle() {
+    function test_pageidEntry_noTitle()
+    {
         $test_entry = '---- dataentry ----
         test1_pageid: foo
         ----';
 
         /** @var syntax_plugin_data_entry $plugin */
-        $plugin = plugin_load('syntax','data_entry');
+        $plugin = plugin_load('syntax', 'data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
         $renderer = new Doku_Renderer_xhtml_mock();
-        $plugin->render('xhtml',$renderer,$data);
+        $plugin->render('xhtml', $renderer, $data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</internallink>'));
-        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = substr($result, 0, strpos($result, '</internallink>'));
+        $result = substr($result, strpos($result, '<internallink>') + 14);
         $result = unserialize($result);
 
-        $this->assertSame('foo',$result['id']);
-        $this->assertSame('foo',$result['name'], 'pageid: use the pageid as title if no title is provided.');
+        $this->assertSame('foo', $result['id']);
+        $this->assertSame('foo', $result['name'], 'pageid: use the pageid as title if no title is provided.');
     }
 
-    function test_pageidEntry_withTitle() {
+    function test_pageidEntry_withTitle()
+    {
         $test_entry = '---- dataentry ----
         test1_pageid: foo|bar
         ----';
 
         /** @var syntax_plugin_data_entry $plugin */
-        $plugin = plugin_load('syntax','data_entry');
+        $plugin = plugin_load('syntax', 'data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
         $renderer = new Doku_Renderer_xhtml_mock();
-        $plugin->render('xhtml',$renderer,$data);
+        $plugin->render('xhtml', $renderer, $data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</internallink>'));
-        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = substr($result, 0, strpos($result, '</internallink>'));
+        $result = substr($result, strpos($result, '<internallink>') + 14);
         $result = unserialize($result);
 
-        $this->assertSame('foo',$result['id'], "wrong id handed to internal link");
-        $this->assertSame('bar',$result['name'], 'pageid: use the provided title');
+        $this->assertSame('foo', $result['id'], "wrong id handed to internal link");
+        $this->assertSame('bar', $result['name'], 'pageid: use the provided title');
     }
 
-    function test_titleEntry_noTitle() {
+    function test_titleEntry_noTitle()
+    {
         $test_entry = '---- dataentry ----
         test1_title: foo
         ----';
 
         /** @var syntax_plugin_data_entry $plugin */
-        $plugin = plugin_load('syntax','data_entry');
+        $plugin = plugin_load('syntax', 'data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
         $renderer = new Doku_Renderer_xhtml_mock();
-        $plugin->render('xhtml',$renderer,$data);
+        $plugin->render('xhtml', $renderer, $data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</internallink>'));
-        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = substr($result, 0, strpos($result, '</internallink>'));
+        $result = substr($result, strpos($result, '<internallink>') + 14);
         $result = unserialize($result);
 
-        $this->assertSame(':foo',$result['id']);
-        $this->assertSame(null,$result['name'], 'no title should be given to internal link. Let useheading decide.');
+        $this->assertSame(':foo', $result['id']);
+        $this->assertSame(null, $result['name'], 'no title should be given to internal link. Let useheading decide.');
     }
 
 
-    function test_titleEntry_withTitle() {
+    function test_titleEntry_withTitle()
+    {
         $test_entry = '---- dataentry ----
         test3_title: link:to:page|TitleOfPage
         ----';
 
         /** @var syntax_plugin_data_entry $plugin */
-        $plugin = plugin_load('syntax','data_entry');
+        $plugin = plugin_load('syntax', 'data_entry');
 
         $handler = new Doku_Handler();
         $data = $plugin->handle($test_entry, 0, 10, $handler);
         $renderer = new Doku_Renderer_xhtml_mock();
-        $plugin->render('xhtml',$renderer,$data);
+        $plugin->render('xhtml', $renderer, $data);
         $result = $renderer->doc;
-        $result = substr($result,0,strpos($result,'</internallink>'));
-        $result = substr($result,strpos($result,'<internallink>')+14);
+        $result = substr($result, 0, strpos($result, '</internallink>'));
+        $result = substr($result, strpos($result, '<internallink>') + 14);
         $result = unserialize($result);
 
-        $this->assertSame(':link:to:page',$result['id']);
-        $this->assertSame('TitleOfPage',$result['name'], 'The Title provided should be the title shown.');
+        $this->assertSame(':link:to:page', $result['id']);
+        $this->assertSame('TitleOfPage', $result['name'], 'The Title provided should be the title shown.');
     }
 
-    function test_editToWiki() {
+    function test_editToWiki()
+    {
         $data = array(
             'classes' => 'projects',
             'data' => array(
                 array(
-                    'title'   => 'type',
-                    'type'    => '',
-                    'multi'   => '',
-                    'value'   => 'web development',
+                    'title' => 'type',
+                    'type' => '',
+                    'multi' => '',
+                    'value' => 'web development',
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'volume',
-                    'type'    => '',
-                    'multi'   => '',
-                    'value'   => '1 Mrd',
+                    'title' => 'volume',
+                    'type' => '',
+                    'multi' => '',
+                    'value' => '1 Mrd',
                     'comment' => 'how much do they pay?',
                 ),
                 array(
-                    'title'   => 'employee',
-                    'type'    => '',
-                    'multi'   => '1',
-                    'value'   => 'Joe, Jane, Jim',
+                    'title' => 'employee',
+                    'type' => '',
+                    'multi' => '1',
+                    'value' => 'Joe, Jane, Jim',
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'customer',
-                    'type'    => 'page',
-                    'multi'   => '',
-                    'value'   => 'customers:microsoft',
+                    'title' => 'customer',
+                    'type' => 'page',
+                    'multi' => '',
+                    'value' => 'customers:microsoft',
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'deadline',
-                    'type'    => 'dt',
-                    'multi'   => '',
-                    'value'   => '2009-08-17',
+                    'title' => 'deadline',
+                    'type' => 'dt',
+                    'multi' => '',
+                    'value' => '2009-08-17',
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'server',
-                    'type'    => 'page',
-                    'multi'   => '1',
-                    'value'   => 'servers:devel01, extern:microsoft',
+                    'title' => 'server',
+                    'type' => 'page',
+                    'multi' => '1',
+                    'value' => 'servers:devel01, extern:microsoft',
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'Website',
-                    'type'    => 'url',
-                    'multi'   => '',
-                    'value'   => 'http://www.microsoft.com',
+                    'title' => 'Website',
+                    'type' => 'url',
+                    'multi' => '',
+                    'value' => 'http://www.microsoft.com',
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'task',
-                    'type'    => 'tag',
-                    'multi'   => '1',
-                    'value'   => 'programming, coding, design, html',
+                    'title' => 'task',
+                    'type' => 'tag',
+                    'multi' => '1',
+                    'value' => 'programming, coding, design, html',
                     'comment' => '',
                 ),
                 array(
-                    'title'   => 'tests',
-                    'type'    => '',
-                    'multi'   => '',
-                    'value'   => '#5 done',
+                    'title' => 'tests',
+                    'type' => '',
+                    'multi' => '',
+                    'value' => '#5 done',
                     'comment' => '',
                 ),
                 //empty row
                 array(
-                    'title'   => '',
-                    'type'    => '',
-                    'multi'   => '',
-                    'value'   => '',
+                    'title' => '',
+                    'type' => '',
+                    'multi' => '',
+                    'value' => '',
                     'comment' => '',
                 )
             )
@@ -284,7 +295,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
     }
 
 
-    function testHandleEmpty() {
+    function testHandleEmpty()
+    {
         $plugin = new syntax_plugin_data_entry();
 
         $entry = "---- dataentry projects ----\n"
@@ -294,12 +306,12 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $handler = new Doku_Handler();
         $result = $plugin->handle($entry, 0, 10, $handler);
 
-        $this->assertEquals(10,         $result['pos'],     'Position has changed');
-        $this->assertEquals(35,        $result['len'],     'wrong entry length');
+        $this->assertEquals(10, $result['pos'], 'Position has changed');
+        $this->assertEquals(35, $result['len'], 'wrong entry length');
         $this->assertEquals('projects', $result['classes'], 'wrong class name detected');
 
         $data = array(
-            '----'     => ''
+            '----' => ''
         );
         $this->assertEquals($data, $result['data'], 'Data array corrupted');
 
@@ -309,7 +321,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals($cols, $result['cols'], 'Cols array corrupted');
     }
 
-    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type) {
+    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type)
+    {
         return array(
             'colname' => $name,
             'multi' => $multi,
@@ -320,7 +333,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         );
     }
 
-    function testShowData() {
+    function testShowData()
+    {
         $handler = new Doku_Handler();
         $xhtml = new Doku_Renderer_xhtml();
         $plugin = new syntax_plugin_data_entry();
@@ -351,7 +365,8 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $this->assertEquals(1, pq('dl dd.tests')->length);
     }
 
-    function testComments() {
+    function testComments()
+    {
         $entry = "---- dataentry projects ----\n"
             . "volume        : 1 Mrd # how much do they pay?\n"
             . "server        : http://www.microsoft.com      # Comment\n"
@@ -365,16 +380,16 @@ class syntax_plugin_data_entry_test extends DokuWikiTest {
         $handler = new Doku_Handler();
         $result = $plugin->handle($entry, 0, 10, $handler);
 
-        $this->assertEquals(10,         $result['pos'],     'Position has changed');
+        $this->assertEquals(10, $result['pos'], 'Position has changed');
         $this->assertEquals('projects', $result['classes'], 'wrong class name detected');
 
         $data = array(
-            'volume'   => '1 Mrd',
-            'server'   => 'http://www.microsoft.com',
-            'website'  => 'http://www.microsoft.com#test',
-            'site'     => 'https://www.microsoft.com/page#test',
-            'tests'    => '#5 done',
-            '----'     => ''
+            'volume' => '1 Mrd',
+            'server' => 'http://www.microsoft.com',
+            'website' => 'http://www.microsoft.com#test',
+            'site' => 'https://www.microsoft.com/page#test',
+            'tests' => '#5 done',
+            '----' => ''
         );
         $this->assertEquals($data, $result['data'], 'Data array corrupted');
 

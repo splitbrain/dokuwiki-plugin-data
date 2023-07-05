@@ -30,7 +30,7 @@ jQuery(function () {
         jQuery.each(classes, function (i, cls) {
             //skip base type
             if (cls == 'data_type_page' || cls == 'data_type_pages') {
-                multi = cls.substr(cls.length-1, 1) == 's';
+                multi = cls.substr(cls.length - 1, 1) == 's';
                 return true;
             }
             //only data types, no other classes

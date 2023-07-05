@@ -8,7 +8,8 @@
 /**
  * Class action_plugin_data
  */
-class action_plugin_data extends DokuWiki_Action_Plugin {
+class action_plugin_data extends DokuWiki_Action_Plugin
+{
 
     /**
      * will hold the data helper plugin
@@ -19,14 +20,16 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     /**
      * Constructor. Load helper plugin
      */
-    function __construct(){
+    function __construct()
+    {
         $this->dthlp = plugin_load('helper', 'data');
     }
 
     /**
      * Registers a callback function for a given event
      */
-    function register(Doku_Event_Handler $controller) {
+    function register(Doku_Event_Handler $controller)
+    {
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'BEFORE', $this, '_handle');
         $controller->register_hook('HTML_SECEDIT_BUTTON', 'BEFORE', $this, '_editbutton');
         $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform'); // deprecated
@@ -40,30 +43,32 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
      * when the plugin code is no longer in the source
      *
      * @param Doku_Event $event
-     * @param null       $param
+     * @param null $param
      */
-    function _handle(Doku_Event $event, $param){
+    function _handle(Doku_Event $event, $param)
+    {
         $data = $event->data;
-        if(strpos($data[0][1],'dataentry') !== false) return; // plugin seems still to be there
+        if (strpos($data[0][1], 'dataentry') !== false) return; // plugin seems still to be there
 
         $sqlite = $this->dthlp->_getDB();
-        if(!$sqlite) return;
-        $id = ltrim($data[1].':'.$data[2],':');
+        if (!$sqlite) return;
+        $id = ltrim($data[1] . ':' . $data[2], ':');
 
         // get page id
-        $res = $sqlite->query('SELECT pid FROM pages WHERE page = ?',$id);
-        $pid = (int) $sqlite->res2single($res);
-        if(!$pid) return; // we have no data for this page
+        $res = $sqlite->query('SELECT pid FROM pages WHERE page = ?', $id);
+        $pid = (int)$sqlite->res2single($res);
+        if (!$pid) return; // we have no data for this page
 
-        $sqlite->query('DELETE FROM data WHERE pid = ?',$pid);
-        $sqlite->query('DELETE FROM pages WHERE pid = ?',$pid);
+        $sqlite->query('DELETE FROM data WHERE pid = ?', $pid);
+        $sqlite->query('DELETE FROM pages WHERE pid = ?', $pid);
     }
 
     /**
      * @param Doku_Event $event
-     * @param null       $param
+     * @param null $param
      */
-    function _editbutton($event, $param) {
+    function _editbutton($event, $param)
+    {
         if ($event->data['target'] !== 'plugin_data') {
             return;
         }
@@ -73,9 +78,10 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
     /**
      * @param Doku_Event $event
-     * @param null       $param
+     * @param null $param
      */
-    function _editform(Doku_Event $event, $param) {
+    function _editform(Doku_Event $event, $param)
+    {
         global $TEXT;
         if ($event->data['target'] !== 'plugin_data') {
             // Not a data edit
@@ -95,16 +101,17 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
 
         // Loop through the instructions
         $instructions = p_get_instructions($TEXT);
-        foreach ( $instructions as $instruction ) {
+        foreach ($instructions as $instruction) {
             // Execute the callback against the Renderer
-            call_user_func_array(array($Renderer, $instruction[0]),$instruction[1]);
+            call_user_func_array(array($Renderer, $instruction[0]), $instruction[1]);
         }
     }
 
     /**
      * @param Doku_Event $event
      */
-    function _handle_edit_post(Doku_Event $event) {
+    function _handle_edit_post(Doku_Event $event)
+    {
         if (!isset($_POST['data_edit'])) {
             return;
         }
@@ -117,7 +124,8 @@ class action_plugin_data extends DokuWiki_Action_Plugin {
     /**
      * @param Doku_Event $event
      */
-    function _handle_ajax(Doku_Event $event) {
+    function _handle_ajax(Doku_Event $event)
+    {
         if ($event->data !== 'data_page') {
             return;
         }

@@ -1,1 +1,2 @@
-ALTER TABLE pages ADD lastmod;
+ALTER TABLE pages
+    ADD lastmod;

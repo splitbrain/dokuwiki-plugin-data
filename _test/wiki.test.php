@@ -4,9 +4,11 @@
  * @group plugin_data
  * @group plugins
  */
-class DataPluginDummyTest extends DokuWikiTest {
+class DataPluginDummyTest extends DokuWikiTest
+{
 
-    function test() {
+    function test()
+    {
         $this->assertTrue(true);
     }
 }

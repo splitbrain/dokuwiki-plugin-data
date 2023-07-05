@@ -1,9 +1,11 @@
 <?php
+
 /**
  * @group plugin_data
  * @group plugins
  */
-class action_handle_test extends DokuWikiTest {
+class action_handle_test extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
@@ -13,14 +15,14 @@ class action_handle_test extends DokuWikiTest {
     /** @var helper_plugin_sqlite */
     protected $db;
 
-    public function tearDown() :void
+    public function tearDown(): void
     {
         parent::tearDown();
 
-        $this->db->query('DELETE FROM pages WHERE page = ?','test');
+        $this->db->query('DELETE FROM pages WHERE page = ?', 'test');
     }
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -29,10 +31,11 @@ class action_handle_test extends DokuWikiTest {
         $this->db = $this->helper->_getDB();
 
         $this->db->query('INSERT INTO pages ( pid, page, title , class , lastmod) VALUES
-            (?, ?, ?, ?, ?)', 1 , 'test', 'title', 'class', time());
+            (?, ?, ?, ?, ?)', 1, 'test', 'title', 'class', time());
     }
 
-    function testHandleStillPresent() {
+    function testHandleStillPresent()
+    {
 
         $data = array(
             0 => array(
@@ -48,7 +51,8 @@ class action_handle_test extends DokuWikiTest {
         $this->assertFalse(!$pid);
     }
 
-    function testHandleDelete() {
+    function testHandleDelete()
+    {
         $data = array(
             0 => array(
                 1 => 'no entry'
@@ -60,15 +64,16 @@ class action_handle_test extends DokuWikiTest {
         $event = new Doku_Event('', $data);
         $this->action->_handle($event, null);
 
-        $res = $this->db->query('SELECT pid FROM pages WHERE page = ?','test');
+        $res = $this->db->query('SELECT pid FROM pages WHERE page = ?', 'test');
         $pid = $this->db->res2single($res);
         $this->assertTrue(!$pid);
     }
 
 
-    private function getTestPageId() {
-        $res = $this->db->query('SELECT pid FROM pages WHERE page = ?','test');
-        $pid = (int) $this->db->res2single($res);
+    private function getTestPageId()
+    {
+        $res = $this->db->query('SELECT pid FROM pages WHERE page = ?', 'test');
+        $pid = (int)$this->db->res2single($res);
         return $pid;
     }
 }

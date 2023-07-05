@@ -51,10 +51,10 @@ class DropdownElement extends \dokuwiki\Form\DropdownElement
         }
 
         // setter
-        $this->values = $this->setValuesInOptGroups((array) $value);
-        if(!$this->values) {
+        $this->values = $this->setValuesInOptGroups((array)$value);
+        if (!$this->values) {
             // unknown value set, select first option instead
-            $this->values = $this->setValuesInOptGroups((array) $this->getFirstOptionKey());
+            $this->values = $this->setValuesInOptGroups((array)$this->getFirstOptionKey());
         }
 
         return $this;

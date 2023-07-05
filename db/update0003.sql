@@ -1,1 +1,2 @@
-ALTER TABLE pages ADD class;
+ALTER TABLE pages
+    ADD class;

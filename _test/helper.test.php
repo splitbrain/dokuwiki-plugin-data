@@ -1,8 +1,10 @@
 <?php
 
-class data_dummy_renderer extends Doku_Renderer_xhtml{
+class data_dummy_renderer extends Doku_Renderer_xhtml
+{
 
-    function internallink($id, $title = '', $ignored=null, $ignored2=false, $linktype = 'content') {
+    function internallink($id, $title = '', $ignored = null, $ignored2 = false, $linktype = 'content')
+    {
         return "link: $id $title";
     }
 
@@ -12,18 +14,20 @@ class data_dummy_renderer extends Doku_Renderer_xhtml{
  * @group plugin_data
  * @group plugins
  */
-class helper_plugin_data_test extends DokuWikiTest {
+class helper_plugin_data_test extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
-    public static function setUpBeforeClass() :void
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
         // copy our own config files to the test directory
-        TestUtils::rcopy(dirname(DOKU_CONF), dirname(__FILE__).'/conf');
+        TestUtils::rcopy(dirname(DOKU_CONF), dirname(__FILE__) . '/conf');
     }
 
-    function testCleanData() {
+    function testCleanData()
+    {
 
         $helper = new helper_plugin_data();
 
@@ -60,12 +64,13 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('', $helper->_cleanData('test', array('type' => '', 'enum' => 'some other')));
     }
 
-    function testColumn() {
+    function testColumn()
+    {
         global $conf;
         $helper = new helper_plugin_data();
 
-        $this->assertEquals($this->createColumnEntry('type', false, 'type',  'type', 'type', ''), $helper->_column('type'));
-        $this->assertEquals($this->createColumnEntry('types', true, 'type',  'type', 'type', ''), $helper->_column('types'));
+        $this->assertEquals($this->createColumnEntry('type', false, 'type', 'type', 'type', ''), $helper->_column('type'));
+        $this->assertEquals($this->createColumnEntry('types', true, 'type', 'type', 'type', ''), $helper->_column('types'));
         $this->assertEquals($this->createColumnEntry('', false, '', '', '', ''), $helper->_column(''));
         $this->assertEquals($this->createColumnEntry('type_url', false, 'type', 'type', 'type', 'url'), $helper->_column('type_url'));
         $this->assertEquals($this->createColumnEntry('type_urls', true, 'type', 'type', 'type', 'url'), $helper->_column('type_urls'));
@@ -74,7 +79,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals($this->createColumnEntry('type_hiddens', true, 'type', 'type', 'type', 'hidden'), $helper->_column('type_hiddens'));
 
         $this->assertEquals($this->createColumnEntry('%title%', false, '%title%', '%title%', 'Page', 'title'), $helper->_column('%title%'));
-        $this->assertEquals($this->createColumnEntry('%pageid%', false, '%pageid%', '%pageid%','Title', 'page'), $helper->_column('%pageid%'));
+        $this->assertEquals($this->createColumnEntry('%pageid%', false, '%pageid%', '%pageid%', 'Title', 'page'), $helper->_column('%pageid%'));
         $this->assertEquals($this->createColumnEntry('%class%', false, '%class%', '%class%', 'Page Class', ''), $helper->_column('%class%'));
         $this->assertEquals($this->createColumnEntry('%lastmod%', false, '%lastmod%', '%lastmod%', 'Last Modified', 'timestamp'), $helper->_column('%lastmod%'));
 
@@ -89,7 +94,8 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals($this->createColumnEntry('trans_urls', true, 'trans', 'trans', 'Übersetzter Titel', 'url'), $helper->_column('trans_urls'));
     }
 
-    function testAddPrePostFixes() {
+    function testAddPrePostFixes()
+    {
         global $conf;
         $helper = new helper_plugin_data();
 
@@ -104,7 +110,7 @@ class helper_plugin_data_test extends DokuWikiTest {
 
         $this->assertEquals('value', $helper->_addPrePostFixes(array('prefix' => '%trans%'), 'value'));
 
-        $plugininstalled = in_array('translation', plugin_list('helper',$all=true));
+        $plugininstalled = in_array('translation', plugin_list('helper', $all = true));
         if (!$plugininstalled) $this->markTestSkipped('Pre-condition not satisfied: translation plugin must be installed');
 
         if ($plugininstalled && plugin_enable('translation')) {
@@ -116,7 +122,8 @@ class helper_plugin_data_test extends DokuWikiTest {
 
     }
 
-    function testResolveData() {
+    function testResolveData()
+    {
         $helper = new helper_plugin_data();
 
         $this->assertEquals('tom', $helper->_resolveData('tom', 'name'));
@@ -126,7 +133,8 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('none:existing ', $helper->_resolveData('none:existing', 'name_title'));
     }
 
-    function testFormatData() {
+    function testFormatData()
+    {
         global $conf;
         global $ID;
         $ID = '';
@@ -166,7 +174,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('<a href=\'url\' class=\'urlextern\' rel="nofollow">url</a>',
             $helper->_formatData(array('type' => 'url'), "url", $renderer));
 
-        $this->assertEquals('<a href="' . wl('start', array('dataflt[0]'=>'_=value')) . '" title="Show pages matching \'value\'" class="wikilink1">value</a>',
+        $this->assertEquals('<a href="' . wl('start', array('dataflt[0]' => '_=value')) . '" title="Show pages matching \'value\'" class="wikilink1">value</a>',
             $helper->_formatData(array('type' => 'tag', 'key' => ''), "value", $renderer));
 
         $this->assertEquals(strftime('%Y/%m/%d %H:%M', 1234567),
@@ -176,11 +184,12 @@ class helper_plugin_data_test extends DokuWikiTest {
             $helper->_formatData(array('type' => 'wiki'), '|**bla**', $renderer));
 
 
-        $this->assertEquals('<a rel="lightbox" href="'.ml('wiki:dokuwiki-128.png', array('cache' => null)).'" class="media" title="wiki:dokuwiki-128.png"><img src="'.ml('wiki:dokuwiki-128.png', array('w' => 300, 'cache' => null)).'" class="media" loading="lazy" title=": dokuwiki-128.png" alt=": dokuwiki-128.png" width="300" /></a>',
+        $this->assertEquals('<a rel="lightbox" href="' . ml('wiki:dokuwiki-128.png', array('cache' => null)) . '" class="media" title="wiki:dokuwiki-128.png"><img src="' . ml('wiki:dokuwiki-128.png', array('w' => 300, 'cache' => null)) . '" class="media" loading="lazy" title=": dokuwiki-128.png" alt=": dokuwiki-128.png" width="300" /></a>',
             $helper->_formatData(array('type' => 'img300', 'key' => ''), 'wiki:dokuwiki-128.png', $renderer));
     }
 
-    function testReplacePlaceholdersInSQL() {
+    function testReplacePlaceholdersInSQL()
+    {
         global $USERINFO;
         global $INPUT;
         $helper = new helper_plugin_data();
@@ -191,7 +200,7 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('test', $data['sql']);
 
         $data = array('sql' => '%groups%');
-        $USERINFO['grps'] = array('test','admin');
+        $USERINFO['grps'] = array('test', 'admin');
         $helper->_replacePlaceholdersInSQL($data);
         $this->assertEquals("test','admin", $data['sql']);
 
@@ -204,7 +213,8 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals('en', $data['sql']);
     }
 
-    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type) {
+    protected function createColumnEntry($name, $multi, $key, $origkey, $title, $type)
+    {
         return array(
             'colname' => $name,
             'multi' => $multi,
@@ -215,13 +225,15 @@ class helper_plugin_data_test extends DokuWikiTest {
         );
     }
 
-    public function testNoSqlPlugin() {
+    public function testNoSqlPlugin()
+    {
         $helper = new helper_plugin_data();
         plugin_disable('sqlite');
         $this->assertFalse($helper->_getDB());
     }
 
-    public function testParseFilter() {
+    public function testParseFilter()
+    {
         $helper = new helper_plugin_data();
 
         $this->assertEquals($this->createFilterArray('name', 'tom', '=', 'name_some', 'some')
@@ -276,7 +288,8 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals(false, $helper->_parse_filter(''));
     }
 
-    protected function createFilterArray($key, $value, $compare, $colname, $type) {
+    protected function createFilterArray($key, $value, $compare, $colname, $type)
+    {
         return array(
             'key' => $key,
             'value' => $value,
@@ -286,7 +299,8 @@ class helper_plugin_data_test extends DokuWikiTest {
         );
     }
 
-    public function testGetFilters() {
+    public function testGetFilters()
+    {
         $helper = new helper_plugin_data();
 
         $this->assertEquals(array(), $helper->_get_filters());
@@ -311,13 +325,15 @@ class helper_plugin_data_test extends DokuWikiTest {
             $helper->_get_filters());
     }
 
-    private function createFilterArrayListEntry($key, $value, $compare, $colname, $type, $logic) {
-        $item =  $this->createFilterArray($key, $value, $compare, $colname, $type);
+    private function createFilterArrayListEntry($key, $value, $compare, $colname, $type, $logic)
+    {
+        $item = $this->createFilterArray($key, $value, $compare, $colname, $type);
         $item['logic'] = $logic;
         return $item;
     }
 
-    public function testA2UA() {
+    public function testA2UA()
+    {
         $helper = new helper_plugin_data();
 
         $array = array(
@@ -333,13 +349,14 @@ class helper_plugin_data_test extends DokuWikiTest {
         $this->assertEquals($result, $helper->_a2ua('table', $array));
     }
 
-    public function testMakeTranslationReplacement() {
+    public function testMakeTranslationReplacement()
+    {
         $helper = new helper_plugin_data();
 
         $this->assertEquals('en', $helper->makeTranslationReplacement('%lang%'));
         $this->assertEquals('', $helper->makeTranslationReplacement('%trans%'));
 
-        $plugininstalled = in_array('translation', plugin_list('helper',$all=true));
+        $plugininstalled = in_array('translation', plugin_list('helper', $all = true));
         if (!$plugininstalled) $this->markTestSkipped('Pre-condition not satisfied: translation plugin must be installed');
 
         if ($plugininstalled && plugin_enable('translation')) {

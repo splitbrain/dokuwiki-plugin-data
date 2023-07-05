@@ -1,13 +1,16 @@
 <?php
+
 /**
  * @group plugin_data
  * @group plugins
  */
-class helper_plugin_data_test_aliases extends DokuWikiTest {
+class helper_plugin_data_test_aliases extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('data', 'sqlite');
 
-    public function testAliases() {
+    public function testAliases()
+    {
         $helper = new helper_plugin_data();
         $db = $helper->_getDB();
         $this->assertTrue($db !== false);

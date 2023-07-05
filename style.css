@@ -15,14 +15,15 @@ div.dataplugin_entry dl {
     display: block;
 }
 
-*:first-child+html div.dataplugin_entry dl dd {
+*:first-child + html div.dataplugin_entry dl dd {
     float: none;
     display: block;
 }
 
-*:first-child+html div.dataplugin_entry dt {
+*:first-child + html div.dataplugin_entry dt {
     padding-right: 0.5em;
 }
+
 /* END OF IE MAGIC */
 
 div.dataplugin_entry dl dt {
@@ -32,6 +33,7 @@ div.dataplugin_entry dl dt {
     width: 10em;
     text-align: right;
 }
+
 div.dataplugin_entry dl dd {
     float: left;
     margin-left: 0.5em;
@@ -56,11 +58,25 @@ ul.dataplugin_cloud li {
     padding: 0;
 }
 
-ul.dataplugin_cloud li.cl0 { font-size: 70% }
-ul.dataplugin_cloud li.cl1 { font-size: 90% }
-ul.dataplugin_cloud li.cl2 { font-size: 110% }
-ul.dataplugin_cloud li.cl3 { font-size: 130% }
-ul.dataplugin_cloud li.cl4 { font-size: 150% }
+ul.dataplugin_cloud li.cl0 {
+    font-size: 70%
+}
+
+ul.dataplugin_cloud li.cl1 {
+    font-size: 90%
+}
+
+ul.dataplugin_cloud li.cl2 {
+    font-size: 110%
+}
+
+ul.dataplugin_cloud li.cl3 {
+    font-size: 130%
+}
+
+ul.dataplugin_cloud li.cl4 {
+    font-size: 150%
+}
 
 /* default styles for the related mode */
 dl.datarelated {
@@ -74,6 +90,7 @@ dl.datarelated dd {
 dl.datarelated dt {
     font-weight: bold;
 }
+
 /*
  * Custom Entry Editor
  */
@@ -98,40 +115,48 @@ dl.datarelated dt {
     border: none;
     margin: 1em 0;
 }
+
 #dw__editform fieldset.plugin__data table {
-    th {
-        border: none;
-    }
-    th.title {
-        width: 20%;
-    }
-    th.type {
-        width: 15%;
-    }
-    th.multi {
-        width: 5%;
-    }
-    th.value {
-        width: 30%;
-    }
-    th.comment {
-        width: 20%;
-    }
+
+th {
+    border: none;
+}
+
+th.title {
+    width: 20%;
+}
+
+th.type {
+    width: 15%;
+}
+
+th.multi {
+    width: 5%;
+}
+
+th.value {
+    width: 30%;
+}
+
+th.comment {
+    width: 20%;
+}
 
 
-    td {
-        padding: 0.2em 0.3em;
-        border: none;
-    }
+td {
+    padding: 0.2em 0.3em;
+    border: none;
+}
 
-    td.title {
-        font-weight: bold;
-    }
+td.title {
+    font-weight: bold;
+}
 
-    td select,
-    td input {
-        width: 100%;
-    }
+td select,
+td input {
+    width: 100%;
+}
+
 }
 
 
@@ -157,10 +182,12 @@ div.dokuwiki div.editbutton_plugin_data form button {
 table.dataplugin_table th input {
     width: 98%;
 }
+
 /* datapicker and autocomplete menu */
 .ui-datepicker {
     font-size: 0.9em;
 }
+
 .ui-menu {
     font-size: 1em;
 }
