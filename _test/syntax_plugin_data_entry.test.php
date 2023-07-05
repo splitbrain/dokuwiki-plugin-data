@@ -342,27 +342,27 @@ class syntax_plugin_data_entry_test extends DokuWikiTest
         $result = $plugin->handle($this->exampleEntry, 0, 10, $handler);
 
         $plugin->_showData($result, $xhtml);
-        $doc = phpQuery::newDocument($xhtml->doc);
+        $doc = (new DOMWrap\Document())->html($xhtml->doc);
 
-        $this->assertEquals(1, pq('div.inline.dataplugin_entry.projects', $doc)->length);
-        $this->assertEquals(1, pq('dl dt.type')->length);
-        $this->assertEquals(1, pq('dl dd.type')->length);
-        $this->assertEquals(1, pq('dl dt.volume')->length);
-        $this->assertEquals(1, pq('dl dd.volume')->length);
-        $this->assertEquals(1, pq('dl dt.employee')->length);
-        $this->assertEquals(1, pq('dl dd.employee')->length);
-        $this->assertEquals(1, pq('dl dt.customer')->length);
-        $this->assertEquals(1, pq('dl dd.customer')->length);
-        $this->assertEquals(1, pq('dl dt.deadline')->length);
-        $this->assertEquals(1, pq('dl dd.deadline')->length);
-        $this->assertEquals(1, pq('dl dt.server')->length);
-        $this->assertEquals(1, pq('dl dd.server')->length);
-        $this->assertEquals(1, pq('dl dt.website')->length);
-        $this->assertEquals(1, pq('dl dd.website')->length);
-        $this->assertEquals(1, pq('dl dt.task')->length);
-        $this->assertEquals(1, pq('dl dd.task')->length);
-        $this->assertEquals(1, pq('dl dt.tests')->length);
-        $this->assertEquals(1, pq('dl dd.tests')->length);
+        $this->assertEquals(1, $doc->find('div.inline.dataplugin_entry.projects')->count());
+        $this->assertEquals(1, $doc->find('dl dt.type')->count());
+        $this->assertEquals(1, $doc->find('dl dd.type')->count());
+        $this->assertEquals(1, $doc->find('dl dt.volume')->count());
+        $this->assertEquals(1, $doc->find('dl dd.volume')->count());
+        $this->assertEquals(1, $doc->find('dl dt.employee')->count());
+        $this->assertEquals(1, $doc->find('dl dd.employee')->count());
+        $this->assertEquals(1, $doc->find('dl dt.customer')->count());
+        $this->assertEquals(1, $doc->find('dl dd.customer')->count());
+        $this->assertEquals(1, $doc->find('dl dt.deadline')->count());
+        $this->assertEquals(1, $doc->find('dl dd.deadline')->count());
+        $this->assertEquals(1, $doc->find('dl dt.server')->count());
+        $this->assertEquals(1, $doc->find('dl dd.server')->count());
+        $this->assertEquals(1, $doc->find('dl dt.website')->count());
+        $this->assertEquals(1, $doc->find('dl dd.website')->count());
+        $this->assertEquals(1, $doc->find('dl dt.task')->count());
+        $this->assertEquals(1, $doc->find('dl dd.task')->count());
+        $this->assertEquals(1, $doc->find('dl dt.tests')->count());
+        $this->assertEquals(1, $doc->find('dl dd.tests')->count());
     }
 
     function testComments()
