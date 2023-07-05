@@ -6,6 +6,8 @@
  * @author  Andreas Gohr <gohr@cosmocode.de>
  */
 
+use dokuwiki\Utf8\PhpString;
+
 /**
  * Administration form for configuring the type aliases
  */
@@ -75,7 +77,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
         }
         foreach ($_REQUEST['d'] as $row) {
             $row = array_map('trim', $row);
-            $row['name'] = utf8_strtolower($row['name']);
+            $row['name'] = PHPString::strtolower($row['name']);
             $row['name'] = rtrim($row['name'], 's');
             if (!$row['name']) continue;
 

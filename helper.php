@@ -4,6 +4,8 @@
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
 
+use dokuwiki\Utf8\PhpString;
+
 /**
  * This is the base class for all syntax classes, providing some general stuff
  */
@@ -43,7 +45,7 @@ class helper_plugin_data extends DokuWiki_Plugin
         $path = DOKU_CONF . '/lang/' . $this->determineLang() . '/data-plugin.php';
         if (file_exists($path)) include($path);
         foreach ($lang as $key => $val) {
-            $lang[utf8_strtolower($key)] = $val;
+            $lang[PHPString::strtolower($key)] = $val;
         }
         $this->locs = $lang;
     }
@@ -381,10 +383,10 @@ class helper_plugin_data extends DokuWiki_Plugin
         $column = array(
             'colname' => $col,
             'multi' => ($matches[3] === 's'),
-            'key' => utf8_strtolower($matches[1]),
+            'key' => PHPString::strtolower($matches[1]),
             'origkey' => $matches[1], //similar to key, but stores upper case
             'title' => $matches[1],
-            'type' => utf8_strtolower($matches[2])
+            'type' => PHPString::strtolower($matches[2])
         );
 
         // fix title for special columns

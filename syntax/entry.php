@@ -6,6 +6,7 @@
  */
 
 use dokuwiki\Form\Element;
+use dokuwiki\Utf8\PhpString;
 
 /**
  * Class syntax_plugin_data_entry
@@ -631,12 +632,12 @@ class syntax_plugin_data_entry extends DokuWiki_Syntax_Plugin
             }
 
             $nudata[] = array($name, syntax_plugin_data_entry::_normalize($field['value']), $field['comment']);
-            $len = max($len, utf8_strlen($nudata[count($nudata) - 1][0]));
+            $len = max($len, PHPString::strlen($nudata[count($nudata) - 1][0]));
         }
 
         $ret = '---- dataentry ' . trim($data['classes']) . ' ----' . DOKU_LF;
         foreach ($nudata as $field) {
-            $ret .= $field[0] . str_repeat(' ', $len + 1 - utf8_strlen($field[0])) . ': ';
+            $ret .= $field[0] . str_repeat(' ', $len + 1 - PHPString::strlen($field[0])) . ': ';
             $ret .= $field[1];
             if ($field[2] !== '') {
                 $ret .= ' # ' . $field[2];
