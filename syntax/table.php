@@ -613,11 +613,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                     case 'pageid':
                     case 'wiki':
                         //note in multivalued case: adds pageid only to first value
-                        $select[] = "pages.page || '|' || group_concat(" . $tables[$key] . ".value,'\n')";
+                        $select[] = "pages.page || '|' || GROUP_CONCAT_DISTINCT(" . $tables[$key] . ".value,'\n')";
                         break;
                     default:
                         // Prevent stripping of trailing zeros by forcing a CAST
-                        $select[] = 'group_concat(" " || ' . $tables[$key] . ".value,'\n')";
+                        $select[] = 'GROUP_CONCAT_DISTINCT(" " || ' . $tables[$key] . ".value,'\n')";
                 }
             }
         }

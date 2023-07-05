@@ -109,10 +109,10 @@ class syntax_plugin_data_table_test extends DokuWikiTest
             'align' => array(
                 '0' => 'center'
             ),
-            'sql' => "SELECT \" \" || pages.page, group_concat(\" \" || T1.value,'
-'), group_concat(\" \" || T2.value,'
-'), group_concat(\" \" || T3.value,'
-'), group_concat(\" \" || T4.value,'
+            'sql' => "SELECT \" \" || pages.page, GROUP_CONCAT_DISTINCT(\" \" || T1.value,'
+'), GROUP_CONCAT_DISTINCT(\" \" || T2.value,'
+'), GROUP_CONCAT_DISTINCT(\" \" || T3.value,'
+'), GROUP_CONCAT_DISTINCT(\" \" || T4.value,'
 ')
                 FROM (
                     SELECT DISTINCT pages.pid AS pid
