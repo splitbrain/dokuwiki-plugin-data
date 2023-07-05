@@ -108,7 +108,7 @@ class helper_plugin_data extends DokuWiki_Plugin
      */
     function _cleanData($value, $type)
     {
-        $value = trim($value);
+        $value = trim((string) $value);
         if (!$value and $value !== '0') {
             return '';
         }
