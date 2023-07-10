@@ -1,5 +1,7 @@
 <?php
 
+use dokuwiki\plugin\sqlite\SQLiteDB;
+
 /**
  * @group plugin_data
  * @group plugins
@@ -12,14 +14,14 @@ class action_handle_test extends DokuWikiTest
     protected $action;
     /** @var helper_plugin_data */
     protected $helper;
-    /** @var helper_plugin_sqlite */
+    /** @var SQLiteDB */
     protected $db;
 
     public function tearDown(): void
     {
         parent::tearDown();
 
-        $this->db->query('DELETE FROM pages WHERE page = ?', 'test');
+        $this->db->exec('DELETE FROM pages WHERE page = ?', 'test');
     }
 
     public function setUp(): void
@@ -30,8 +32,10 @@ class action_handle_test extends DokuWikiTest
         $this->helper = plugin_load('helper', 'data');
         $this->db = $this->helper->_getDB();
 
-        $this->db->query('INSERT INTO pages ( pid, page, title , class , lastmod) VALUES
-            (?, ?, ?, ?, ?)', 1, 'test', 'title', 'class', time());
+        $this->db->exec(
+            'INSERT INTO pages ( pid, page, title , class , lastmod) VALUES (?, ?, ?, ?, ?)',
+            [1, 'test', 'title', 'class', time()]
+        );
     }
 
     function testHandleStillPresent()
@@ -64,16 +68,14 @@ class action_handle_test extends DokuWikiTest
         $event = new Doku_Event('', $data);
         $this->action->_handle($event, null);
 
-        $res = $this->db->query('SELECT pid FROM pages WHERE page = ?', 'test');
-        $pid = $this->db->res2single($res);
+        $pid = $this->db->queryValue('SELECT pid FROM pages WHERE page = ?', 'test');
         $this->assertTrue(!$pid);
     }
 
 
     private function getTestPageId()
     {
-        $res = $this->db->query('SELECT pid FROM pages WHERE page = ?', 'test');
-        $pid = (int)$this->db->res2single($res);
+        $pid = (int) $this->db->queryValue('SELECT pid FROM pages WHERE page = ?', 'test');
         return $pid;
     }
 }

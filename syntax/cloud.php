@@ -103,7 +103,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
                     if (!$tables[$col]) {
                         $tables[$col] = 'T' . (++$cnt);
                         $from .= ' LEFT JOIN data AS ' . $tables[$col] . ' ON ' . $tables[$col] . '.pid = data.pid';
-                        $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->quote_string($col);
+                        $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->getPdo()->quote($col);
                     }
 
                     $where .= ' ' . $filter['logic'] . ' ' . $tables[$col] . '.value ' . $filter['compare'] .
@@ -115,7 +115,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         // build query
         $sql = "SELECT data.value AS value, COUNT(data.pid) AS cnt
                   FROM data $from $pagesjoin
-                 WHERE data.key = " . $sqlite->quote_string($ckey) . "
+                 WHERE data.key = " . $sqlite->getPdo()->quote($ckey) . "
                  $where
               GROUP BY data.value";
         if (isset($data['min'])) {
@@ -164,8 +164,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         $this->dthlp->_replacePlaceholdersInSQL($data);
 
         // build cloud data
-        $res = $sqlite->query($data['sql']);
-        $rows = $sqlite->res2arr($res);
+        $rows = $sqlite->queryAll($data['sql']);
         $min = 0;
         $max = 0;
         $tags = array();

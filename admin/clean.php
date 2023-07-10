@@ -68,14 +68,13 @@ class admin_plugin_data_clean extends DokuWiki_Admin_Plugin
         $sqlite = $this->dthlp->_getDB();
         if (!$sqlite) return;
 
-        $res = $sqlite->query("SELECT pid, page FROM pages");
-        $rows = $sqlite->res2arr($res);
+        $rows = $sqlite->queryAll('SELECT pid, page FROM pages');
 
         $count = 0;
         foreach ($rows as $row) {
             if (!page_exists($row['page'])) {
-                $sqlite->query('DELETE FROM data WHERE pid = ?', $row['pid']);
-                $sqlite->query('DELETE FROM pages WHERE pid = ?', $row['pid']);
+                $sqlite->exec('DELETE FROM data WHERE pid = ?', $row['pid']);
+                $sqlite->exec('DELETE FROM pages WHERE pid = ?', $row['pid']);
                 $count++;
             }
         }
@@ -100,5 +99,3 @@ class admin_plugin_data_clean extends DokuWiki_Admin_Plugin
     }
 
 }
-
-// vim:ts=4:sw=4:et:enc=utf-8:

@@ -227,61 +227,62 @@ class helper_plugin_data_test extends DokuWikiTest
 
     public function testNoSqlPlugin()
     {
-        $helper = new helper_plugin_data();
         plugin_disable('sqlite');
-        $this->assertFalse($helper->_getDB());
+        $this->expectException(\Exception::class);
+        $helper = new helper_plugin_data();
+        $helper->_getDB();
     }
 
     public function testParseFilter()
     {
         $helper = new helper_plugin_data();
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '=', 'name_some', 'some')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '=', 'name_some', 'some')
             , $helper->_parse_filter('name_some = tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '=', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '=', 'name', '')
             , $helper->_parse_filter('name = tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '!=', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '!=', 'name', '')
             , $helper->_parse_filter('name != tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '!=', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '!=', 'name', '')
             , $helper->_parse_filter('name <> tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '<', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '<', 'name', '')
             , $helper->_parse_filter('name < tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '>', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '>', 'name', '')
             , $helper->_parse_filter('name > tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '<=', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '<=', 'name', '')
             , $helper->_parse_filter('name <= tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', '>=', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", '>=', 'name', '')
             , $helper->_parse_filter('name >= tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', 'LIKE', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", 'LIKE', 'name', '')
             , $helper->_parse_filter('name ~ tom'));
 
-        $this->assertEquals($this->createFilterArray('name', '%tom%', 'LIKE', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'%tom%'", 'LIKE', 'name', '')
             , $helper->_parse_filter('name *~ tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', 'NOT LIKE', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", 'NOT LIKE', 'name', '')
             , $helper->_parse_filter('name !~ tom'));
 
-        $this->assertEquals($this->createFilterArray('name', '%tom', 'LIKE', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'%tom'", 'LIKE', 'name', '')
             , $helper->_parse_filter('name ~ *tom'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom%', 'LIKE', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom%'", 'LIKE', 'name', '')
             , $helper->_parse_filter('name ~ tom*'));
 
-        $this->assertEquals($this->createFilterArray('name', '%tom%', 'LIKE', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'%tom%'", 'LIKE', 'name', '')
             , $helper->_parse_filter('name ~ *tom*'));
 
-        $this->assertEquals($this->createFilterArray('name', 'tom', 'IN(', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'tom'", 'IN(', 'name', '')
             , $helper->_parse_filter('name ~~ tom'));
 
-        $this->assertEquals($this->createFilterArray('name', "t''om','john*", 'IN(', 'name', '')
+        $this->assertEquals($this->createFilterArray('name', "'t''om','john*'", 'IN(', 'name', '')
             , $helper->_parse_filter("name ~~ t'om,john*"));
 
         $this->assertEquals(false, $helper->_parse_filter('name is *tom*'));
@@ -306,12 +307,12 @@ class helper_plugin_data_test extends DokuWikiTest
         $this->assertEquals(array(), $helper->_get_filters());
 
         $_REQUEST['dataflt'] = 'name = tom';
-        $this->assertEquals(array($this->createFilterArrayListEntry('name', 'tom', '=', 'name', '', 'AND')),
+        $this->assertEquals(array($this->createFilterArrayListEntry('name', "'tom'", '=', 'name', '', 'AND')),
             $helper->_get_filters());
 
         $_REQUEST['dataflt'] = array();
         $_REQUEST['dataflt'][] = 'name = tom';
-        $this->assertEquals(array($this->createFilterArrayListEntry('name', 'tom', '=', 'name', '', 'AND')),
+        $this->assertEquals(array($this->createFilterArrayListEntry('name', "'tom'", '=', 'name', '', 'AND')),
             $helper->_get_filters());
 
         $_REQUEST['dataflt'] = array();
@@ -319,8 +320,8 @@ class helper_plugin_data_test extends DokuWikiTest
         $_REQUEST['dataflt'][] = 'unit_url = dokuwiki.org';
         $this->assertEquals(
             array(
-                $this->createFilterArrayListEntry('name', 'tom', '=', 'name', '', 'AND'),
-                $this->createFilterArrayListEntry('unit', 'http://dokuwiki.org', '=', 'unit_url', 'url', 'AND')
+                $this->createFilterArrayListEntry('name', "'tom'", '=', 'name', '', 'AND'),
+                $this->createFilterArrayListEntry('unit', "'http://dokuwiki.org'", '=', 'unit_url', 'url', 'AND')
             ),
             $helper->_get_filters());
     }

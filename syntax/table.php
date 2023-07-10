@@ -263,9 +263,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
 
         // run query
         $clist = array_keys($data['cols']);
-        $res = $sqlite->query($data['sql']);
-
-        $rows = $sqlite->res2arr($res);
+        $rows = $sqlite->queryAll($data['sql']);
         $cnt = count($rows);
 
         if ($cnt === 0) {
@@ -603,7 +601,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                 if (!isset($tables[$key])) {
                     $tables[$key] = 'T' . (++$cnt);
                     $from .= ' LEFT JOIN data AS ' . $tables[$key] . ' ON ' . $tables[$key] . '.pid = W1.pid';
-                    $from .= ' AND ' . $tables[$key] . ".key = " . $sqlite->quote_string($key);
+                    $from .= ' AND ' . $tables[$key] . ".key = " . $sqlite->getPdo()->quote($key);
                 }
                 $type = $col['type'];
                 if (is_array($type)) {
@@ -640,7 +638,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                 if (!$tables[$col]) {
                     $tables[$col] = 'T' . (++$cnt);
                     $from .= ' LEFT JOIN data AS ' . $tables[$col] . ' ON ' . $tables[$col] . '.pid = W1.pid';
-                    $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->quote_string($col);
+                    $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->getPdo()->quote($col);
                 }
 
                 $order = 'ORDER BY ' . $tables[$col] . '.value ' . $data['sort'][1];
@@ -661,11 +659,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                 $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if ($col == '%pageid%') {
-                    $where2 .= " " . $filter['logic'] . " pages.page " . $filter['compare'] . " '" . $filter['value'] . "'" . $closecompare;
+                    $where2 .= " " . $filter['logic'] . " pages.page " . $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } elseif ($col == '%class%') {
-                    $where2 .= " " . $filter['logic'] . " pages.class " . $filter['compare'] . " '" . $filter['value'] . "'" . $closecompare;
+                    $where2 .= " " . $filter['logic'] . " pages.class " . $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } elseif ($col == '%title%') {
-                    $where2 .= " " . $filter['logic'] . " pages.title " . $filter['compare'] . " '" . $filter['value'] . "'" . $closecompare;
+                    $where2 .= " " . $filter['logic'] . " pages.title " . $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } elseif ($col == '%lastmod%') {
                     # parse value to int?
                     $filter['value'] = (int)strtotime($filter['value']);
@@ -674,15 +672,15 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                     // filter by hidden column?
                     $table = 'T' . (++$cnt);
                     $from2 .= ' LEFT JOIN data AS ' . $table . ' ON ' . $table . '.pid = pages.pid';
-                    $from2 .= ' AND ' . $table . ".key = " . $sqlite->quote_string($col);
+                    $from2 .= ' AND ' . $table . ".key = " . $sqlite->getPdo()->quote($col);
 
                     // apply data resolving?
                     if ($use_dataresolve && $filter['colname'] && (substr($filter['compare'], -4) == 'LIKE')) {
-                        $where2 .= ' ' . $filter['logic'] . ' DATARESOLVE(' . $table . '.value,\'' . $sqlite->escape_string($filter['colname']) . '\') ' . $filter['compare'] .
-                            " '" . $filter['value'] . "'"; //value is already escaped
+                        $where2 .= ' ' . $filter['logic'] . ' DATARESOLVE(' . $table . '.value,' . $sqlite->getPdo()->quote($filter['colname']) . ') ' . $filter['compare'] .
+                            " " . $filter['value']; //value is already escaped
                     } else {
                         $where2 .= ' ' . $filter['logic'] . ' ' . $table . '.value ' . $filter['compare'] .
-                            " '" . $filter['value'] . "'" . $closecompare; //value is already escaped
+                            " " . $filter['value'] . $closecompare; //value is already escaped
                     }
                 }
             }

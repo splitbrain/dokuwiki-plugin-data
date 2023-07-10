@@ -4,6 +4,8 @@
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
 
+use dokuwiki\ErrorHandler;
+use dokuwiki\plugin\sqlite\SQLiteDB;
 use dokuwiki\Utf8\PhpString;
 
 /**
@@ -13,7 +15,7 @@ class helper_plugin_data extends DokuWiki_Plugin
 {
 
     /**
-     * @var helper_plugin_sqlite initialized via _getDb()
+     * @var SQLiteDB initialized via _getDb()
      */
     protected $db = null;
 
@@ -80,21 +82,20 @@ class helper_plugin_data extends DokuWiki_Plugin
     /**
      * load the sqlite helper
      *
-     * @return helper_plugin_sqlite|false plugin or false if failed
+     * @return SQLiteDB|null SQLite class plugin or null if failed
      */
     function _getDB()
     {
         if ($this->db === null) {
-            $this->db = plugin_load('helper', 'sqlite');
-            if ($this->db === null) {
-                msg('The data plugin needs the sqlite plugin', -1);
-                return false;
+            try {
+                $this->db = new SQLiteDB('data', __DIR__ . '/db/');
+                $this->db->getPdo()->sqliteCreateFunction('DATARESOLVE', [$this, '_resolveData'], 2);
+            } catch (\Exception $exception) {
+                if (defined('DOKU_UNITTEST')) throw new \RuntimeException('Could not load SQLite', 0, $exception);
+                ErrorHandler::logException($exception);
+                msg('Couldn\'t load sqlite.', -1);
+                return null;
             }
-            if (!$this->db->init('data', dirname(__FILE__) . '/db/')) {
-                $this->db = null;
-                return false;
-            }
-            $this->db->create_function('DATARESOLVE', array($this, '_resolveData'), 2);
         }
         return $this->db;
     }
@@ -432,8 +433,7 @@ class helper_plugin_data extends DokuWiki_Plugin
         if (!$sqlite) return array();
 
         $this->aliases = array();
-        $res = $sqlite->query("SELECT * FROM aliases");
-        $rows = $sqlite->res2arr($res);
+        $rows = $sqlite->queryAll("SELECT * FROM aliases");
         foreach ($rows as $row) {
             $name = $row['name'];
             unset($row['name']);
@@ -492,11 +492,14 @@ class helper_plugin_data extends DokuWiki_Plugin
             }
             $sqlite = $this->_getDB();
             if (!$sqlite) return false;
-            $val = $sqlite->escape_string($val); //pre escape
+
             if ($com == 'IN(') {
                 $val = explode(',', $val);
                 $val = array_map('trim', $val);
-                $val = implode("','", $val);
+                $val = array_map([$sqlite->getPdo(), 'quote'], $val);
+                $val = implode(",", $val);
+            } else {
+                $val = $sqlite->getPdo()->quote($val);
             }
 
             return array(

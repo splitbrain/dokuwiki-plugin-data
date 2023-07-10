@@ -70,29 +70,30 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
         $sqlite = $this->dthlp->_getDB();
         if (!$sqlite) return;
 
-        $sqlite->query("BEGIN TRANSACTION");
-        if (!$sqlite->query("DELETE FROM aliases")) {
-            $sqlite->query('ROLLBACK TRANSACTION');
-            return;
-        }
-        foreach ($_REQUEST['d'] as $row) {
-            $row = array_map('trim', $row);
-            $row['name'] = PHPString::strtolower($row['name']);
-            $row['name'] = rtrim($row['name'], 's');
-            if (!$row['name']) continue;
+        $sqlite->getPdo()->beginTransaction();
+        try {
+            $sqlite->exec('DELETE FROM aliases');
 
-            // Clean enum
-            $arr = preg_split('/\s*,\s*/', $row['enum']);
-            $arr = array_unique($arr);
-            $row['enum'] = implode(', ', $arr);
+            foreach ($_REQUEST['d'] as $row) {
+                $row = array_map('trim', $row);
+                $row['name'] = PHPString::strtolower($row['name']);
+                $row['name'] = rtrim($row['name'], 's');
+                if (!$row['name']) continue;
 
-            if (!$sqlite->query("INSERT INTO aliases (name, type, prefix, postfix, enum)
-                                 VALUES (?,?,?,?,?)", $row)) {
-                $sqlite->query('ROLLBACK TRANSACTION');
-                return;
+                // Clean enum
+                $arr = preg_split('/\s*,\s*/', $row['enum']);
+                $arr = array_unique($arr);
+                $row['enum'] = implode(', ', $arr);
+
+                $sqlite->exec(
+                    'INSERT INTO aliases (name, type, prefix, postfix, enum) VALUES (?,?,?,?,?)',
+                    $row
+                );
             }
+            $sqlite->getPdo()->commit();
+        } catch (\Exception $exception) {
+            $sqlite->getPdo()->rollBack();
         }
-        $sqlite->query("COMMIT TRANSACTION");
     }
 
     /**
@@ -105,9 +106,8 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
 
         echo $this->locale_xhtml('admin_intro');
 
-        $sql = "SELECT * FROM aliases ORDER BY name";
-        $res = $sqlite->query($sql);
-        $rows = $sqlite->res2arr($res);
+        $sql = 'SELECT * FROM aliases ORDER BY name';
+        $rows = $sqlite->queryAll($sql);
 
         $form = new Doku_Form(array('method' => 'post'));
         $form->addHidden('page', 'data_aliases');
@@ -164,5 +164,3 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
     }
 
 }
-
-// vim:ts=4:sw=4:et:enc=utf-8:

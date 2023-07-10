@@ -52,7 +52,7 @@ class syntax_plugin_data_table_test extends DokuWikiTest
             'filter' => array(
                 '0' => array(
                     'key' => 'type',
-                    'value' => 'web development',
+                    'value' => "'web development'",
                     'compare' => '=',
                     'colname' => 'type',
                     'type' => '',

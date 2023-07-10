@@ -40,9 +40,8 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
         if (!$data['sql']) return true; // sql build
         $this->dthlp->_replacePlaceholdersInSQL($data);
 
-        $res = $sqlite->query($data['sql']);
-        if (!$sqlite->res2count($res)) return true; // no rows matched
-        $rows = $sqlite->res2arr($res);
+        $rows = $sqlite->queryAll($data['sql']);
+        if (!$rows) return true; // no rows matched
 
         $renderer->doc .= '<dl class="' . $data['classes'] . '">';
         $renderer->doc .= '<dt>' . htmlspecialchars($data['title']) . '</dt>';
@@ -81,21 +80,19 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
         $found = false;
         foreach (array_keys($data['cols']) as $col) {
             // get values for current page:
-            $values = array();
             $sql = "SELECT A.value
                       FROM data A, pages B
                      WHERE key = ?
                        AND A.pid = B.pid
                        AND B.page = ?";
-            $res = $sqlite->query($sql, $col, $id);
-            while ($value = $sqlite->res_fetch_assoc($res)) {
-                $values[] = $value['value'];
-            }
-            if (!count($values)) continue; // no values? ignore the column.
+            $rows = $sqlite->queryAll($sql, $col, $id);
+            if(!$rows) continue; // no values? ignore the column.
+            $values = array_column($rows, 'value');
             $found = true;
 
-            $cond[] = " ( T1.key = " . $sqlite->quote_string($col) .
-                " AND T1.value IN (" . $sqlite->quote_and_join($values, ',') . ") )\n";
+            $in = join(',', array_map([$sqlite->getPdo(), 'quote'], $values));
+            $cond[] = " ( T1.key = " . $sqlite->getPdo()->quote($col) .
+                " AND T1.value IN (" . $in . ") )\n";
         }
         $where .= ' AND (' . join(' OR ', $cond) . ') ';
 
@@ -115,7 +112,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
                 if (!$tables[$col]) {
                     $tables[$col] = 'T' . (++$cnt);
                     $from .= ' LEFT JOIN data AS ' . $tables[$col] . ' ON ' . $tables[$col] . '.pid = pages.pid';
-                    $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->quote_string($col);
+                    $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->getPdo()->quote($col);
                 }
 
                 $order = ', ' . $tables[$col] . '.value ' . $data['sort'][1];
@@ -141,7 +138,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
                     if (!$tables[$col]) {
                         $tables[$col] = 'T' . (++$cnt);
                         $from .= ' LEFT JOIN data AS ' . $tables[$col] . ' ON ' . $tables[$col] . '.pid = pages.pid';
-                        $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->quote_string($col);
+                        $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->getPdo()->quote($col);
                     }
 
                     $where .= ' ' . $filter['logic'] . ' ' . $tables[$col] . '.value ' . $filter['compare'] .
@@ -156,7 +153,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
         $sql = "SELECT pages.pid, pages.page as page, pages.title as title, COUNT(*) as rel
                   FROM pages, data as T1 $from
                  WHERE pages.pid = T1.pid
-                   AND pages.page != " . $sqlite->quote_string($id) . "
+                   AND pages.page != " . $sqlite->getPdo()->quote($id) . "
                        $where
               GROUP BY pages.pid
               ORDER BY rel DESC$order";
