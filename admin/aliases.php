@@ -6,6 +6,7 @@
  * @author  Andreas Gohr <gohr@cosmocode.de>
  */
 
+use dokuwiki\ErrorHandler;
 use dokuwiki\Utf8\PhpString;
 
 /**
@@ -65,7 +66,8 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
      */
     public function handle()
     {
-        if (!is_array($_REQUEST['d']) || !checkSecurityToken()) return;
+        global $INPUT;
+        if (!$INPUT->has('d') || !checkSecurityToken()) return;
 
         $sqlite = $this->dthlp->_getDB();
         if (!$sqlite) return;
@@ -74,7 +76,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
         try {
             $sqlite->exec('DELETE FROM aliases');
 
-            foreach ($_REQUEST['d'] as $row) {
+            foreach ($INPUT->arr('d') as $row) {
                 $row = array_map('trim', $row);
                 $row['name'] = PHPString::strtolower($row['name']);
                 $row['name'] = rtrim($row['name'], 's');
@@ -85,13 +87,12 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
                 $arr = array_unique($arr);
                 $row['enum'] = implode(', ', $arr);
 
-                $sqlite->exec(
-                    'INSERT INTO aliases (name, type, prefix, postfix, enum) VALUES (?,?,?,?,?)',
-                    $row
-                );
+                $sqlite->saveRecord('aliases', $row);
             }
             $sqlite->getPdo()->commit();
         } catch (\Exception $exception) {
+            msg(hsc($exception->getMessage()), -1);
+            ErrorHandler::logException($exception);
             $sqlite->getPdo()->rollBack();
         }
     }
