@@ -91,12 +91,13 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
             $cnt = 0;
 
             foreach ($data['filter'] as $filter) {
+                //Note: value is already escaped
                 $col = $filter['key'];
                 $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if (preg_match('/^%(\w+)%$/', $col, $m) && isset($fields[$m[1]])) {
                     $where .= " " . $filter['logic'] . " pages." . $fields[$m[1]] .
-                        " " . $filter['compare'] . " '" . $filter['value'] . "'" . $closecompare;
+                        " " . $filter['compare'] . " " . $filter['value'] . $closecompare;
                     $pagesjoin = ' LEFT JOIN pages ON pages.pid = data.pid';
                 } else {
                     // filter by hidden column?
@@ -107,7 +108,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
                     }
 
                     $where .= ' ' . $filter['logic'] . ' ' . $tables[$col] . '.value ' . $filter['compare'] .
-                        " '" . $filter['value'] . "'" . $closecompare; //value is already escaped
+                        " " . $filter['value'] . $closecompare;
                 }
             }
         }

@@ -126,13 +126,14 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
             $where .= ' AND ( 1=1 ';
 
             foreach ($data['filter'] as $filter) {
+                // note: value is already escaped
                 $col = $filter['key'];
                 $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if ($col == '%pageid%') {
-                    $where .= " " . $filter['logic'] . " pages.page " . $filter['compare'] . " '" . $filter['value'] . "'" . $closecompare;
+                    $where .= " " . $filter['logic'] . " pages.page " . $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } elseif ($col == '%title%') {
-                    $where .= " " . $filter['logic'] . " pages.title " . $filter['compare'] . " '" . $filter['value'] . "'" . $closecompare;
+                    $where .= " " . $filter['logic'] . " pages.title " . $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } else {
                     // filter by hidden column?
                     if (!$tables[$col]) {
@@ -142,7 +143,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
                     }
 
                     $where .= ' ' . $filter['logic'] . ' ' . $tables[$col] . '.value ' . $filter['compare'] .
-                        " '" . $filter['value'] . "'" . $closecompare; //value is already escaped
+                        " " . $filter['value'] . $closecompare;
                 }
             }
 
