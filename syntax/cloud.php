@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
@@ -10,12 +11,11 @@
  */
 class syntax_plugin_data_cloud extends syntax_plugin_data_table
 {
-
     /**
      * will hold the data helper plugin
      * @var $dthlp helper_plugin_data
      */
-    var $dthlp = null;
+    public $dthlp;
 
     /**
      * Constructor. Load helper plugin
@@ -76,16 +76,12 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         $from = ' ';
         $where = ' ';
         $pagesjoin = '';
-        $tables = array();
+        $tables = [];
 
         $sqlite = $this->dthlp->_getDB();
         if (!$sqlite) return false;
 
-        $fields = array(
-            'pageid' => 'page',
-            'class' => 'class',
-            'title' => 'title'
-        );
+        $fields = ['pageid' => 'page', 'class' => 'class', 'title' => 'title'];
         // prepare filters (no request filters - we set them ourselves)
         if (is_array($data['filter']) && count($data['filter'])) {
             $cnt = 0;
@@ -168,7 +164,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         $rows = $sqlite->queryAll($data['sql']);
         $min = 0;
         $max = 0;
-        $tags = array();
+        $tags = [];
         foreach ($rows as $row) {
             if (!$max) {
                 $max = $row['cnt'];
@@ -210,9 +206,9 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         $levels--;
 
         // calculate tresholds
-        $tresholds = array();
+        $tresholds = [];
         for ($i = 0; $i <= $levels; $i++) {
-            $tresholds[$i] = pow($max - $min + 1, $i / $levels) + $min - 1;
+            $tresholds[$i] = ($max - $min + 1) ** ($i / $levels) + $min - 1;
         }
 
         // assign weights
@@ -229,6 +225,4 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         // sort
         ksort($tags);
     }
-
 }
-

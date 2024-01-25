@@ -8,7 +8,6 @@
  */
 class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
 {
-
     private $args;
     private $additional;
 
@@ -24,8 +23,8 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
     public function initialize($args)
     {
         $this->init($args);
-        $n_args = array();
-        $this->args = array();
+        $n_args = [];
+        $this->args = [];
         foreach ($args as $arg) {
             if ($arg[0] !== '_') {
                 $n_args[] = $arg;
@@ -34,7 +33,6 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
             $this->args[] = $arg;
         }
         $this->standardArgs($n_args);
-
     }
 
     /**
@@ -64,7 +62,7 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
             $values = preg_split('/\s*,\s*/', $datatype['enum']);
             if (!$datatype['multi'] && $this->opt['optional']) array_unshift($values, '');
             $this->opt['args'] = $values;
-            $this->additional = ($datatype['multi'] ? array('multiple' => 'multiple') : array());
+            $this->additional = ($datatype['multi'] ? ['multiple' => 'multiple'] : []);
         } else {
             $classes = 'data_type_' . $datatype['type'] . ($datatype['multi'] ? 's' : '') . ' ' .
                 'data_type_' . $datatype['basetype'] . ($datatype['multi'] ? 's' : '');
@@ -75,7 +73,6 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
         if (!isset($this->opt['display'])) {
             $this->opt['display'] = $this->opt['label'];
         }
-
     }
 
     /**
@@ -113,7 +110,7 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
 
             $form->addElement(call_user_func_array('form_makeListboxField',
                 $this->_parse_tpl(
-                    array(
+                    [
                         '@@NAME@@[]',
                         $params['args'],
                         $params['value'],
@@ -121,7 +118,7 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
                         '',
                         '@@CLASS@@',
                         $this->additional
-                    ),
+                    ],
                     $params
                 )));
         }
@@ -141,7 +138,7 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
     public function handle_post($value, &$fields, $index, $formid)
     {
         if (is_array($value)) {
-            $value = join(', ', $value);
+            $value = implode(', ', $value);
         }
 
         return parent::handle_post($value, $fields, $index, $formid);
@@ -172,4 +169,3 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
         return str_replace('@TRANS@', $trans, $string);
     }
 }
-

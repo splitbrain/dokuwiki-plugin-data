@@ -1,22 +1,23 @@
 <?php
+
+use dokuwiki\Extension\AdminPlugin;
+
 /**
  * DokuWiki Plugin data (Admin Component)
  *
  * @license GPL 2 http://www.gnu.org/licenses/gpl-2.0.html
  * @author  Andreas Gohr <gohr@cosmocode.de>
  */
-
 /**
  * Let admin remove non-existing pages from sqlite db
  */
-class admin_plugin_data_clean extends DokuWiki_Admin_Plugin
+class admin_plugin_data_clean extends AdminPlugin
 {
-
     /**
      * will hold the data helper plugin
      * @var helper_plugin_data
      */
-    protected $dthlp = null;
+    protected $dthlp;
 
     /**
      * Constructor. Load helper plugin
@@ -90,12 +91,11 @@ class admin_plugin_data_clean extends DokuWiki_Admin_Plugin
 
         echo $this->locale_xhtml('intro_clean');
 
-        $form = new Doku_Form(array('method' => 'post'));
+        $form = new Doku_Form(['method' => 'post']);
         $form->addHidden('page', 'data_clean');
         $form->addHidden('data_go', 'go');
 
         $form->addElement(form_makeButton('submit', 'admin', $this->getLang('submit_clean')));
         $form->printForm();
     }
-
 }
