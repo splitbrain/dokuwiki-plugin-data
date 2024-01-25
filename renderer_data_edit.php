@@ -1,4 +1,7 @@
 <?php
+
+use dokuwiki\Form\Form;
+
 /**
  * Dummy renderer for data entry editing
  *
@@ -11,11 +14,11 @@ require_once DOKU_INC . 'inc/parser/renderer.php';
 class Doku_Renderer_plugin_data_edit extends Doku_Renderer
 {
     /**
-     * @var Doku_Form|\dokuwiki\Form\Form
+     * @var Doku_Form|Form
      */
     public $form;
 
-    function getFormat()
+    public function getFormat()
     {
         return 'plugin_data_edit';
     }

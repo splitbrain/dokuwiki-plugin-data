@@ -1,29 +1,30 @@
 <?php
+
+use dokuwiki\Extension\SyntaxPlugin;
+
 /**
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
-
 /**
  * Class syntax_plugin_data_table
  */
-class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
+class syntax_plugin_data_table extends SyntaxPlugin
 {
-
     /**
      * will hold the data helper plugin
      *
      * @var $dthlp helper_plugin_data
      */
-    var $dthlp = null;
+    public $dthlp;
 
-    var $sums = array();
+    public $sums = [];
 
     /**
      * Constructor. Load helper plugin
      */
-    function __construct()
+    public function __construct()
     {
         $this->dthlp = plugin_load('helper', 'data');
     }
@@ -31,7 +32,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
     /**
      * What kind of syntax are we?
      */
-    function getType()
+    public function getType()
     {
         return 'substition';
     }
@@ -39,7 +40,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
     /**
      * What about paragraphs?
      */
-    function getPType()
+    public function getPType()
     {
         return 'block';
     }
@@ -47,7 +48,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
     /**
      * Where to sort in?
      */
-    function getSort()
+    public function getSort()
     {
         return 155;
     }
@@ -55,7 +56,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
     /**
      * Connect pattern to lexer
      */
-    function connectTo($mode)
+    public function connectTo($mode)
     {
         $this->Lexer->addSpecialPattern('----+ *datatable(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_table');
     }
@@ -72,7 +73,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      * @param Doku_Handler $handler The Doku_Handler object
      * @return  bool|array Return an array with all data you want to use in render, false don't add an instruction
      */
-    function handle($match, $state, $pos, Doku_Handler $handler)
+    public function handle($match, $state, $pos, Doku_Handler $handler)
     {
         if (!$this->dthlp->ready()) return null;
 
@@ -83,17 +84,17 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         $class = preg_replace('/^----+ *data[a-z]+/', '', $class);
         $class = trim($class, '- ');
 
-        $data = array(
+        $data = [
             'classes' => $class,
             'limit' => 0,
             'dynfilters' => false,
             'summarize' => false,
             'rownumbers' => (bool)$this->getConf('rownumbers'),
             'sepbyheaders' => false,
-            'headers' => array(),
-            'widths' => array(),
-            'filter' => array()
-        );
+            'headers' => [],
+            'widths' => [],
+            'filter' => []
+        ];
 
         // parse info
         foreach ($lines as $line) {
@@ -162,9 +163,9 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                     $column = $this->dthlp->_column($line[1]);
                     $sort = $column['key'];
                     if (substr($sort, 0, 1) == '^') {
-                        $data['sort'] = array(substr($sort, 1), 'DESC');
+                        $data['sort'] = [substr($sort, 1), 'DESC'];
                     } else {
-                        $data['sort'] = array($sort, 'ASC');
+                        $data['sort'] = [$sort, 'ASC'];
                     }
                     break;
                 case 'where':
@@ -206,7 +207,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         }
 
         // we need at least one column to display
-        if (!is_array($data['cols']) || !count($data['cols'])) {
+        if (!is_array($data['cols']) || $data['cols'] === []) {
             msg('data plugin: no columns selected', -1);
             return null;
         }
@@ -237,26 +238,24 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      * Handles the actual output creation.
      *
      * @param string $format output format being rendered
-     * @param Doku_Renderer $R the current renderer object
+     * @param Doku_Renderer $renderer the current renderer object
      * @param array $data data created by handler()
      * @return  boolean               rendered correctly? (however, returned value is not used at the moment)
      */
-    function render($format, Doku_Renderer $R, $data)
+    public function render($format, Doku_Renderer $renderer, $data)
     {
         if ($format != 'xhtml') return false;
-        /** @var Doku_Renderer_xhtml $R */
-
         if (is_null($data)) return false;
         if (!$this->dthlp->ready()) return false;
         $sqlite = $this->dthlp->_getDB();
         if (!$sqlite) return false;
 
-        $R->info['cache'] = false;
+        $renderer->info['cache'] = false;
 
         //reset counters
-        $this->sums = array();
+        $this->sums = [];
 
-        if ($this->hasRequestFilter() or isset($_REQUEST['dataofs'])) {
+        if ($this->hasRequestFilter() || isset($_REQUEST['dataofs'])) {
             $this->updateSQLwithQuery($data); // handles request params
         }
         $this->dthlp->_replacePlaceholdersInSQL($data);
@@ -267,7 +266,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         $cnt = count($rows);
 
         if ($cnt === 0) {
-            $this->nullList($data, $clist, $R);
+            $this->nullList($data, $clist, $renderer);
             return true;
         }
 
@@ -276,8 +275,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         }
 
         //build classnames per column
-        $classes = array();
-        $class_names_cache = array();
+        $classes = [];
+        $class_names_cache = [];
         $offset = 0;
         if ($data['rownumbers']) {
             $offset = 1; //rownumbers are in first column
@@ -293,27 +292,28 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         }
 
         //start table/list
-        $R->doc .= $this->preList($clist, $data);
+        $renderer->doc .= $this->preList($clist, $data);
 
         foreach ($rows as $rownum => $row) {
             // build data rows
-            $R->doc .= $this->before_item;
+            $renderer->doc .= $this->before_item;
 
             if ($data['rownumbers']) {
-                $R->doc .= sprintf($this->before_val, 'class="' . $classes[0] . '"');
-                $R->doc .= $rownum + 1;
-                $R->doc .= $this->after_val;
+                $renderer->doc .= sprintf($this->before_val, 'class="' . $classes[0] . '"');
+                $renderer->doc .= $rownum + 1;
+                $renderer->doc .= $this->after_val;
             }
 
             foreach (array_values($row) as $num => $cval) {
                 $num_rn = $num + $offset;
 
-                $R->doc .= sprintf($this->beforeVal($data, $num_rn), 'class="' . $classes[$num_rn] . '"');
-                $R->doc .= $this->dthlp->_formatData(
+                $renderer->doc .= sprintf($this->beforeVal($data, $num_rn), 'class="' . $classes[$num_rn] . '"');
+                $renderer->doc .= $this->dthlp->_formatData(
                     $data['cols'][$clist[$num]],
-                    $cval, $R
+                    $cval,
+                    $renderer
                 );
-                $R->doc .= $this->afterVal($data, $num_rn);
+                $renderer->doc .= $this->afterVal($data, $num_rn);
 
                 // clean currency symbols
                 $nval = str_replace('$€₤', '', $cval);
@@ -328,11 +328,10 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                     }
                     $this->sums[$num] += $nval;
                 }
-
             }
-            $R->doc .= $this->after_item;
+            $renderer->doc .= $this->after_item;
         }
-        $R->doc .= $this->postList($data, $cnt);
+        $renderer->doc .= $this->postList($data, $cnt);
 
         return true;
     }
@@ -368,7 +367,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      * @param array $data instruction by handler
      * @return string html of table header
      */
-    function preList($clist, $data)
+    public function preList($clist, $data)
     {
         global $ID;
         global $conf;
@@ -380,7 +379,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         $text = '<div class="table dataaggregation">';
         if (isset($_REQUEST['dataflt'])) {
             $filters = $this->dthlp->_get_filters();
-            $fltrs = array();
+            $fltrs = [];
             foreach ($filters as $filter) {
                 if (strpos($filter['compare'], 'LIKE') !== false) {
                     if (strpos($filter['compare'], 'NOT') !== false) {
@@ -414,7 +413,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
             $ckey = $clist[$num];
 
             $width = '';
-            if (isset($data['widths'][$num]) and $data['widths'][$num] != '-') {
+            if (isset($data['widths'][$num]) && $data['widths'][$num] != '-') {
                 $width = ' style="width: ' . $data['widths'][$num] . ';"';
             }
             $text .= '<th' . $width . '>';
@@ -430,7 +429,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
             }
 
             // Clickable header for dynamic sorting
-            $text .= '<a href="' . wl($ID, array('datasrt' => $ckey) + $cur_params) .
+            $text .= '<a href="' . wl($ID, ['datasrt' => $ckey] + $cur_params) .
                 '" title="' . $this->getLang('sort') . '">' . hsc($head) . '</a>';
             $text .= '</th>';
         }
@@ -446,14 +445,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
 
             foreach ($data['headers'] as $num => $head) {
                 $text .= '<th>';
-                $form = new Doku_Form(array('method' => 'GET'));
-                $form->_hidden = array();
+                $form = new Doku_Form(['method' => 'GET']);
+                $form->_hidden = [];
                 if (!$conf['userewrite']) {
                     $form->addHidden('id', $ID);
                 }
 
                 $key = 'dataflt[' . $data['cols'][$clist[$num]]['colname'] . '*~' . ']';
-                $val = isset($cur_params[$key]) ? $cur_params[$key] : '';
+                $val = $cur_params[$key] ?? '';
 
                 // Add current request params
                 foreach ($cur_params as $c_key => $c_val) {
@@ -479,7 +478,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      * @param array $clist keys of the columns
      * @param Doku_Renderer $R
      */
-    function nullList($data, $clist, $R)
+    public function nullList($data, $clist, $R)
     {
         $R->doc .= $this->preList($clist, $data);
         $R->tablerow_open();
@@ -497,7 +496,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      * @param int $rowcnt number of rows
      * @return string html of table footer
      */
-    function postList($data, $rowcnt)
+    public function postList($data, $rowcnt)
     {
         global $ID;
         $text = '';
@@ -571,11 +570,11 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      * @param array &$data instruction by handler
      * @return bool|string SQL query or false
      */
-    function _buildSQL(&$data)
+    public function _buildSQL(&$data)
     {
         $cnt = 0;
-        $tables = array();
-        $select = array();
+        $tables = [];
+        $select = [];
         $from = '';
 
         $from2 = '';
@@ -653,7 +652,6 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         // prepare filters
         $cnt = 0;
         if (is_array($data['filter']) && count($data['filter'])) {
-
             foreach ($data['filter'] as $filter) {
                 $col = $filter['key'];
                 $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
@@ -687,7 +685,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
         }
 
         // build the query
-        $sql = "SELECT " . join(', ', $select) . "
+        $sql = "SELECT " . implode(', ', $select) . "
                 FROM (
                     SELECT DISTINCT pages.pid AS pid
                     FROM pages $from2
@@ -712,14 +710,14 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      *
      * @param array $data instruction by handler()
      */
-    function updateSQLwithQuery(&$data)
+    public function updateSQLwithQuery(&$data)
     {
         if ($this->hasRequestFilter()) {
             if (isset($_REQUEST['datasrt'])) {
                 if ($_REQUEST['datasrt'][0] == '^') {
-                    $data['sort'] = array(substr($_REQUEST['datasrt'], 1), 'DESC');
+                    $data['sort'] = [substr($_REQUEST['datasrt'], 1), 'DESC'];
                 } else {
-                    $data['sort'] = array($_REQUEST['datasrt'], 'ASC');
+                    $data['sort'] = [$_REQUEST['datasrt'], 'ASC'];
                 }
             }
 
@@ -740,7 +738,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      *
      * @return bool
      */
-    function hasRequestFilter()
+    public function hasRequestFilter()
     {
         return isset($_REQUEST['datasrt']) || isset($_REQUEST['dataflt']);
     }
@@ -755,7 +753,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
      */
     protected function parseValues($line)
     {
-        $values = array();
+        $values = [];
         $inQuote = false;
         $escapedQuote = false;
         $value = '';
@@ -773,17 +771,16 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                         $escapedQuote = true;
                         continue;
                     }
-                    array_push($values, $value);
+                    $values[] = $value;
                     $inQuote = false;
                     $value = '';
                     continue;
-
                 } else {
                     $inQuote = true;
                     $value = ''; //don't store stuff before the opening quote
                     continue;
                 }
-            } else if ($line[$i] == ',') {
+            } elseif ($line[$i] == ',') {
                 if ($inQuote) {
                     $value .= ',';
                     continue;
@@ -791,7 +788,7 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
                     if (strlen($value) < 1) {
                         continue;
                     }
-                    array_push($values, trim($value));
+                    $values[] = trim($value);
                     $value = '';
                     continue;
                 }
@@ -800,9 +797,8 @@ class syntax_plugin_data_table extends DokuWiki_Syntax_Plugin
             $value .= $line[$i];
         }
         if (strlen($value) > 0) {
-            array_push($values, trim($value));
+            $values[] = trim($value);
         }
         return $values;
     }
 }
-

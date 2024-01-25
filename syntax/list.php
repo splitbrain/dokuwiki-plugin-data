@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
@@ -11,11 +12,10 @@
  */
 class syntax_plugin_data_list extends syntax_plugin_data_table
 {
-
     /**
      * Connect pattern to lexer
      */
-    function connectTo($mode)
+    public function connectTo($mode)
     {
         $this->Lexer->addSpecialPattern('----+ *datalist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_list');
     }
@@ -34,7 +34,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table
      */
     protected function beforeVal(&$data, $colno)
     {
-        if ($data['sepbyheaders'] and $colno === 0) {
+        if ($data['sepbyheaders'] && $colno === 0) {
             return $data['headers'][$colno];
         } else {
             return $this->before_val;
@@ -64,7 +64,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table
      * @param array $data instruction by handler
      * @return string html of table header
      */
-    function preList($clist, $data)
+    public function preList($clist, $data)
     {
         return '<div class="dataaggregation"><ul class="dataplugin_list ' . $data['classes'] . '">';
     }
@@ -76,7 +76,7 @@ class syntax_plugin_data_list extends syntax_plugin_data_table
      * @param array $clist keys of the columns
      * @param Doku_Renderer $R
      */
-    function nullList($data, $clist, $R)
+    public function nullList($data, $clist, $R)
     {
         $R->doc .= '<div class="dataaggregation"><p class="dataplugin_list ' . $data['classes'] . '">';
         $R->cdata($this->getLang('none'));
@@ -90,9 +90,8 @@ class syntax_plugin_data_list extends syntax_plugin_data_table
      * @param int $rowcnt number of rows
      * @return string html of table footer
      */
-    function postList($data, $rowcnt)
+    public function postList($data, $rowcnt)
     {
         return '</ul></div>';
     }
-
 }

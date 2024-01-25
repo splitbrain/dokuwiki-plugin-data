@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
@@ -12,11 +13,10 @@
  */
 class syntax_plugin_data_taglist extends syntax_plugin_data_cloud
 {
-
     /**
      * Connect pattern to lexer
      */
-    function connectTo($mode)
+    public function connectTo($mode)
     {
         $this->Lexer->addSpecialPattern('----+ *datataglist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_taglist');
     }
@@ -41,6 +41,4 @@ class syntax_plugin_data_taglist extends syntax_plugin_data_cloud
         // sort by values. Key is name of the single tag, value the count
         arsort($tags);
     }
-
 }
-

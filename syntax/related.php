@@ -1,4 +1,5 @@
 <?php
+
 /**
  * List related pages based on similar data in the given column(s)
  *
@@ -11,11 +12,10 @@
  */
 class syntax_plugin_data_related extends syntax_plugin_data_table
 {
-
     /**
      * Connect pattern to lexer
      */
-    function connectTo($mode)
+    public function connectTo($mode)
     {
         $this->Lexer->addSpecialPattern('----+ *datarelated(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_related');
     }
@@ -28,7 +28,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
      * @param array $data data created by handler()
      * @return  boolean                 rendered correctly? (however, returned value is not used at the moment)
      */
-    function render($format, Doku_Renderer $renderer, $data)
+    public function render($format, Doku_Renderer $renderer, $data)
     {
         if ($format != 'xhtml') return false;
         if (is_null($data)) return false;
@@ -62,14 +62,14 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
     /**
      * Builds the SQL query from the given data
      */
-    function _buildSQL(&$data, $id = null)
+    public function _buildSQL(&$data, $id = null)
     {
         global $ID;
         if (is_null($id)) $id = $ID;
 
         $cnt = 1;
-        $tables = array();
-        $cond = array();
+        $tables = [];
+        $cond = [];
         $from = '';
         $where = '';
 
@@ -86,15 +86,15 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
                        AND A.pid = B.pid
                        AND B.page = ?";
             $rows = $sqlite->queryAll($sql, $col, $id);
-            if(!$rows) continue; // no values? ignore the column.
+            if (!$rows) continue; // no values? ignore the column.
             $values = array_column($rows, 'value');
             $found = true;
 
-            $in = join(',', array_map([$sqlite->getPdo(), 'quote'], $values));
+            $in = implode(',', array_map([$sqlite->getPdo(), 'quote'], $values));
             $cond[] = " ( T1.key = " . $sqlite->getPdo()->quote($col) .
                 " AND T1.value IN (" . $in . ") )\n";
         }
-        $where .= ' AND (' . join(' OR ', $cond) . ') ';
+        $where .= ' AND (' . implode(' OR ', $cond) . ') ';
 
         // any tags to compare?
         if (!$found) return false;
