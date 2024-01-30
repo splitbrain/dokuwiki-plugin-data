@@ -17,7 +17,11 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
      */
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('----+ *datarelated(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_related');
+        $this->Lexer->addSpecialPattern(
+            '----+ *datarelated(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',
+            $mode,
+            'plugin_data_related'
+        );
     }
 
     /**
@@ -34,11 +38,11 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
         if (is_null($data)) return false;
         if (!$this->dthlp->ready()) return false;
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
         if (!$data['sql']) return true; // sql build
-        $this->dthlp->_replacePlaceholdersInSQL($data);
+        $this->dthlp->replacePlaceholdersInSQL($data);
 
         $rows = $sqlite->queryAll($data['sql']);
         if (!$rows) return true; // no rows matched
@@ -62,7 +66,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
     /**
      * Builds the SQL query from the given data
      */
-    public function _buildSQL(&$data, $id = null)
+    public function buildSQL(&$data, $id = null)
     {
         global $ID;
         if (is_null($id)) $id = $ID;
@@ -73,7 +77,7 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
         $from = '';
         $where = '';
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
         // prepare the columns to match against
@@ -131,9 +135,14 @@ class syntax_plugin_data_related extends syntax_plugin_data_table
                 $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if ($col == '%pageid%') {
-                    $where .= " " . $filter['logic'] . " pages.page " . $filter['compare'] . " " . $filter['value'] . $closecompare;
+                    $where .= " " . $filter['logic'] . " pages.page "
+                        . $filter['compare'] . " "
+                        . $filter['value'] . $closecompare;
                 } elseif ($col == '%title%') {
-                    $where .= " " . $filter['logic'] . " pages.title " . $filter['compare'] . " " . $filter['value'] . $closecompare;
+                    $where .= " "
+                        . $filter['logic'] . " pages.title "
+                        . $filter['compare'] . " "
+                        . $filter['value'] . $closecompare;
                 } else {
                     // filter by hidden column?
                     if (!$tables[$col]) {

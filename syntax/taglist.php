@@ -18,7 +18,11 @@ class syntax_plugin_data_taglist extends syntax_plugin_data_cloud
      */
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('----+ *datataglist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_taglist');
+        $this->Lexer->addSpecialPattern(
+            '----+ *datataglist(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',
+            $mode,
+            'plugin_data_taglist'
+        );
     }
 
     protected $before_item = '<ul class="dataplugin_taglist %s">';
@@ -34,9 +38,9 @@ class syntax_plugin_data_taglist extends syntax_plugin_data_cloud
      * @param $max    int   The highest count of a single tag
      * @param $levels int   The number of levels you want. A 5 gives levels 0 to 4.
      */
-    protected function _cloud_weight(&$tags, $min, $max, $levels)
+    protected function cloudWeight(&$tags, $min, $max, $levels)
     {
-        parent::_cloud_weight($tags, $min, $max, $levels);
+        parent::cloudWeight($tags, $min, $max, $levels);
 
         // sort by values. Key is name of the single tag, value the count
         arsort($tags);

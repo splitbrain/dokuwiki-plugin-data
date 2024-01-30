@@ -58,7 +58,11 @@ class syntax_plugin_data_table extends SyntaxPlugin
      */
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('----+ *datatable(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_table');
+        $this->Lexer->addSpecialPattern(
+            '----+ *datatable(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',
+            $mode,
+            'plugin_data_table'
+        );
     }
 
     /**
@@ -117,7 +121,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
                     foreach ($cols as $col) {
                         $col = trim($col);
                         if (!$col) continue;
-                        $column = $this->dthlp->_column($col);
+                        $column = $this->dthlp->column($col);
                         $data['cols'][$column['key']] = $column;
                     }
                     break;
@@ -160,7 +164,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
                     break;
                 case 'order':
                 case 'sort':
-                    $column = $this->dthlp->_column($line[1]);
+                    $column = $this->dthlp->column($line[1]);
                     $sort = $column['key'];
                     if (substr($sort, 0, 1) == '^') {
                         $data['sort'] = [substr($sort, 1), 'DESC'];
@@ -171,15 +175,14 @@ class syntax_plugin_data_table extends SyntaxPlugin
                 case 'where':
                 case 'filter':
                 case 'filterand':
-                    /** @noinspection PhpMissingBreakStatementInspection */
-                case 'and':
+                case 'and': // phpcs:ignore PSR2.ControlStructures.SwitchDeclaration.TerminatingComment
                     $logic = 'AND';
                 case 'filteror':
                 case 'or':
                     if (!$logic) {
                         $logic = 'OR';
                     }
-                    $flt = $this->dthlp->_parse_filter($line[1]);
+                    $flt = $this->dthlp->parseFilter($line[1]);
                     if (is_array($flt)) {
                         $flt['logic'] = $logic;
                         $data['filter'][] = $flt;
@@ -222,10 +225,10 @@ class syntax_plugin_data_table extends SyntaxPlugin
             $data['headers'][] = $columnprops['title'];
         }
 
-        $data['sql'] = $this->_buildSQL($data);
+        $data['sql'] = $this->buildSQL($data);
 
         // Save current request params for comparison in updateSQL
-        $data['cur_param'] = $this->dthlp->_get_current_param(false);
+        $data['cur_param'] = $this->dthlp->getPurrentParam(false);
         return $data;
     }
 
@@ -247,7 +250,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
         if ($format != 'xhtml') return false;
         if (is_null($data)) return false;
         if (!$this->dthlp->ready()) return false;
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
         $renderer->info['cache'] = false;
@@ -258,7 +261,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
         if ($this->hasRequestFilter() || isset($_REQUEST['dataofs'])) {
             $this->updateSQLwithQuery($data); // handles request params
         }
-        $this->dthlp->_replacePlaceholdersInSQL($data);
+        $this->dthlp->replacePlaceholdersInSQL($data);
 
         // run query
         $clist = array_keys($data['cols']);
@@ -308,7 +311,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
                 $num_rn = $num + $offset;
 
                 $renderer->doc .= sprintf($this->beforeVal($data, $num_rn), 'class="' . $classes[$num_rn] . '"');
-                $renderer->doc .= $this->dthlp->_formatData(
+                $renderer->doc .= $this->dthlp->formatData(
                     $data['cols'][$clist[$num]],
                     $cval,
                     $renderer
@@ -373,12 +376,12 @@ class syntax_plugin_data_table extends SyntaxPlugin
         global $conf;
 
         // Save current request params to not loose them
-        $cur_params = $this->dthlp->_get_current_param();
+        $cur_params = $this->dthlp->getPurrentParam();
 
         //show active filters
         $text = '<div class="table dataaggregation">';
         if (isset($_REQUEST['dataflt'])) {
-            $filters = $this->dthlp->_get_filters();
+            $filters = $this->dthlp->getFilters();
             $fltrs = [];
             foreach ($filters as $filter) {
                 if (strpos($filter['compare'], 'LIKE') !== false) {
@@ -530,7 +533,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
                 }
 
                 // keep url params
-                $params = $this->dthlp->_a2ua('dataflt', $_REQUEST['dataflt']);
+                $params = $this->dthlp->a2ua('dataflt', $_REQUEST['dataflt']);
                 if (isset($_REQUEST['datasrt'])) {
                     $params['datasrt'] = $_REQUEST['datasrt'];
                 }
@@ -547,7 +550,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
                 $next = $offset + $data['limit'];
 
                 // keep url params
-                $params = $this->dthlp->_a2ua('dataflt', $_REQUEST['dataflt']);
+                $params = $this->dthlp->a2ua('dataflt', $_REQUEST['dataflt']);
                 if (isset($_REQUEST['datasrt'])) {
                     $params['datasrt'] = $_REQUEST['datasrt'];
                 }
@@ -570,7 +573,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
      * @param array &$data instruction by handler
      * @return bool|string SQL query or false
      */
-    public function _buildSQL(&$data)
+    public function buildSQL(&$data)
     {
         $cnt = 0;
         $tables = [];
@@ -580,7 +583,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
         $from2 = '';
         $where2 = '1 = 1';
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
         // prepare the columns to show
@@ -657,15 +660,19 @@ class syntax_plugin_data_table extends SyntaxPlugin
                 $closecompare = ($filter['compare'] == 'IN(' ? ')' : '');
 
                 if ($col == '%pageid%') {
-                    $where2 .= " " . $filter['logic'] . " pages.page " . $filter['compare'] . " " . $filter['value'] . $closecompare;
+                    $where2 .= " " . $filter['logic'] . " pages.page " .
+                        $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } elseif ($col == '%class%') {
-                    $where2 .= " " . $filter['logic'] . " pages.class " . $filter['compare'] . " " . $filter['value'] . $closecompare;
+                    $where2 .= " " . $filter['logic'] . " pages.class " .
+                        $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } elseif ($col == '%title%') {
-                    $where2 .= " " . $filter['logic'] . " pages.title " . $filter['compare'] . " " . $filter['value'] . $closecompare;
+                    $where2 .= " " . $filter['logic'] . " pages.title " .
+                        $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } elseif ($col == '%lastmod%') {
                     # parse value to int?
                     $filter['value'] = (int)strtotime($filter['value']);
-                    $where2 .= " " . $filter['logic'] . " pages.lastmod " . $filter['compare'] . " " . $filter['value'] . $closecompare;
+                    $where2 .= " " . $filter['logic'] . " pages.lastmod " .
+                        $filter['compare'] . " " . $filter['value'] . $closecompare;
                 } else {
                     // filter by hidden column?
                     $table = 'T' . (++$cnt);
@@ -674,7 +681,9 @@ class syntax_plugin_data_table extends SyntaxPlugin
 
                     // apply data resolving?
                     if ($use_dataresolve && $filter['colname'] && (substr($filter['compare'], -4) == 'LIKE')) {
-                        $where2 .= ' ' . $filter['logic'] . ' DATARESOLVE(' . $table . '.value,' . $sqlite->getPdo()->quote($filter['colname']) . ') ' . $filter['compare'] .
+                        $where2 .= ' ' . $filter['logic'] .
+                            ' DATARESOLVE(' . $table . '.value,' . $sqlite->getPdo()->quote($filter['colname']) . ') ' .
+                            $filter['compare'] .
                             " " . $filter['value']; //value is already escaped
                     } else {
                         $where2 .= ' ' . $filter['logic'] . ' ' . $table . '.value ' . $filter['compare'] .
@@ -722,10 +731,10 @@ class syntax_plugin_data_table extends SyntaxPlugin
             }
 
             // add request filters
-            $data['filter'] = array_merge($data['filter'], $this->dthlp->_get_filters());
+            $data['filter'] = array_merge($data['filter'], $this->dthlp->getFilters());
 
             // Rebuild SQL FIXME do this smarter & faster
-            $data['sql'] = $this->_buildSQL($data);
+            $data['sql'] = $this->buildSQL($data);
         }
 
         if ($data['limit'] && (int)$_REQUEST['dataofs']) {

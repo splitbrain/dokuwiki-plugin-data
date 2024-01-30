@@ -12,7 +12,7 @@ class helper_plugin_data_test_aliases extends DokuWikiTest
     public function testAliases()
     {
         $helper = new helper_plugin_data();
-        $db = $helper->_getDB();
+        $db = $helper->getDB();
         $this->assertTrue($db !== false);
         $db->exec(
             'INSERT INTO aliases (name, type, prefix, postfix, enum) VALUES (?,?,?,?,?)',
@@ -26,7 +26,7 @@ class helper_plugin_data_test_aliases extends DokuWikiTest
                 'postfix' => ']]'
             )
         );
-        $this->assertEquals($expect, $helper->_aliases());
+        $this->assertEquals($expect, $helper->aliases());
 
     }
 }

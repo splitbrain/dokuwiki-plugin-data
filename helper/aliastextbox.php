@@ -48,7 +48,7 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
 
         foreach ($args as $arg) {
             $arg = $this->replaceTranslation($arg);
-            $datatype = $dthlp->_column($arg);
+            $datatype = $dthlp->column($arg);
             if (is_array($datatype['type'])) {
                 $datatype['basetype'] = $datatype['type']['type'];
                 $datatype['enum'] = $datatype['type']['enum'];
@@ -108,7 +108,8 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
                 $this->additional['required'] = 'required';
             }
 
-            $form->addElement(call_user_func_array('form_makeListboxField',
+            $form->addElement(call_user_func_array(
+                'form_makeListboxField',
                 $this->_parse_tpl(
                     [
                         '@@NAME@@[]',
@@ -120,7 +121,8 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
                         $this->additional
                     ],
                     $params
-                )));
+                )
+            ));
         }
     }
 
@@ -135,13 +137,13 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
      * @param int $formid unique identifier of the form which contains this field
      * @return bool Whether the passed value is valid
      */
-    public function handle_post($value, &$fields, $index, $formid)
+    public function handlePost($value, &$fields, $index, $formid)
     {
         if (is_array($value)) {
             $value = implode(', ', $value);
         }
 
-        return parent::handle_post($value, $fields, $index, $formid);
+        return parent::handlePost($value, $fields, $index, $formid);
     }
 
     /**

@@ -66,7 +66,7 @@ class admin_plugin_data_clean extends AdminPlugin
     {
         if (!isset($_REQUEST['data_go']) || !checkSecurityToken()) return;
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return;
 
         $rows = $sqlite->queryAll('SELECT pid, page FROM pages');

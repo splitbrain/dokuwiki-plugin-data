@@ -61,7 +61,11 @@ class syntax_plugin_data_entry extends SyntaxPlugin
      */
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('----+ *dataentry(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_entry');
+        $this->Lexer->addSpecialPattern(
+            '----+ *dataentry(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',
+            $mode,
+            'plugin_data_entry'
+        );
     }
 
     /**
@@ -96,7 +100,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
             if (empty($line)) continue;
             $line = preg_split('/\s*:\s*/', $line, 2);
 
-            $column = $this->dthlp->_column($line[0]);
+            $column = $this->dthlp->column($line[0]);
             if (isset($matches[2])) {
                 $column['comment'] = $matches[2];
             }
@@ -109,18 +113,24 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                 }
                 $vals = explode(',', $line[1]);
                 foreach ($vals as $val) {
-                    $val = trim($this->dthlp->_cleanData($val, $column['type']));
+                    $val = trim($this->dthlp->cleanData($val, $column['type']));
                     if ($val == '') continue;
                     if (!in_array($val, $data[$column['key']])) {
                         $data[$column['key']][] = $val;
                     }
                 }
             } else {
-                $data[$column['key']] = $this->dthlp->_cleanData($line[1] ?? '', $column['type']);
+                $data[$column['key']] = $this->dthlp->cleanData($line[1] ?? '', $column['type']);
             }
             $columns[$column['key']] = $column;
         }
-        return ['data' => $data, 'cols' => $columns, 'classes' => $class, 'pos' => $pos, 'len' => strlen($match)]; // not utf8_strlen
+        return [
+            'data' => $data,
+            'cols' => $columns,
+            'classes' => $class,
+            'pos' => $pos,
+            'len' => strlen($match) // not utf8_strlen
+        ];
     }
 
     /**
@@ -140,18 +150,18 @@ class syntax_plugin_data_entry extends SyntaxPlugin
         switch ($format) {
             case 'xhtml':
                 /** @var $renderer Doku_Renderer_xhtml */
-                $this->_showData($data, $renderer);
+                $this->showData($data, $renderer);
                 return true;
             case 'metadata':
                 /** @var $renderer Doku_Renderer_metadata */
-                $this->_saveData($data, $ID, $renderer->meta['title'] ?? '');
+                $this->saveData($data, $ID, $renderer->meta['title'] ?? '');
                 return true;
             case 'plugin_data_edit':
                 /** @var $renderer Doku_Renderer_plugin_data_edit */
                 if (is_a($renderer->form, 'Doku_Form')) {
-                    $this->_editDataLegacy($data, $renderer);
+                    $this->editDataLegacy($data, $renderer);
                 } else {
-                    $this->_editData($data, $renderer);
+                    $this->editData($data, $renderer);
                 }
                 return true;
             default:
@@ -165,7 +175,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
      * @param array $data
      * @param Doku_Renderer_xhtml $R
      */
-    public function _showData($data, $R)
+    public function showData($data, $R)
     {
         global $ID;
         $ret = '';
@@ -184,7 +194,9 @@ class syntax_plugin_data_entry extends SyntaxPlugin
             if ($type === 'hidden') continue;
 
             $class_name = hsc(sectionID($key, $class_names));
-            $ret .= '<dt class="' . $class_name . '">' . hsc($data['cols'][$key]['title']) . '<span class="sep">: </span></dt>';
+            $ret .= '<dt class="' . $class_name . '">' .
+                hsc($data['cols'][$key]['title']) .
+                '<span class="sep">: </span></dt>';
             $ret .= '<dd class="' . $class_name . '">';
             if (is_array($val)) {
                 $cnt = count($val);
@@ -192,7 +204,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                     if ($type === 'wiki') {
                         $val[$i] = $ID . '|' . $val[$i];
                     }
-                    $ret .= $this->dthlp->_formatData($data['cols'][$key], $val[$i], $R);
+                    $ret .= $this->dthlp->formatData($data['cols'][$key], $val[$i], $R);
                     if ($i < $cnt - 1) {
                         $ret .= '<span class="sep">, </span>';
                     }
@@ -201,7 +213,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                 if ($type === 'wiki') {
                     $val = $ID . '|' . $val;
                 }
-                $ret .= $this->dthlp->_formatData($data['cols'][$key], $val, $R);
+                $ret .= $this->dthlp->formatData($data['cols'][$key], $val, $R);
             }
             $ret .= '</dd>';
         }
@@ -213,9 +225,9 @@ class syntax_plugin_data_entry extends SyntaxPlugin
     /**
      * Save date to the database
      */
-    public function _saveData($data, $id, $title)
+    public function saveData($data, $id, $title)
     {
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
         if (!$title) {
@@ -300,12 +312,12 @@ class syntax_plugin_data_entry extends SyntaxPlugin
             for ($i = 1; $i < $argc; $i++) {
                 $data = [];
                 $data['sql'] = $args[$i];
-                $this->dthlp->_replacePlaceholdersInSQL($data);
+                $this->dthlp->replacePlaceholdersInSQL($data);
                 $args[$i] = $data['sql'];
             }
         }
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
         return call_user_func_array(array(&$sqlite, 'query'), $args);
@@ -321,7 +333,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
      * @param Doku_Renderer_plugin_data_edit $renderer
      * @deprecated                          _editData() is used since Igor
      */
-    protected function _editDataLegacy($data, &$renderer)
+    protected function editDataLegacy($data, &$renderer)
     {
         $renderer->form->startFieldset($this->getLang('dataentry'));
         $renderer->form->_content[count($renderer->form->_content) - 1]['class'] = 'plugin__data';
@@ -333,7 +345,15 @@ class syntax_plugin_data_entry extends SyntaxPlugin
             $columns = ['title', 'value', 'comment'];
             $class = 'edit_content_only';
         } else {
-            $renderer->form->addElement(form_makeField('text', 'data_edit[classes]', $data['classes'], $this->getLang('class'), 'data__classes'));
+            $renderer->form->addElement(
+                form_makeField(
+                    'text',
+                    'data_edit[classes]',
+                    $data['classes'],
+                    $this->getLang('class'),
+                    'data__classes'
+                )
+            );
 
             $columns = ['title', 'type', 'multi', 'value', 'comment'];
             $class = 'edit_all_content';
@@ -397,13 +417,26 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                         $attr['class'] = 'datepicker';
                     }
 
-                    $content = form_makeField('text', $fieldid . '[value]', $content, $vals['title'], '', $classes, $attr);
+                    $content = form_makeField(
+                        'text',
+                        $fieldid . '[value]',
+                        $content,
+                        $vals['title'],
+                        '',
+                        $classes,
+                        $attr
+                    );
                 }
-                $cells = [hsc($vals['title']) . ':', $content, '<span title="' . hsc($vals['comment']) . '">' . hsc($vals['comment']) . '</span>'];
+                $cells = [
+                    hsc($vals['title']) . ':',
+                    $content,
+                    '<span title="' . hsc($vals['comment']) . '">' . hsc($vals['comment']) . '</span>'
+                ];
                 foreach (['multi', 'comment', 'type'] as $field) {
                     $renderer->form->addHidden($fieldid . "[$field]", $vals[$field]);
                 }
-                $renderer->form->addHidden($fieldid . "[title]", $vals['origkey']); //keep key as key, even if title is translated
+                //keep key as key, even if title is translated
+                $renderer->form->addHidden($fieldid . "[title]", $vals['origkey']);
             } else {
                 $check_data = $vals['multi'] ? ['checked' => 'checked'] : [];
                 $cells = [
@@ -413,14 +446,34 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                         $fieldid . '[type]',
                         array_merge(
                             ['', 'page', 'nspage', 'title', 'img', 'mail', 'url', 'tag', 'wiki', 'dt', 'hidden'],
-                            array_keys($this->dthlp->_aliases())
+                            array_keys($this->dthlp->aliases())
                         ),
                         $vals['type'],
                         $this->getLang('type')
                     ),
-                    form_makeCheckboxField($fieldid . '[multi]', ['1', ''], $this->getLang('multi'), '', '', $check_data),
-                    form_makeField('text', $fieldid . '[value]', $content, $this->getLang('value')),
-                    form_makeField('text', $fieldid . '[comment]', $vals['comment'], $this->getLang('comment'), '', 'data_comment', ['readonly' => 1, 'title' => $vals['comment']]),
+                    form_makeCheckboxField(
+                        $fieldid . '[multi]',
+                        ['1', ''],
+                        $this->getLang('multi'),
+                        '',
+                        '',
+                        $check_data
+                    ),
+                    form_makeField(
+                        'text',
+                        $fieldid . '[value]',
+                        $content,
+                        $this->getLang('value')
+                    ),
+                    form_makeField(
+                        'text',
+                        $fieldid . '[comment]',
+                        $vals['comment'],
+                        $this->getLang('comment'),
+                        '',
+                        'data_comment',
+                        ['readonly' => 1, 'title' => $vals['comment']]
+                    ),
                 ];
             }
 
@@ -444,7 +497,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
      * @param array $data
      * @param Doku_Renderer_plugin_data_edit $renderer
      */
-    protected function _editData($data, &$renderer)
+    protected function editData($data, &$renderer)
     {
         $renderer->form->addFieldsetOpen($this->getLang('dataentry'))->attr('class', 'plugin__data');
 
@@ -534,7 +587,8 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                 foreach (['multi', 'comment', 'type'] as $field) {
                     $renderer->form->setHiddenField($fieldid . "[$field]", $vals[$field] ?? '');
                 }
-                $renderer->form->setHiddenField($fieldid . "[title]", $vals['origkey'] ?? ''); //keep key as key, even if title is translated
+                //keep key as key, even if title is translated
+                $renderer->form->setHiddenField($fieldid . "[title]", $vals['origkey'] ?? '');
             } else {
                 $check_data = $vals['multi'] ? ['checked' => 'checked'] : [];
                 $cells = [];
@@ -547,7 +601,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                     $fieldid . '[type]',
                     array_merge(
                         ['', 'page', 'nspage', 'title', 'img', 'mail', 'url', 'tag', 'wiki', 'dt', 'hidden'],
-                        array_keys($this->dthlp->_aliases())
+                        array_keys($this->dthlp->aliases())
                     ),
                     $this->getLang('type')
                 );
@@ -592,7 +646,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
      * @return mixed
      * @todo bad naming
      */
-    public static function _normalize($txt)
+    public static function normalize($txt)
     {
         return str_replace('#', '\#', trim($txt));
     }
@@ -615,10 +669,10 @@ class syntax_plugin_data_entry extends SyntaxPlugin
             $field = array_map('trim', $field);
             if ($field['title'] === '') continue;
 
-            $name = syntax_plugin_data_entry::_normalize($field['title']);
+            $name = syntax_plugin_data_entry::normalize($field['title']);
 
             if ($field['type'] !== '') {
-                $name .= '_' . syntax_plugin_data_entry::_normalize($field['type']);
+                $name .= '_' . syntax_plugin_data_entry::normalize($field['type']);
             } elseif (substr($name, -1, 1) === 's') {
                 $name .= '_'; // when the field name ends in 's' we need to secure it against being assumed as multi
             }
@@ -627,7 +681,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
                 $name .= 's';
             }
 
-            $nudata[] = [$name, syntax_plugin_data_entry::_normalize($field['value']), $field['comment']];
+            $nudata[] = [$name, syntax_plugin_data_entry::normalize($field['value']), $field['comment']];
             $len = max($len, PhpString::strlen($nudata[count($nudata) - 1][0]));
         }
 

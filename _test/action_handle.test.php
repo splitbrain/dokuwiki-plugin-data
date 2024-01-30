@@ -8,7 +8,6 @@ use dokuwiki\plugin\sqlite\SQLiteDB;
  */
 class action_handle_test extends DokuWikiTest
 {
-
     protected $pluginsEnabled = array('data', 'sqlite');
 
     protected $action;
@@ -30,7 +29,7 @@ class action_handle_test extends DokuWikiTest
 
         $this->action = new action_plugin_data();
         $this->helper = plugin_load('helper', 'data');
-        $this->db = $this->helper->_getDB();
+        $this->db = $this->helper->getDB();
 
         $this->db->exec(
             'INSERT INTO pages ( pid, page, title , class , lastmod) VALUES (?, ?, ?, ?, ?)',
@@ -38,7 +37,7 @@ class action_handle_test extends DokuWikiTest
         );
     }
 
-    function testHandleStillPresent()
+    public function testHandleStillPresent()
     {
 
         $data = array(
@@ -49,13 +48,13 @@ class action_handle_test extends DokuWikiTest
             2 => 'test'
         );
         $event = new Doku_Event('', $data);
-        $this->action->_handle($event, null);
+        $this->action->handle($event, null);
 
         $pid = $this->getTestPageId();
         $this->assertFalse(!$pid);
     }
 
-    function testHandleDelete()
+    public function testHandleDelete()
     {
         $data = array(
             0 => array(
@@ -66,7 +65,7 @@ class action_handle_test extends DokuWikiTest
         );
 
         $event = new Doku_Event('', $data);
-        $this->action->_handle($event, null);
+        $this->action->handle($event, null);
 
         $pid = $this->db->queryValue('SELECT pid FROM pages WHERE page = ?', 'test');
         $this->assertTrue(!$pid);

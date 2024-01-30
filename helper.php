@@ -77,7 +77,7 @@ class helper_plugin_data extends Plugin
      */
     public function ready()
     {
-        return (bool)$this->_getDB();
+        return (bool)$this->getDB();
     }
 
     /**
@@ -85,12 +85,12 @@ class helper_plugin_data extends Plugin
      *
      * @return SQLiteDB|null SQLite class plugin or null if failed
      */
-    public function _getDB()
+    public function getDB()
     {
         if ($this->db === null) {
             try {
                 $this->db = new SQLiteDB('data', __DIR__ . '/db/');
-                $this->db->getPdo()->sqliteCreateFunction('DATARESOLVE', [$this, '_resolveData'], 2);
+                $this->db->getPdo()->sqliteCreateFunction('DATARESOLVE', [$this, 'resolveData'], 2);
             } catch (\Exception $exception) {
                 if (defined('DOKU_UNITTEST')) throw new \RuntimeException('Could not load SQLite', 0, $exception);
                 ErrorHandler::logException($exception);
@@ -108,7 +108,7 @@ class helper_plugin_data extends Plugin
      * @param string|array $type
      * @return string
      */
-    public function _cleanData($value, $type)
+    public function cleanData($value, $type)
     {
         $value = trim((string) $value);
         if (!$value && $value !== '0') {
@@ -167,7 +167,7 @@ class helper_plugin_data extends Plugin
      * @param string $post
      * @return string
      */
-    public function _addPrePostFixes($type, $val, $pre = '', $post = '')
+    public function addPrePostFixes($type, $val, $pre = '', $post = '')
     {
         if (is_array($type)) {
             if (isset($type['prefix'])) {
@@ -191,11 +191,11 @@ class helper_plugin_data extends Plugin
      * @param string $colname
      * @return string
      */
-    public function _resolveData($value, $colname)
+    public function resolveData($value, $colname)
     {
         // resolve pre and postfixes
-        $column = $this->_column($colname);
-        $value = $this->_addPrePostFixes($column['type'], $value);
+        $column = $this->column($colname);
+        $value = $this->addPrePostFixes($column['type'], $value);
 
         // for pages, resolve title
         $type = $column['type'];
@@ -229,7 +229,7 @@ class helper_plugin_data extends Plugin
      * @param Doku_Renderer_xhtml $R
      * @return string
      */
-    public function _formatData($column, $value, Doku_Renderer_xhtml $R)
+    public function formatData($column, $value, Doku_Renderer_xhtml $R)
     {
         global $conf;
         $vals = explode("\n", $value);
@@ -248,13 +248,13 @@ class helper_plugin_data extends Plugin
             }
             switch ($type) {
                 case 'page':
-                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->addPrePostFixes($column['type'], $val);
                     $val = $this->ensureAbsoluteId($val);
                     $outs[] = $R->internallink($val, null, null, true);
                     break;
                 case 'title':
                     [$id, $title] = array_pad(explode('|', $val, 2), 2, null);
-                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    $id = $this->addPrePostFixes($column['type'], $id);
                     $id = $this->ensureAbsoluteId($id);
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
@@ -271,7 +271,7 @@ class helper_plugin_data extends Plugin
                         $storedID = $id;
                     }
 
-                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    $id = $this->addPrePostFixes($column['type'], $id);
 
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
@@ -283,7 +283,7 @@ class helper_plugin_data extends Plugin
                     break;
                 case 'mail':
                     [$id, $title] = array_pad(explode(' ', $val, 2), 2, null);
-                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    $id = $this->addPrePostFixes($column['type'], $id);
                     $id = obfuscate(hsc($id));
                     if (!$title) {
                         $title = $id;
@@ -296,7 +296,7 @@ class helper_plugin_data extends Plugin
                     $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $id . '">' . $title . '</a>';
                     break;
                 case 'url':
-                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->addPrePostFixes($column['type'], $val);
                     $outs[] = $this->external_link($val, false, 'urlextern');
                     break;
                 case 'tag':
@@ -304,11 +304,11 @@ class helper_plugin_data extends Plugin
                     if (!is_array($column['type'])) {
                         $target = $column['key'] . ':';
                     } else {
-                        $target = $this->_addPrePostFixes($column['type'], '');
+                        $target = $this->addPrePostFixes($column['type'], '');
                     }
 
                     $outs[] = '<a href="'
-                        . wl(str_replace('/', ':', cleanID($target)), $this->_getTagUrlparam($column, $val))
+                        . wl(str_replace('/', ':', cleanID($target)), $this->getTagUrlparam($column, $val))
                         . '" title="' . sprintf($this->getLang('tagfilter'), hsc($val))
                         . '" class="wikilink1">' . hsc($val) . '</a>';
                     break;
@@ -327,7 +327,7 @@ class helper_plugin_data extends Plugin
                     } else {
                         $storedID = $ID;
                     }
-                    $data = $this->_addPrePostFixes($column['type'], $data);
+                    $data = $this->addPrePostFixes($column['type'], $data);
 
                     // Trim document_{start,end}, p_{open,close} from instructions
                     $allinstructions = p_get_instructions($data);
@@ -341,7 +341,7 @@ class helper_plugin_data extends Plugin
                     $ID = $oldid;
                     break;
                 default:
-                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->addPrePostFixes($column['type'], $val);
                     //type '_img' or '_img<width>'
                     if (substr($type, 0, 3) == 'img') {
                         $width = (int)substr($type, 3);
@@ -376,7 +376,8 @@ class helper_plugin_data extends Plugin
                                 $height = null,
                                 $cache = null,
                                 $linking = 'direct',
-                                true);
+                                true
+                            );
                         }
                         if (strpos($html, 'mediafile') === false) {
                             $html = str_replace('href', 'rel="lightbox" href', $html);
@@ -397,7 +398,7 @@ class helper_plugin_data extends Plugin
      * @param string $col column name
      * @return array with key, type, ismulti, title, opt
      */
-    public function _column($col)
+    public function column($col)
     {
         preg_match('/^([^_]*)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
         $column = [
@@ -425,7 +426,7 @@ class helper_plugin_data extends Plugin
         }
 
         // check if the type is some alias
-        $aliases = $this->_aliases();
+        $aliases = $this->aliases();
         if (isset($aliases[$column['type']])) {
             $column['origtype'] = $column['type'];
             $column['type'] = $aliases[$column['type']];
@@ -444,11 +445,11 @@ class helper_plugin_data extends Plugin
      *
      * @return array
      */
-    public function _aliases()
+    public function aliases()
     {
         if (!is_null($this->aliases)) return $this->aliases;
 
-        $sqlite = $this->_getDB();
+        $sqlite = $this->getDB();
         if (!$sqlite) return [];
 
         $this->aliases = [];
@@ -470,11 +471,11 @@ class helper_plugin_data extends Plugin
      * @param $filterline
      * @return array|bool - array on success, false on error
      */
-    public function _parse_filter($filterline)
+    public function parseFilter($filterline)
     {
         //split filterline on comparator
         if (preg_match('/^(.*?)([\*=<>!~]{1,2})(.*)$/', $filterline, $matches)) {
-            $column = $this->_column(trim($matches[1]));
+            $column = $this->column(trim($matches[1]));
 
             $com = $matches[2];
             $aliasses = ['<>' => '!=', '=!' => '!=', '~!' => '!~', '==' => '=', '~=' => '~', '=~' => '~'];
@@ -504,9 +505,9 @@ class helper_plugin_data extends Plugin
                 }
             } else {
                 // Clean if there are no asterisks I could kill
-                $val = $this->_cleanData($val, $column['type']);
+                $val = $this->cleanData($val, $column['type']);
             }
-            $sqlite = $this->_getDB();
+            $sqlite = $this->getDB();
             if (!$sqlite) return false;
 
             if ($com == 'IN(') {
@@ -518,7 +519,13 @@ class helper_plugin_data extends Plugin
                 $val = $sqlite->getPdo()->quote($val);
             }
 
-            return ['key' => $column['key'], 'value' => $val, 'compare' => $com, 'colname' => $column['colname'], 'type' => $column['type']];
+            return [
+                'key' => $column['key'],
+                'value' => $val,
+                'compare' => $com,
+                'colname' => $column['colname'],
+                'type' => $column['type']
+            ];
         }
         msg('Failed to parse filter "' . hsc($filterline) . '"', -1);
         return false;
@@ -529,7 +536,7 @@ class helper_plugin_data extends Plugin
      *
      * @param $data
      */
-    public function _replacePlaceholdersInSQL(&$data)
+    public function replacePlaceholdersInSQL(&$data)
     {
         global $USERINFO;
         global $INPUT;
@@ -582,7 +589,7 @@ class helper_plugin_data extends Plugin
      *
      * @return array
      */
-    public function _get_filters()
+    public function getFilters()
     {
         $filters = [];
 
@@ -598,7 +605,7 @@ class helper_plugin_data extends Plugin
             if (!is_numeric($key)) {
                 $line = $key . $line;
             }
-            $f = $this->_parse_filter($line);
+            $f = $this->parseFilter($line);
             if (is_array($f)) {
                 $f['logic'] = 'AND';
                 $filters[] = $f;
@@ -614,7 +621,7 @@ class helper_plugin_data extends Plugin
      * @param string|array $array value or key-value pairs
      * @return array
      */
-    public function _a2ua($name, $array)
+    public function a2ua($name, $array)
     {
         $urlarray = [];
         foreach ((array)$array as $key => $val) {
@@ -629,11 +636,11 @@ class helper_plugin_data extends Plugin
      * @param bool $returnURLparams
      * @return array with dataflt, datasrt and dataofs parameters
      */
-    public function _get_current_param($returnURLparams = true)
+    public function getPurrentParam($returnURLparams = true)
     {
         $cur_params = [];
         if (isset($_REQUEST['dataflt'])) {
-            $cur_params = $this->_a2ua('dataflt', $_REQUEST['dataflt']);
+            $cur_params = $this->a2ua('dataflt', $_REQUEST['dataflt']);
         }
         if (isset($_REQUEST['datasrt'])) {
             $cur_params['datasrt'] = $_REQUEST['datasrt'];
@@ -660,7 +667,7 @@ class helper_plugin_data extends Plugin
      * @param string $tag
      * @return array of url parameters
      */
-    public function _getTagUrlparam($column, $tag)
+    public function getTagUrlparam($column, $tag)
     {
         $param = [];
 
@@ -672,14 +679,14 @@ class helper_plugin_data extends Plugin
                 if (!is_numeric($key)) {
                     $flt = $key . $flt;
                 }
-                $filter = $this->_parse_filter($flt);
+                $filter = $this->parseFilter($flt);
                 if ($filter['key'] == $column['key']) {
                     unset($param[$key]);
                 }
             }
         }
         $param[] = $column['key'] . "_=$tag";
-        $param = $this->_a2ua('dataflt', $param);
+        $param = $this->a2ua('dataflt', $param);
 
         if (isset($_REQUEST['datasrt'])) {
             $param['datasrt'] = $_REQUEST['datasrt'];

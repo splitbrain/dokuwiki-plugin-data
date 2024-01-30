@@ -34,12 +34,12 @@ class action_plugin_data extends ActionPlugin
      */
     public function register(EventHandler $controller)
     {
-        $controller->register_hook('IO_WIKIPAGE_WRITE', 'BEFORE', $this, '_handle');
-        $controller->register_hook('HTML_SECEDIT_BUTTON', 'BEFORE', $this, '_editbutton');
-        $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, '_editform'); // deprecated
-        $controller->register_hook('EDIT_FORM_ADDTEXTAREA', 'BEFORE', $this, '_editform'); // replacement
-        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, '_handle_edit_post');
-        $controller->register_hook('AJAX_CALL_UNKNOWN', 'BEFORE', $this, '_handle_ajax');
+        $controller->register_hook('IO_WIKIPAGE_WRITE', 'BEFORE', $this, 'handle');
+        $controller->register_hook('HTML_SECEDIT_BUTTON', 'BEFORE', $this, 'editButton');
+        $controller->register_hook('HTML_EDIT_FORMSELECTION', 'BEFORE', $this, 'editForm'); // deprecated
+        $controller->register_hook('EDIT_FORM_ADDTEXTAREA', 'BEFORE', $this, 'editForm'); // replacement
+        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'handleEditPost');
+        $controller->register_hook('AJAX_CALL_UNKNOWN', 'BEFORE', $this, 'handleAjax');
     }
 
     /**
@@ -49,12 +49,12 @@ class action_plugin_data extends ActionPlugin
      * @param Event $event
      * @param null $param
      */
-    public function _handle(Event $event, $param)
+    public function handle(Event $event, $param)
     {
         $data = $event->data;
         if (strpos($data[0][1], 'dataentry') !== false) return; // plugin seems still to be there
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return;
         $id = ltrim($data[1] . ':' . $data[2], ':');
 
@@ -70,7 +70,7 @@ class action_plugin_data extends ActionPlugin
      * @param Event $event
      * @param null $param
      */
-    public function _editbutton($event, $param)
+    public function editButton($event, $param)
     {
         if ($event->data['target'] !== 'plugin_data') {
             return;
@@ -83,7 +83,7 @@ class action_plugin_data extends ActionPlugin
      * @param Event $event
      * @param null $param
      */
-    public function _editform(Event $event, $param)
+    public function editForm(Event $event, $param)
     {
         global $TEXT;
         if ($event->data['target'] !== 'plugin_data') {
@@ -113,7 +113,7 @@ class action_plugin_data extends ActionPlugin
     /**
      * @param Event $event
      */
-    public function _handle_edit_post(Event $event)
+    public function handleEditPost(Event $event)
     {
         if (!isset($_POST['data_edit'])) {
             return;
@@ -127,7 +127,7 @@ class action_plugin_data extends ActionPlugin
     /**
      * @param Event $event
      */
-    public function _handle_ajax(Event $event)
+    public function handleAjax(Event $event)
     {
         if ($event->data !== 'data_page') {
             return;
@@ -137,7 +137,7 @@ class action_plugin_data extends ActionPlugin
         $event->preventDefault();
 
         $type = substr($_REQUEST['aliastype'], 10);
-        $aliases = $this->dthlp->_aliases();
+        $aliases = $this->dthlp->aliases();
 
         if (!isset($aliases[$type])) {
             echo 'Unknown type';

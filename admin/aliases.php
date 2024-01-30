@@ -70,7 +70,7 @@ class admin_plugin_data_aliases extends AdminPlugin
         global $INPUT;
         if (!$INPUT->has('d') || !checkSecurityToken()) return;
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return;
 
         $sqlite->getPdo()->beginTransaction();
@@ -103,7 +103,7 @@ class admin_plugin_data_aliases extends AdminPlugin
      */
     public function html()
     {
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return;
 
         echo $this->locale_xhtml('admin_intro');
@@ -138,7 +138,8 @@ class admin_plugin_data_aliases extends AdminPlugin
             $form->addElement('<td>');
             $form->addElement(form_makeMenuField(
                 'd[' . $cur . '][type]',
-                ['', 'page', 'title', 'mail', 'url', 'dt', 'wiki', 'tag', 'hidden', 'img'], //'nspage' don't support post/prefixes
+                //'nspage' don't support post/prefixes
+                ['', 'page', 'title', 'mail', 'url', 'dt', 'wiki', 'tag', 'hidden', 'img'],
                 $row['type'],
                 ''
             ));
