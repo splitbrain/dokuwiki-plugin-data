@@ -1,9 +1,11 @@
 <?php
+
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
 
+use dokuwiki\Extension\Plugin;
 use dokuwiki\ErrorHandler;
 use dokuwiki\plugin\sqlite\SQLiteDB;
 use dokuwiki\Utf8\PhpString;
@@ -11,23 +13,22 @@ use dokuwiki\Utf8\PhpString;
 /**
  * This is the base class for all syntax classes, providing some general stuff
  */
-class helper_plugin_data extends DokuWiki_Plugin
+class helper_plugin_data extends Plugin
 {
-
     /**
      * @var SQLiteDB initialized via _getDb()
      */
-    protected $db = null;
+    protected $db;
 
     /**
      * @var array stores the alias definitions
      */
-    protected $aliases = null;
+    protected $aliases;
 
     /**
      * @var array stores custom key localizations
      */
-    protected $locs = array();
+    protected $locs = [];
 
     /**
      * Constructor
@@ -41,13 +42,13 @@ class helper_plugin_data extends DokuWiki_Plugin
 
     private function loadLocalizedLabels()
     {
-        $lang = array();
+        $lang = [];
         $path = DOKU_CONF . '/lang/en/data-plugin.php';
         if (file_exists($path)) include($path);
         $path = DOKU_CONF . '/lang/' . $this->determineLang() . '/data-plugin.php';
         if (file_exists($path)) include($path);
         foreach ($lang as $key => $val) {
-            $lang[PHPString::strtolower($key)] = $val;
+            $lang[PhpString::strtolower($key)] = $val;
         }
         $this->locs = $lang;
     }
@@ -76,7 +77,7 @@ class helper_plugin_data extends DokuWiki_Plugin
      */
     public function ready()
     {
-        return (bool)$this->_getDB();
+        return (bool)$this->getDB();
     }
 
     /**
@@ -84,12 +85,12 @@ class helper_plugin_data extends DokuWiki_Plugin
      *
      * @return SQLiteDB|null SQLite class plugin or null if failed
      */
-    function _getDB()
+    public function getDB()
     {
         if ($this->db === null) {
             try {
                 $this->db = new SQLiteDB('data', __DIR__ . '/db/');
-                $this->db->getPdo()->sqliteCreateFunction('DATARESOLVE', [$this, '_resolveData'], 2);
+                $this->db->getPdo()->sqliteCreateFunction('DATARESOLVE', [$this, 'resolveData'], 2);
             } catch (\Exception $exception) {
                 if (defined('DOKU_UNITTEST')) throw new \RuntimeException('Could not load SQLite', 0, $exception);
                 ErrorHandler::logException($exception);
@@ -107,10 +108,10 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param string|array $type
      * @return string
      */
-    function _cleanData($value, $type)
+    public function cleanData($value, $type)
     {
         $value = trim((string) $value);
-        if (!$value and $value !== '0') {
+        if (!$value && $value !== '0') {
             return '';
         }
         if (is_array($type)) {
@@ -166,7 +167,7 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param string $post
      * @return string
      */
-    function _addPrePostFixes($type, $val, $pre = '', $post = '')
+    public function addPrePostFixes($type, $val, $pre = '', $post = '')
     {
         if (is_array($type)) {
             if (isset($type['prefix'])) {
@@ -190,11 +191,11 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param string $colname
      * @return string
      */
-    function _resolveData($value, $colname)
+    public function resolveData($value, $colname)
     {
         // resolve pre and postfixes
-        $column = $this->_column($colname);
-        $value = $this->_addPrePostFixes($column['type'], $value);
+        $column = $this->column($colname);
+        $value = $this->addPrePostFixes($column['type'], $value);
 
         // for pages, resolve title
         $type = $column['type'];
@@ -204,7 +205,7 @@ class helper_plugin_data extends DokuWiki_Plugin
         if ($type == 'title' || ($type == 'page' && useHeading('content'))) {
             $id = $value;
             if ($type == 'title') {
-                list($id,) = explode('|', $value, 2);
+                [$id, ] = explode('|', $value, 2);
             }
             //DATARESOLVE is only used with the 'LIKE' comparator, so concatenate the different strings is fine.
             $value .= ' ' . p_get_first_heading($id);
@@ -228,11 +229,11 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param Doku_Renderer_xhtml $R
      * @return string
      */
-    function _formatData($column, $value, Doku_Renderer_xhtml $R)
+    public function formatData($column, $value, Doku_Renderer_xhtml $R)
     {
         global $conf;
         $vals = explode("\n", $value);
-        $outs = array();
+        $outs = [];
 
         //multivalued line from db result for pageid and wiki has only in first value the ID
         $storedID = '';
@@ -247,18 +248,18 @@ class helper_plugin_data extends DokuWiki_Plugin
             }
             switch ($type) {
                 case 'page':
-                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->addPrePostFixes($column['type'], $val);
                     $val = $this->ensureAbsoluteId($val);
                     $outs[] = $R->internallink($val, null, null, true);
                     break;
                 case 'title':
-                    list($id, $title) = array_pad(explode('|', $val, 2), 2, null);
-                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    [$id, $title] = array_pad(explode('|', $val, 2), 2, null);
+                    $id = $this->addPrePostFixes($column['type'], $id);
                     $id = $this->ensureAbsoluteId($id);
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
                 case 'pageid':
-                    list($id, $title) = array_pad(explode('|', $val, 2), 2, null);
+                    [$id, $title] = array_pad(explode('|', $val, 2), 2, null);
 
                     //use ID from first value of the multivalued line
                     if ($title == null) {
@@ -270,7 +271,7 @@ class helper_plugin_data extends DokuWiki_Plugin
                         $storedID = $id;
                     }
 
-                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    $id = $this->addPrePostFixes($column['type'], $id);
 
                     $outs[] = $R->internallink($id, $title, null, true);
                     break;
@@ -281,8 +282,8 @@ class helper_plugin_data extends DokuWiki_Plugin
                     $outs[] = $R->internallink($val, null, null, true);
                     break;
                 case 'mail':
-                    list($id, $title) = array_pad(explode(' ', $val, 2), 2, null);
-                    $id = $this->_addPrePostFixes($column['type'], $id);
+                    [$id, $title] = array_pad(explode(' ', $val, 2), 2, null);
+                    $id = $this->addPrePostFixes($column['type'], $id);
                     $id = obfuscate(hsc($id));
                     if (!$title) {
                         $title = $id;
@@ -295,7 +296,7 @@ class helper_plugin_data extends DokuWiki_Plugin
                     $outs[] = '<a href="mailto:' . $id . '" class="mail" title="' . $id . '">' . $title . '</a>';
                     break;
                 case 'url':
-                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->addPrePostFixes($column['type'], $val);
                     $outs[] = $this->external_link($val, false, 'urlextern');
                     break;
                 case 'tag':
@@ -303,10 +304,11 @@ class helper_plugin_data extends DokuWiki_Plugin
                     if (!is_array($column['type'])) {
                         $target = $column['key'] . ':';
                     } else {
-                        $target = $this->_addPrePostFixes($column['type'], '');
+                        $target = $this->addPrePostFixes($column['type'], '');
                     }
 
-                    $outs[] = '<a href="' . wl(str_replace('/', ':', cleanID($target)), $this->_getTagUrlparam($column, $val))
+                    $outs[] = '<a href="'
+                        . wl(str_replace('/', ':', cleanID($target)), $this->getTagUrlparam($column, $val))
                         . '" title="' . sprintf($this->getLang('tagfilter'), hsc($val))
                         . '" class="wikilink1">' . hsc($val) . '</a>';
                     break;
@@ -316,7 +318,7 @@ class helper_plugin_data extends DokuWiki_Plugin
                 case 'wiki':
                     global $ID;
                     $oldid = $ID;
-                    list($ID, $data) = explode('|', $val, 2);
+                    [$ID, $data] = explode('|', $val, 2);
 
                     //use ID from first value of the multivalued line
                     if ($data == null) {
@@ -325,7 +327,7 @@ class helper_plugin_data extends DokuWiki_Plugin
                     } else {
                         $storedID = $ID;
                     }
-                    $data = $this->_addPrePostFixes($column['type'], $data);
+                    $data = $this->addPrePostFixes($column['type'], $data);
 
                     // Trim document_{start,end}, p_{open,close} from instructions
                     $allinstructions = p_get_instructions($data);
@@ -339,7 +341,7 @@ class helper_plugin_data extends DokuWiki_Plugin
                     $ID = $oldid;
                     break;
                 default:
-                    $val = $this->_addPrePostFixes($column['type'], $val);
+                    $val = $this->addPrePostFixes($column['type'], $val);
                     //type '_img' or '_img<width>'
                     if (substr($type, 0, 3) == 'img') {
                         $width = (int)substr($type, 3);
@@ -347,7 +349,7 @@ class helper_plugin_data extends DokuWiki_Plugin
                             $width = $this->getConf('image_width');
                         }
 
-                        list($mediaid, $title) = array_pad(explode('|', $val, 2), 2, null);
+                        [$mediaid, $title] = array_pad(explode('|', $val, 2), 2, null);
                         if ($title === null) {
                             $title = $column['key'] . ': ' . basename(str_replace(':', '/', $mediaid));
                         } else {
@@ -355,9 +357,27 @@ class helper_plugin_data extends DokuWiki_Plugin
                         }
 
                         if (media_isexternal($val)) {
-                            $html = $R->externalmedia($mediaid, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                            $html = $R->externalmedia(
+                                $mediaid,
+                                $title,
+                                $align = null,
+                                $width,
+                                $height = null,
+                                $cache = null,
+                                $linking = 'direct',
+                                true
+                            );
                         } else {
-                            $html = $R->internalmedia($mediaid, $title, $align = null, $width, $height = null, $cache = null, $linking = 'direct', true);
+                            $html = $R->internalmedia(
+                                $mediaid,
+                                $title,
+                                $align = null,
+                                $width,
+                                $height = null,
+                                $cache = null,
+                                $linking = 'direct',
+                                true
+                            );
                         }
                         if (strpos($html, 'mediafile') === false) {
                             $html = str_replace('href', 'rel="lightbox" href', $html);
@@ -369,7 +389,7 @@ class helper_plugin_data extends DokuWiki_Plugin
                     }
             }
         }
-        return join(', ', $outs);
+        return implode(', ', $outs);
     }
 
     /**
@@ -378,25 +398,25 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param string $col column name
      * @return array with key, type, ismulti, title, opt
      */
-    function _column($col)
+    public function column($col)
     {
         preg_match('/^([^_]*)(?:_(.*))?((?<!s)|s)$/', $col, $matches);
-        $column = array(
+        $column = [
             'colname' => $col,
             'multi' => ($matches[3] === 's'),
-            'key' => PHPString::strtolower($matches[1]),
+            'key' => PhpString::strtolower($matches[1]),
             'origkey' => $matches[1], //similar to key, but stores upper case
             'title' => $matches[1],
-            'type' => PHPString::strtolower($matches[2])
-        );
+            'type' => PhpString::strtolower($matches[2]),
+        ];
 
         // fix title for special columns
-        static $specials = array(
-            '%title%' => array('page', 'title'),
-            '%pageid%' => array('title', 'page'),
-            '%class%' => array('class'),
-            '%lastmod%' => array('lastmod', 'timestamp')
-        );
+        static $specials = [
+            '%title%' => ['page', 'title'],
+            '%pageid%' => ['title', 'page'],
+            '%class%' => ['class'],
+            '%lastmod%' => ['lastmod', 'timestamp']
+        ];
         if (isset($specials[$column['title']])) {
             $s = $specials[$column['title']];
             $column['title'] = $this->getLang($s[0]);
@@ -406,7 +426,7 @@ class helper_plugin_data extends DokuWiki_Plugin
         }
 
         // check if the type is some alias
-        $aliases = $this->_aliases();
+        $aliases = $this->aliases();
         if (isset($aliases[$column['type']])) {
             $column['origtype'] = $column['type'];
             $column['type'] = $aliases[$column['type']];
@@ -425,14 +445,14 @@ class helper_plugin_data extends DokuWiki_Plugin
      *
      * @return array
      */
-    function _aliases()
+    public function aliases()
     {
         if (!is_null($this->aliases)) return $this->aliases;
 
-        $sqlite = $this->_getDB();
-        if (!$sqlite) return array();
+        $sqlite = $this->getDB();
+        if (!$sqlite) return [];
 
-        $this->aliases = array();
+        $this->aliases = [];
         $rows = $sqlite->queryAll("SELECT * FROM aliases");
         foreach ($rows as $row) {
             $name = $row['name'];
@@ -451,17 +471,14 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param $filterline
      * @return array|bool - array on success, false on error
      */
-    function _parse_filter($filterline)
+    public function parseFilter($filterline)
     {
         //split filterline on comparator
         if (preg_match('/^(.*?)([\*=<>!~]{1,2})(.*)$/', $filterline, $matches)) {
-            $column = $this->_column(trim($matches[1]));
+            $column = $this->column(trim($matches[1]));
 
             $com = $matches[2];
-            $aliasses = array(
-                '<>' => '!=', '=!' => '!=', '~!' => '!~',
-                '==' => '=', '~=' => '~', '=~' => '~'
-            );
+            $aliasses = ['<>' => '!=', '=!' => '!=', '~!' => '!~', '==' => '=', '~=' => '~', '=~' => '~'];
 
             if (isset($aliasses[$com])) {
                 $com = $aliasses[$com];
@@ -488,9 +505,9 @@ class helper_plugin_data extends DokuWiki_Plugin
                 }
             } else {
                 // Clean if there are no asterisks I could kill
-                $val = $this->_cleanData($val, $column['type']);
+                $val = $this->cleanData($val, $column['type']);
             }
-            $sqlite = $this->_getDB();
+            $sqlite = $this->getDB();
             if (!$sqlite) return false;
 
             if ($com == 'IN(') {
@@ -502,13 +519,13 @@ class helper_plugin_data extends DokuWiki_Plugin
                 $val = $sqlite->getPdo()->quote($val);
             }
 
-            return array(
+            return [
                 'key' => $column['key'],
                 'value' => $val,
                 'compare' => $com,
                 'colname' => $column['colname'],
                 'type' => $column['type']
-            );
+            ];
         }
         msg('Failed to parse filter "' . hsc($filterline) . '"', -1);
         return false;
@@ -519,7 +536,7 @@ class helper_plugin_data extends DokuWiki_Plugin
      *
      * @param $data
      */
-    function _replacePlaceholdersInSQL(&$data)
+    public function replacePlaceholdersInSQL(&$data)
     {
         global $USERINFO;
         global $INPUT;
@@ -572,12 +589,12 @@ class helper_plugin_data extends DokuWiki_Plugin
      *
      * @return array
      */
-    function _get_filters()
+    public function getFilters()
     {
-        $filters = array();
+        $filters = [];
 
         if (!isset($_REQUEST['dataflt'])) {
-            $flt = array();
+            $flt = [];
         } elseif (!is_array($_REQUEST['dataflt'])) {
             $flt = (array)$_REQUEST['dataflt'];
         } else {
@@ -588,7 +605,7 @@ class helper_plugin_data extends DokuWiki_Plugin
             if (!is_numeric($key)) {
                 $line = $key . $line;
             }
-            $f = $this->_parse_filter($line);
+            $f = $this->parseFilter($line);
             if (is_array($f)) {
                 $f['logic'] = 'AND';
                 $filters[] = $f;
@@ -604,9 +621,9 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param string|array $array value or key-value pairs
      * @return array
      */
-    function _a2ua($name, $array)
+    public function a2ua($name, $array)
     {
-        $urlarray = array();
+        $urlarray = [];
         foreach ((array)$array as $key => $val) {
             $urlarray[$name . '[' . $key . ']'] = $val;
         }
@@ -619,11 +636,11 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param bool $returnURLparams
      * @return array with dataflt, datasrt and dataofs parameters
      */
-    function _get_current_param($returnURLparams = true)
+    public function getPurrentParam($returnURLparams = true)
     {
-        $cur_params = array();
+        $cur_params = [];
         if (isset($_REQUEST['dataflt'])) {
-            $cur_params = $this->_a2ua('dataflt', $_REQUEST['dataflt']);
+            $cur_params = $this->a2ua('dataflt', $_REQUEST['dataflt']);
         }
         if (isset($_REQUEST['datasrt'])) {
             $cur_params['datasrt'] = $_REQUEST['datasrt'];
@@ -634,7 +651,7 @@ class helper_plugin_data extends DokuWiki_Plugin
 
         //combine key and value
         if (!$returnURLparams) {
-            $flat_param = array();
+            $flat_param = [];
             foreach ($cur_params as $key => $val) {
                 $flat_param[] = $key . $val;
             }
@@ -650,9 +667,9 @@ class helper_plugin_data extends DokuWiki_Plugin
      * @param string $tag
      * @return array of url parameters
      */
-    function _getTagUrlparam($column, $tag)
+    public function getTagUrlparam($column, $tag)
     {
-        $param = array();
+        $param = [];
 
         if (isset($_REQUEST['dataflt'])) {
             $param = (array)$_REQUEST['dataflt'];
@@ -662,14 +679,14 @@ class helper_plugin_data extends DokuWiki_Plugin
                 if (!is_numeric($key)) {
                     $flt = $key . $flt;
                 }
-                $filter = $this->_parse_filter($flt);
+                $filter = $this->parseFilter($flt);
                 if ($filter['key'] == $column['key']) {
                     unset($param[$key]);
                 }
             }
         }
         $param[] = $column['key'] . "_=$tag";
-        $param = $this->_a2ua('dataflt', $param);
+        $param = $this->a2ua('dataflt', $param);
 
         if (isset($_REQUEST['datasrt'])) {
             $param['datasrt'] = $_REQUEST['datasrt'];

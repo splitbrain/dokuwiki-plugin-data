@@ -16,7 +16,7 @@ class data_action_plugin_edit_button_test extends DokuWikiTest
             'target' => 'plugin_data'
         );
         $event = new Doku_Event('', $data);
-        $action->_editbutton($event, null);
+        $action->editButton($event, null);
 
         $this->assertTrue(isset($data['name']));
     }
@@ -28,7 +28,7 @@ class data_action_plugin_edit_button_test extends DokuWikiTest
             'target' => 'default target'
         );
         $event = new Doku_Event('', $data);
-        $action->_editbutton($event, null);
+        $action->editButton($event, null);
 
         $this->assertFalse(isset($data['name']));
     }

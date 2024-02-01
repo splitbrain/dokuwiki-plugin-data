@@ -1,4 +1,5 @@
 <?php
+
 /**
  * DokuWiki Plugin data (Admin Component)
  *
@@ -6,20 +7,20 @@
  * @author  Andreas Gohr <gohr@cosmocode.de>
  */
 
+use dokuwiki\Extension\AdminPlugin;
 use dokuwiki\ErrorHandler;
 use dokuwiki\Utf8\PhpString;
 
 /**
  * Administration form for configuring the type aliases
  */
-class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
+class admin_plugin_data_aliases extends AdminPlugin
 {
-
     /**
      * will hold the data helper plugin
      * @var helper_plugin_data
      */
-    protected $dthlp = null;
+    protected $dthlp;
 
     /**
      * Constructor. Load helper plugin
@@ -69,7 +70,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
         global $INPUT;
         if (!$INPUT->has('d') || !checkSecurityToken()) return;
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return;
 
         $sqlite->getPdo()->beginTransaction();
@@ -78,7 +79,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
 
             foreach ($INPUT->arr('d') as $row) {
                 $row = array_map('trim', $row);
-                $row['name'] = PHPString::strtolower($row['name']);
+                $row['name'] = PhpString::strtolower($row['name']);
                 $row['name'] = rtrim($row['name'], 's');
                 if (!$row['name']) continue;
 
@@ -102,7 +103,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
      */
     public function html()
     {
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return;
 
         echo $this->locale_xhtml('admin_intro');
@@ -110,7 +111,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
         $sql = 'SELECT * FROM aliases ORDER BY name';
         $rows = $sqlite->queryAll($sql);
 
-        $form = new Doku_Form(array('method' => 'post'));
+        $form = new Doku_Form(['method' => 'post']);
         $form->addHidden('page', 'data_aliases');
         $form->addElement(
             '<table class="inline">' .
@@ -124,7 +125,7 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
         );
 
         // add empty row for adding a new entry
-        $rows[] = array('name' => '', 'type' => '', 'prefix' => '', 'postfix' => '', 'enum' => '');
+        $rows[] = ['name' => '', 'type' => '', 'prefix' => '', 'postfix' => '', 'enum' => ''];
 
         $cur = 0;
         foreach ($rows as $row) {
@@ -137,8 +138,10 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
             $form->addElement('<td>');
             $form->addElement(form_makeMenuField(
                 'd[' . $cur . '][type]',
-                array('', 'page', 'title', 'mail', 'url', 'dt', 'wiki', 'tag', 'hidden', 'img'),//'nspage' don't support post/prefixes
-                $row['type'], ''
+                //'nspage' don't support post/prefixes
+                ['', 'page', 'title', 'mail', 'url', 'dt', 'wiki', 'tag', 'hidden', 'img'],
+                $row['type'],
+                ''
             ));
             $form->addElement('</td>');
 
@@ -163,5 +166,4 @@ class admin_plugin_data_aliases extends DokuWiki_Admin_Plugin
         $form->addElement(form_makeButton('submit', 'admin', $this->getLang('submit')));
         $form->printForm();
     }
-
 }

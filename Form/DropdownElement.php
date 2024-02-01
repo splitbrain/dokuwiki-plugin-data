@@ -2,6 +2,7 @@
 
 namespace dokuwiki\plugin\data\Form;
 
+use dokuwiki\Form\InputElement;
 use dokuwiki\Form\OptGroup;
 
 /**
@@ -14,7 +15,7 @@ class DropdownElement extends \dokuwiki\Form\DropdownElement
     protected $values = [];
 
     /** @var \dokuwiki\plugin\data\Form\OptGroup[] */
-    protected $optGroups = array();
+    protected $optGroups = [];
 
 
     /**
@@ -27,7 +28,7 @@ class DropdownElement extends \dokuwiki\Form\DropdownElement
      */
     public function __construct($name, $options, $label = '')
     {
-        \dokuwiki\Form\InputElement::__construct('dropdown', $name, $label);
+        InputElement::__construct('dropdown', $name, $label);
         $this->rmattr('type');
         $this->optGroups[''] = new \dokuwiki\plugin\data\Form\OptGroup(null, $options);
         $this->val('');
@@ -69,7 +70,7 @@ class DropdownElement extends \dokuwiki\Form\DropdownElement
      */
     public function attr($name, $value = null)
     {
-        return \dokuwiki\Form\InputElement::attr($name, $value);
+        return InputElement::attr($name, $value);
     }
 
     /**
@@ -143,5 +144,4 @@ class DropdownElement extends \dokuwiki\Form\DropdownElement
 
         return $html;
     }
-
 }

@@ -341,7 +341,7 @@ class syntax_plugin_data_entry_test extends DokuWikiTest
 
         $result = $plugin->handle($this->exampleEntry, 0, 10, $handler);
 
-        $plugin->_showData($result, $xhtml);
+        $plugin->showData($result, $xhtml);
         $doc = (new DOMWrap\Document())->html($xhtml->doc);
 
         $this->assertEquals(1, $doc->find('div.inline.dataplugin_entry.projects')->count());

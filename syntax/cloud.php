@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
@@ -10,12 +11,11 @@
  */
 class syntax_plugin_data_cloud extends syntax_plugin_data_table
 {
-
     /**
      * will hold the data helper plugin
      * @var $dthlp helper_plugin_data
      */
-    var $dthlp = null;
+    public $dthlp;
 
     /**
      * Constructor. Load helper plugin
@@ -59,7 +59,11 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
      */
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+', $mode, 'plugin_data_cloud');
+        $this->Lexer->addSpecialPattern(
+            '----+ *datacloud(?: [ a-zA-Z0-9_]*)?-+\n.*?\n----+',
+            $mode,
+            'plugin_data_cloud'
+        );
     }
 
     /**
@@ -68,7 +72,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
      * @param array &$data instruction by handler
      * @return bool|string SQL query or false
      */
-    public function _buildSQL(&$data)
+    public function buildSQL(&$data)
     {
         $ckey = array_keys($data['cols']);
         $ckey = $ckey[0];
@@ -76,16 +80,12 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         $from = ' ';
         $where = ' ';
         $pagesjoin = '';
-        $tables = array();
+        $tables = [];
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
-        $fields = array(
-            'pageid' => 'page',
-            'class' => 'class',
-            'title' => 'title'
-        );
+        $fields = ['pageid' => 'page', 'class' => 'class', 'title' => 'title'];
         // prepare filters (no request filters - we set them ourselves)
         if (is_array($data['filter']) && count($data['filter'])) {
             $cnt = 0;
@@ -152,7 +152,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         if (!$this->dthlp->ready()) return false;
         $renderer->info['cache'] = false;
 
-        $sqlite = $this->dthlp->_getDB();
+        $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
         $ckey = array_keys($data['cols']);
@@ -162,13 +162,13 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
             $data['page'] = $ID;
         }
 
-        $this->dthlp->_replacePlaceholdersInSQL($data);
+        $this->dthlp->replacePlaceholdersInSQL($data);
 
         // build cloud data
         $rows = $sqlite->queryAll($data['sql']);
         $min = 0;
         $max = 0;
-        $tags = array();
+        $tags = [];
         foreach ($rows as $row) {
             if (!$max) {
                 $max = $row['cnt'];
@@ -177,7 +177,7 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
             $tags[$row['value']]['cnt'] = $row['cnt'];
             $tags[$row['value']]['value'] = $row['value'];
         }
-        $this->_cloud_weight($tags, $min, $max, 5);
+        $this->cloudWeight($tags, $min, $max, 5);
 
         // output cloud
         $renderer->doc .= sprintf($this->before_item, hsc($data['classes']));
@@ -188,7 +188,8 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
             }
 
             $renderer->doc .= sprintf($this->before_val, $tag['lvl']);
-            $renderer->doc .= '<a href="' . wl($data['page'], $this->dthlp->_getTagUrlparam($data['cols'][$ckey], $tag['value'])) .
+            $renderer->doc .= '<a href="' .
+                wl($data['page'], $this->dthlp->getTagUrlparam($data['cols'][$ckey], $tag['value'])) .
                 '" title="' . sprintf($this->getLang('tagfilter'), hsc($tag['value'])) .
                 '" class="wikilink1">' . $tagLabelText . '</a>';
             $renderer->doc .= $this->after_val;
@@ -205,14 +206,14 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
      * @param $max int      The highest count of a single tag
      * @param $levels int   The number of levels you want. A 5 gives levels 0 to 4.
      */
-    protected function _cloud_weight(&$tags, $min, $max, $levels)
+    protected function cloudWeight(&$tags, $min, $max, $levels)
     {
         $levels--;
 
         // calculate tresholds
-        $tresholds = array();
+        $tresholds = [];
         for ($i = 0; $i <= $levels; $i++) {
-            $tresholds[$i] = pow($max - $min + 1, $i / $levels) + $min - 1;
+            $tresholds[$i] = ($max - $min + 1) ** ($i / $levels) + $min - 1;
         }
 
         // assign weights
@@ -229,6 +230,4 @@ class syntax_plugin_data_cloud extends syntax_plugin_data_table
         // sort
         ksort($tags);
     }
-
 }
-
