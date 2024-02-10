@@ -403,6 +403,19 @@ class syntax_plugin_data_table extends SyntaxPlugin
                 '</div>';
             $text .= '</div>';
         }
+        
+        // fixes for bootstrap tpl 
+        if( isset($conf['tpl']['bootstrap3']['tableStyle'])) {
+            $ts = explode(',', $conf['tpl']['bootstrap3']['tableStyle']);
+            foreach ($ts as $class) {
+                if ($class == 'responsive') {
+                    $text = str_replace('<div class="table', '<div class="table table-responsive', $text);
+                } else {
+                    $data['classes'] .= " table-$class";
+                }
+            }
+        }        
+        
         // build table
         $text .= '<table class="inline dataplugin_table ' . $data['classes'] . '">';
         // build column headers
