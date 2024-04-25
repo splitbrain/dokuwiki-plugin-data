@@ -303,9 +303,8 @@ class syntax_plugin_data_entry extends SyntaxPlugin
      * @fixme replace this madness
      * @return bool|mixed
      */
-    public function replaceQuery()
+    public function replaceQuery(...$args)
     {
-        $args = func_get_args();
         $argc = func_num_args();
 
         if ($argc > 1) {
@@ -320,7 +319,7 @@ class syntax_plugin_data_entry extends SyntaxPlugin
         $sqlite = $this->dthlp->getDB();
         if (!$sqlite) return false;
 
-        return call_user_func_array(array(&$sqlite, 'query'), $args);
+        return $sqlite->query(...$args);
     }
 
 

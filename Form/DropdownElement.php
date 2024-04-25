@@ -135,9 +135,7 @@ class DropdownElement extends \dokuwiki\Form\DropdownElement
         $html = '<select ' . buildAttributes($attr) . '>';
         $html = array_reduce(
             $this->optGroups,
-            function ($html, OptGroup $optGroup) {
-                return $html . $optGroup->toHTML();
-            },
+            static fn($html, OptGroup $optGroup) => $html . $optGroup->toHTML(),
             $html
         );
         $html .= '</select>';
