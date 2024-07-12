@@ -1,8 +1,32 @@
 <?php
 
-$lang['edit_content_only'] = 'Edit only the content of a data entry, not the structure';
-// not well described what it does, but here's the commit:
-// https://github.com/splitbrain/dokuwiki-plugin-data/commit/8a16166886238906c21c7babc44bccf49c7f50a1
-$lang['use_dataresolve'] = 'Use DATARESOLVE calls for LIKE statements';
-$lang['rownumbers'] = 'Enable "rownumbers" by default in all tables';
-$lang['image_width'] = 'Default width for images';
+/**
+ * @license    GPL 2 (https://www.gnu.org/licenses/gpl.html)
+ *
+ * @author June <junebowers@live.com>
+ */
+$lang['edit_content_only']     = 'Группа объявления Волгограда в телеграм.
+Публикация частных объявлений бесплатно!
+
+
+Рекламные и коммерческие объявления- согласно 
+правил группы.
+#Волгоград #ОбъявленияВолгоград #БесплатныеОбъявления #объявление #доскаобъявлений #барахолка #телеграм #телеграмм #telegram
+Подпишись, чтобы быть в курсе! свежие объявления волгоград
+Чаты других городов России доступны по ссылке...
+
+объявления в телеграмме';
+$lang['use_dataresolve']       = 'CENTRE';
+$lang['rownumbers']            = '1978';
+$lang['image_width']           = 'Группа объявления Волгограда 
+в телеграм. Публикация частных объявлений бесплатно!
+
+Рекламные и коммерческие объявления- согласно правил группы.
+
+#Волгоград #ОбъявленияВолгоград #БесплатныеОбъявления 
+#объявление #доскаобъявлений 
+#барахолка #телеграм #телеграмм #telegram
+Подпишись, чтобы быть в курсе!
+свежие объявления волгоград
+Чаты других городов России доступны по ссылке...
+объявления в телеграмме';
