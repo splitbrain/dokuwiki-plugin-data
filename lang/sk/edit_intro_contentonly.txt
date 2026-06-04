@@ -1,0 +1,1 @@
+Upravte [[doku>plugin:data|dátový záznam]] a kliknite na ''Uložiť''. Záznam upravujte iba vtedy, ak ho viete **vylepšiť**.

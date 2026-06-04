@@ -1,0 +1,7 @@
+====== Nastavenie aliasov typov DB polí ======
+
+Toto rozhranie umožňuje definovať nové aliasy typov polí na základe existujúcich.
+
+Aliasované typy možno používať ako ktorýkoľvek iný typ pluginu, ale všetky dáta dostanú prefix alebo postfix s hodnotami, ktoré tu pre alias zadáte. Zvyčajne sa to používa na prepojenie určitých typov polí so špeciálnymi mennými priestormi.
+
+Viac informácií o aliasoch nájdete v [[doku>plugin:data|popise pluginu]].

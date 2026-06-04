@@ -1,0 +1,6 @@
+====== Čistenie databázy ======
+
+Keď sa odstránia stránky s pripojenými dátovými záznamami, odstránia sa aj ich uložené metadáta. To však platí len vtedy, keď bola stránka odstránená bežnou úpravou wiki. Ak bola stránka odstránená inak, napr. odstránením zo súborového systému, jej metadáta zostávajú v databáze.
+
+Tento nástroj odstráni všetky uložené dáta stránok, ktoré už neexistujú.
+
