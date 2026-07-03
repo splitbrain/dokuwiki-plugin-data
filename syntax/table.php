@@ -637,7 +637,7 @@ class syntax_plugin_data_table extends SyntaxPlugin
                 $order = 'ORDER BY pages.lastmod ' . $data['sort'][1];
             } else {
                 // sort by hidden column?
-                if (!$tables[$col]) {
+                if (!isset($tables[$col])) {
                     $tables[$col] = 'T' . (++$cnt);
                     $from .= ' LEFT JOIN data AS ' . $tables[$col] . ' ON ' . $tables[$col] . '.pid = W1.pid';
                     $from .= ' AND ' . $tables[$col] . ".key = " . $sqlite->getPdo()->quote($col);
