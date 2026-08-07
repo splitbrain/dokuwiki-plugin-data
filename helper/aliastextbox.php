@@ -8,6 +8,9 @@
  */
 class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
 {
+    public $opt;
+    public $tpl;
+    public $error;
     private $args;
     private $additional;
 
@@ -108,21 +111,18 @@ class helper_plugin_data_aliastextbox extends helper_plugin_bureaucracy_field
                 $this->additional['required'] = 'required';
             }
 
-            $form->addElement(call_user_func_array(
-                'form_makeListboxField',
-                $this->_parse_tpl(
-                    [
-                        '@@NAME@@[]',
-                        $params['args'],
-                        $params['value'],
-                        '@@DISPLAY@@',
-                        '',
-                        '@@CLASS@@',
-                        $this->additional
-                    ],
-                    $params
-                )
-            ));
+            $form->addElement(form_makeListboxField(...$this->_parse_tpl(
+                [
+                    '@@NAME@@[]',
+                    $params['args'],
+                    $params['value'],
+                    '@@DISPLAY@@',
+                    '',
+                    '@@CLASS@@',
+                    $this->additional
+                ],
+                $params
+            )));
         }
     }
 
